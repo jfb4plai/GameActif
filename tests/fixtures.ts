@@ -13,6 +13,8 @@ export function eauActivity(): Activity {
     discipline: 'Sciences',
     year: '2e primaire',
     context: 'Classe de 12 élèves, vocabulaire très simple, beaucoup de lecture à voix haute.',
+    /** Code factice : l'exemple n'est pas rattaché à un attendu réel du jeu de données. */
+    cibles: ['TEST.eau.1'],
     items: [
       item('a1', 'évaporation', 'facile'),
       item('b1', 'passage du liquide au gaz'),

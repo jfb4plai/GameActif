@@ -44,6 +44,8 @@ export interface Activity {
   year: string;
   /** Contexte de classe : obligatoire pour publier. */
   context: string;
+  /** Codes d'attendus du référentiel FWB visés (1 à 3), forme `M.P4.1.1.i1.a1`. Obligatoires pour publier. */
+  cibles: string[];
   items: Item[];
   categories: Category[];
   pairs: Pair[];

@@ -43,10 +43,30 @@ export function validateActivity(activity: Activity): string[] {
   return issues;
 }
 
-/** Règles de publication du split 80/20 : contexte, validation de chaque élément, structure saine. */
-export function canPublish(activity: Activity): { ok: boolean; reasons: string[] } {
+/** Cibles : de 1 à 3 attendus, sans doublon ; si le jeu de données est fourni, chaque code doit y exister. */
+export function validateCibles(cibles: readonly string[], knownCodes?: ReadonlySet<string>): string[] {
+  const issues: string[] = [];
+  if (cibles.length < 1 || cibles.length > 3) issues.push('Il faut choisir de 1 à 3 attendus du référentiel.');
+  const seen = new Set<string>();
+  for (const code of cibles) {
+    if (seen.has(code)) issues.push(`Attendu choisi deux fois : ${code}`);
+    seen.add(code);
+    if (knownCodes && !knownCodes.has(code)) issues.push(`Attendu inconnu : ${code}`);
+  }
+  return issues;
+}
+
+/**
+ * Règles de publication du split 80/20 : contexte, attendus visés, validation de chaque élément, structure saine.
+ * `knownTargetCodes` : codes du jeu de données de référentiel ; l'appelant le charge (le moteur reste pur).
+ */
+export function canPublish(
+  activity: Activity,
+  knownTargetCodes?: ReadonlySet<string>,
+): { ok: boolean; reasons: string[] } {
   const reasons: string[] = [];
   if (activity.context.trim() === '') reasons.push('Le contexte de classe est obligatoire.');
+  reasons.push(...validateCibles(activity.cibles, knownTargetCodes));
   const pending = activity.items.filter((i) => !i.validated).length;
   if (pending > 0) reasons.push(`${pending} élément(s) pas encore validé(s).`);
   reasons.push(...validateActivity(activity));

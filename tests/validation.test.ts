@@ -61,6 +61,46 @@ describe('canPublish', () => {
   });
 });
 
+describe('cibles (attendus du référentiel)', () => {
+  const known = new Set(['M.P4.1.1.i1.a1', 'M.P4.1.1.i1.a2', 'M.P4.1.1.i1.a3', 'M.P4.1.1.i2.a2', 'TEST.eau.1']);
+
+  it('refuse sans aucune cible', () => {
+    const a = eauActivity();
+    a.cibles = [];
+    expect(canPublish(a).reasons).toContain('Il faut choisir de 1 à 3 attendus du référentiel.');
+  });
+
+  it('refuse plus de 3 cibles', () => {
+    const a = eauActivity();
+    a.cibles = ['M.P4.1.1.i1.a1', 'M.P4.1.1.i1.a2', 'M.P4.1.1.i1.a3', 'M.P4.1.1.i2.a2'];
+    expect(canPublish(a, known).reasons).toContain('Il faut choisir de 1 à 3 attendus du référentiel.');
+  });
+
+  it('refuse un code inconnu du jeu de données', () => {
+    const a = eauActivity();
+    a.cibles = ['M.P4.9.9.i9.a9'];
+    expect(canPublish(a, known).reasons).toContain('Attendu inconnu : M.P4.9.9.i9.a9');
+  });
+
+  it('refuse un même attendu choisi deux fois', () => {
+    const a = eauActivity();
+    a.cibles = ['M.P4.1.1.i1.a1', 'M.P4.1.1.i1.a1'];
+    expect(canPublish(a, known).reasons).toContain('Attendu choisi deux fois : M.P4.1.1.i1.a1');
+  });
+
+  it('accepte de 1 à 3 codes connus', () => {
+    const a = eauActivity();
+    a.cibles = ['M.P4.1.1.i1.a1', 'M.P4.1.1.i1.a2', 'M.P4.1.1.i1.a3'];
+    expect(canPublish(a, known)).toEqual({ ok: true, reasons: [] });
+  });
+
+  it('sans jeu de données fourni, ne contrôle que le nombre', () => {
+    const a = eauActivity();
+    a.cibles = ['inconnu-mais-non-controle'];
+    expect(canPublish(a)).toEqual({ ok: true, reasons: [] });
+  });
+});
+
 describe('editStats', () => {
   it('compte les éléments proposés par l’IA, modifiés ou non', () => {
     const a = eauActivity();
