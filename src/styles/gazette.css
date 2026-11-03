@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Charte « gazette » (demandée par JF le 2026-11-03). Le texte que l'élève lit reste en Arial. */
+:root {
+  --journal: #efe6d2;
+  --papier: #fbf6e9;
+  --encre: #161616;
+  --sarcelle: #1f8a8c;
+  --jaune: #f6be2c;
+  --vermillon: #e8412a;
+  --vert: #cfe8d5;
+  --ombre: rgba(0, 0, 0, 0.38);
+  --titre: 'Alfa Slab One', Georgia, 'Times New Roman', serif;
+  --machine: 'Special Elite', 'Courier New', monospace;
+  --lecture: Arial, Helvetica, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--journal);
+  color: var(--encre);
+  font-family: var(--lecture);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.entete { position: relative; overflow: hidden; border-bottom: 3px solid var(--encre); background: var(--papier); padding: 18px 20px 22px; }
+.entete .rayons { position: absolute; right: -160px; top: -260px; width: 560px; height: 560px; border-radius: 50%;
+  background: repeating-conic-gradient(var(--jaune) 0 9deg, transparent 9deg 22deg); opacity: 0.85; animation: tourne 120s linear infinite; }
+.entete .soleil { position: absolute; right: -40px; top: -120px; width: 300px; height: 300px; border-radius: 50%; background: var(--sarcelle); border: 2px solid var(--encre); }
+.entete .contenu { position: relative; max-width: 1000px; margin: 0 auto; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.entete h1 { font-family: var(--titre); font-weight: 400; font-size: clamp(24px, 5vw, 40px); margin: 0; line-height: 1.1; text-shadow: 3px 3px 0 var(--jaune); }
+.entete img { background: var(--papier); padding: 2px 4px; border: 2px solid var(--encre); box-shadow: 3px 3px 0 var(--ombre); }
+@keyframes tourne { to { transform: rotate(360deg); } }
+
+main { position: relative; max-width: 1000px; margin: 0 auto; padding: 20px; }
+
+button { font-family: var(--machine); font-size: 17px; min-height: 44px; padding: 8px 16px; cursor: pointer; color: var(--encre);
+  background: var(--jaune); border: 2px solid var(--encre); border-radius: 0; box-shadow: 4px 4px 0 var(--ombre); transition: transform 0.12s, box-shadow 0.12s; }
+button:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--ombre); }
+button:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ombre); }
+button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible { outline: 4px solid var(--vermillon); outline-offset: 2px; }
+button[aria-pressed='true'], button[aria-selected='true'] { background: var(--encre); color: var(--papier); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.carte { background: var(--papier); border: 2px solid var(--encre); box-shadow: 5px 5px 0 var(--ombre); padding: 16px 18px; margin-bottom: 22px; }
+.etiquette { font-family: var(--machine); font-size: 15px; background: var(--jaune); border: 2px solid var(--encre); box-shadow: 3px 3px 0 var(--ombre); padding: 2px 10px; transform: rotate(-2deg); display: inline-block; }
+h2 { font-family: var(--titre); font-weight: 400; font-size: 26px; margin: 0 0 8px; line-height: 1.2; }
+.aide { color: #3b3b3b; font-size: 16px; margin: 4px 0 10px; }
+.code { font-family: var(--machine); font-size: 14px; color: #3b3b3b; display: block; }
+label { display: block; font-weight: bold; margin-bottom: 4px; }
+input[type='number'], select { font-family: var(--lecture); font-size: 18px; min-height: 44px; padding: 6px 10px; border: 2px solid var(--encre); background: #fff; border-radius: 0; }
+
+/* Mode calme : tout mouvement décoratif coupé, rotations retirées. */
+body.calme .entete .rayons { animation: none; }
+body.calme *, body.calme *::before, body.calme *::after { animation: none !important; transition: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .entete .rayons { animation: none; }
+  * { animation: none !important; transition: none !important; }
+}
