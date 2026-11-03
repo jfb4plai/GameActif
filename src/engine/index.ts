@@ -8,3 +8,4 @@ export * from './setup.js';
 export * from './associer.js';
 export * from './trier.js';
 export * from './ordre.js';
+export * from './signals.js';
