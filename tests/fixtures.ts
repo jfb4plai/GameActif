@@ -87,10 +87,10 @@ export function sceneActivity(): Activity {
       item('k4', 'Pose le chat entre les deux arbres.'),
     ],
     categories: [
-      { id: 'z-sur', label: 'sur la table' },
-      { id: 'z-sous', label: 'sous la table' },
-      { id: 'z-dans', label: 'dans la boîte' },
-      { id: 'z-entre', label: 'entre les deux arbres' },
+      { id: 'z-sur', label: 'sur la table', zone: true },
+      { id: 'z-sous', label: 'sous la table', zone: true },
+      { id: 'z-dans', label: 'dans la boîte', zone: true },
+      { id: 'z-entre', label: 'entre les deux arbres', zone: true },
     ],
     pairs: [],
     memberships: [
@@ -100,6 +100,19 @@ export function sceneActivity(): Activity {
       { itemId: 'k4', categoryId: 'z-entre' },
     ],
     ranks: [],
+  };
+}
+
+/** Activité qui propose Trier (familles de l'eau) ET Placer (zones de la scène) : les deux ne doivent pas se mélanger. */
+export function mixedActivity(): Activity {
+  const e = eauActivity();
+  const s = sceneActivity();
+  return {
+    ...e,
+    sceneId: s.sceneId,
+    items: [...e.items, ...s.items],
+    categories: [...e.categories, ...s.categories],
+    memberships: [...e.memberships, ...s.memberships],
   };
 }
 

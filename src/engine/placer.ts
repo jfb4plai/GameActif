@@ -2,12 +2,12 @@ import type { Activity, ProfileId } from './types.js';
 import type { ProfileParams } from './profiles.js';
 import type { RoundState } from './round.js';
 import type { Rng } from './rng.js';
-import { setupTrier } from './trier.js';
+import { setupByCategory } from './trier.js';
 
 /**
  * Placer dans une scène : chaque consigne désigne une zone de la scène (« Pose le chat sous la table »).
  * Au niveau du moteur c'est un choix de zone, comme Trier : on réutilise sa mise en place (consignes limitées
- * par le profil, ordre d'écriture cassé). Différences : les zones sont dessinées dans la scène, donc elles
+ * par le profil, ordre d'écriture cassé), restreinte aux catégories marquées `zone`. Différences : les zones sont dessinées dans la scène, donc elles
  * restent toutes affichées (le profil ne limite que les consignes) et gardent l'ordre de la scène.
  * Le glisser du chat vers une zone (coordonnées) relève du rendu, pas du moteur.
  */
@@ -21,7 +21,7 @@ export function setupPlacer(
 
   let base: RoundState;
   try {
-    base = setupTrier(activity, profile, rng, { maxCategories: Number.MAX_SAFE_INTEGER, ...overrides });
+    base = setupByCategory(activity, profile, rng, { maxCategories: Number.MAX_SAFE_INTEGER, ...overrides }, true, 'placer');
   } catch {
     throw new Error('Placer indisponible : il faut au moins 2 zones contenant chacune une consigne.');
   }
@@ -29,8 +29,7 @@ export function setupPlacer(
   const used = new Set(base.options);
   return {
     ...base,
-    mechanic: 'placer',
     sceneId: activity.sceneId,
-    options: activity.categories.map((c) => c.id).filter((id) => used.has(id)),
+    options: activity.categories.filter((c) => c.zone).map((c) => c.id).filter((id) => used.has(id)),
   };
 }

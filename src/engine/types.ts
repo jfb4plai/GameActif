@@ -17,6 +17,8 @@ export interface Item {
 export interface Category {
   id: string;
   label: string;
+  /** Zone d'une scène (mécanique « placer ») ; une zone n'est jamais une famille de Trier. */
+  zone?: boolean;
 }
 
 /** Appariement élément ↔ élément (mécanique Associer). */

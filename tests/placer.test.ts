@@ -3,7 +3,7 @@ import { setupPlacer } from '../src/engine/placer.js';
 import { setupRound } from '../src/engine/setup.js';
 import { availableMechanics } from '../src/engine/availability.js';
 import { makeRng } from '../src/engine/rng.js';
-import { sceneActivity, solveAll } from './fixtures.js';
+import { mixedActivity, sceneActivity, solveAll } from './fixtures.js';
 
 const zoneOf: Record<string, string> = { k1: 'z-sur', k2: 'z-sous', k3: 'z-dans', k4: 'z-entre' };
 
@@ -82,5 +82,38 @@ describe('Placer : disponibilité et aiguillage', () => {
 
   it('setupRound aiguille vers placer', () => {
     expect(setupRound(sceneActivity(), 'placer', 'standard', makeRng(1)).mechanic).toBe('placer');
+  });
+});
+
+describe('Trier et Placer dans une même activité', () => {
+  it('Trier ne reprend ni les consignes ni les zones de la scène (30 graines, 3 profils)', () => {
+    for (const profile of ['soutien', 'standard', 'defi'] as const) {
+      for (let seed = 0; seed < 10; seed++) {
+        const s = setupRound(mixedActivity(), 'trier', profile, makeRng(seed));
+        expect(s.elements.every((e) => e.id.startsWith('t'))).toBe(true);
+        expect(s.options.every((o) => o.startsWith('c'))).toBe(true);
+      }
+    }
+  });
+
+  it('Placer ne reprend ni les familles de l’eau ni leurs éléments', () => {
+    for (let seed = 0; seed < 10; seed++) {
+      const s = setupRound(mixedActivity(), 'placer', 'defi', makeRng(seed));
+      expect(s.elements.every((e) => e.id.startsWith('k'))).toBe(true);
+      expect(s.options).toEqual(['z-sur', 'z-sous', 'z-dans', 'z-entre']);
+    }
+  });
+
+  it('les deux mécaniques sont disponibles pour l’activité mixte', () => {
+    const m = availableMechanics(mixedActivity());
+    expect(m.trier.available).toBe(true);
+    expect(m.placer.available).toBe(true);
+  });
+
+  it('une activité qui n’a que des zones n’offre pas Trier', () => {
+    expect(availableMechanics(sceneActivity()).trier).toEqual({
+      available: false,
+      missing: 'Il faut au moins 2 catégories contenant chacune un élément.',
+    });
   });
 });

@@ -12,10 +12,13 @@ export function validPairs(activity: Activity): Pair[] {
   return activity.pairs.filter((p) => ids.has(p.leftId) && ids.has(p.rightId) && p.leftId !== p.rightId);
 }
 
-/** Classements valides ; un élément classé deux fois garde sa première catégorie. */
-export function validMemberships(activity: Activity): Membership[] {
+/**
+ * Classements valides ; un élément classé deux fois garde sa première catégorie.
+ * `zone` choisit le type de catégorie : familles de Trier (faux, par défaut) ou zones d'une scène (vrai).
+ */
+export function validMemberships(activity: Activity, zone = false): Membership[] {
   const items = new Set(activity.items.map((i) => i.id));
-  const cats = new Set(activity.categories.map((c) => c.id));
+  const cats = new Set(activity.categories.filter((c) => !!c.zone === zone).map((c) => c.id));
   const seen = new Set<string>();
   const out: Membership[] = [];
   for (const m of activity.memberships) {
@@ -49,12 +52,14 @@ export function availableMechanics(activity: Activity): Record<MechanicId, Mecha
     trier = { available: false, missing: 'Il faut au moins 3 éléments classés.' };
   }
 
+  const placements = validMemberships(activity, true);
+  const filledZones = new Set(placements.map((m) => m.categoryId));
   let placer: MechanicAvailability = { available: true, missing: null };
   if (!activity.sceneId) {
     placer = { available: false, missing: 'Il faut choisir une scène.' };
-  } else if (filledCategories.size < 2) {
+  } else if (filledZones.size < 2) {
     placer = { available: false, missing: 'Il faut au moins 2 zones contenant chacune une consigne.' };
-  } else if (memberships.length < 3) {
+  } else if (placements.length < 3) {
     placer = { available: false, missing: 'Il faut au moins 3 consignes.' };
   }
 
