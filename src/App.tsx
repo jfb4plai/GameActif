@@ -1,4 +1,9 @@
 import { CalmProvider, CalmToggle } from './ui/CalmContext';
+import { ActivityScreen } from './ui/ActivityScreen';
+import { activitePilote } from './data/pilote';
+
+// Créée une seule fois : l'activité d'exemple ne change pas pendant la session.
+const ACTIVITE = activitePilote();
 
 export default function App() {
   return (
@@ -13,7 +18,9 @@ export default function App() {
           <CalmToggle />
         </div>
       </header>
-      <main />
+      <main>
+        <ActivityScreen activity={ACTIVITE} />
+      </main>
     </CalmProvider>
   );
 }

@@ -75,6 +75,30 @@ svg.scene { display: block; width: 100%; height: auto; touch-action: none; }
 .chat { cursor: grab; transition: transform 0.32s ease; }
 .indice-zone { fill: rgba(232, 65, 42, 0.12); stroke: var(--vermillon); stroke-width: 3; stroke-dasharray: 8 6; }
 
+/* Écran d'activité : jeu sur écran et jeu physique en regard */
+.champs { display: flex; gap: 28px; flex-wrap: wrap; }
+.deux-cartes { display: grid; grid-template-columns: 1fr; gap: 0 22px; }
+@media (min-width: 900px) { .deux-cartes { grid-template-columns: 1fr 2fr; } }
+.liens-programme { padding-left: 18px; }
+.liens-programme li { margin-bottom: 10px; }
+.fiche h3 { font-family: var(--machine); font-weight: 400; font-size: 20px; margin: 18px 0 6px; border-bottom: 2px solid var(--encre); }
+.fiche table { border-collapse: collapse; width: 100%; background: #fff; }
+.fiche th, .fiche td { border: 2px solid var(--encre); padding: 6px 10px; text-align: left; font-size: 16px; }
+.fiche th { background: var(--jaune); font-family: var(--machine); font-weight: 400; }
+.cartes-imprimer { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+.carte-imprimer { font-family: Arial, Helvetica, sans-serif; font-size: 24pt; line-height: 1.25; text-align: center; border: 1px dashed var(--encre); padding: 14mm 8mm; min-height: 60mm; display: flex; align-items: center; justify-content: center; break-inside: avoid; background: #fff; }
+
+@media print {
+  @page { size: A4; margin: 12mm; }
+  body { background: #fff; }
+  .entete, .hors-impression, .controles, .carte-ecran, .plateau, .jeu-en-cours { display: none !important; }
+  .carte, .carte-classe { box-shadow: none; border: 0; padding: 0; }
+  body.impression-fiche .carte-classe:not(:has(.fiche[data-impression])) { display: none !important; }
+  .deux-cartes { display: block; }
+  .avant-corrige, .avant-cartes { break-before: page; }
+  .fiche { font-size: 12pt; }
+}
+
 /* Mode calme : tout mouvement décoratif coupé, rotations retirées. */
 body.calme .entete .rayons { animation: none; }
 body.calme *, body.calme *::before, body.calme *::after { animation: none !important; transition: none !important; }
