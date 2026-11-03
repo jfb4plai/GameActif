@@ -125,6 +125,11 @@ input[type='search'], textarea, input[type='text'] { font-family: var(--lecture)
 .problemes-saisie { min-height: 28px; }
 .problemes-saisie ul { padding-left: 18px; }
 
+/* Cadre du parcours */
+.navigation-parcours { display: flex; flex-wrap: wrap; gap: 14px; margin: 6px 0 12px; }
+.raisons { padding-left: 18px; color: var(--encre); font-weight: bold; }
+#titre-etape:focus { outline: none; }
+
 /* Mode calme : tout mouvement décoratif coupé, rotations retirées. */
 body.calme .entete .rayons { animation: none; }
 body.calme *, body.calme *::before, body.calme *::after { animation: none !important; transition: none !important; }
