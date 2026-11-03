@@ -1,0 +1,17 @@
+{
+  "name": "gameactif",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "GameActif : activités interactives différenciées, moteur pur",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build:referentiel": "node scripts/build-referentiel.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "typescript": "^5.5.3",
+    "vitest": "^2.1.4"
+  }
+}
