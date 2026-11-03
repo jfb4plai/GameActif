@@ -113,3 +113,8 @@ export function useAuth(): AuthValeur {
   if (!v) throw new Error('useAuth doit être utilisé dans un AuthProvider.');
   return v;
 }
+
+/** Comme useAuth, mais rend null hors d'un AuthProvider : le parcours reste utilisable sans fournisseur. */
+export function useAuthOptionnel(): AuthValeur | null {
+  return useContext(Contexte);
+}

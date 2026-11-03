@@ -1,4 +1,5 @@
 import { CalmProvider, CalmToggle } from './ui/CalmContext';
+import { AuthProvider } from './compte/auth';
 import { Parcours } from './ui/Parcours';
 
 export default function App() {
@@ -15,7 +16,9 @@ export default function App() {
         </div>
       </header>
       <main>
-        <Parcours />
+        <AuthProvider>
+          <Parcours />
+        </AuthProvider>
       </main>
     </CalmProvider>
   );

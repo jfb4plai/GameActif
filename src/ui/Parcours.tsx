@@ -2,9 +2,13 @@ import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { construireActivite } from '../atelier/brouillon.js';
 import { activitePilote } from '../data/pilote.js';
 import { ETAPES, problemesEtape, reduire, type Etape } from '../parcours/etapes.js';
+import { useAuthOptionnel } from '../compte/auth.js';
+import { codeConserve, lireCodeDansAdresse, type StockageLocal } from '../compte/invitation.js';
+import { getSupabase } from '../lib/supabase.js';
 import { chargerBrouillon, sauverBrouillon, type Stockage } from '../parcours/stockage.js';
 import { ActivityScreen } from './ActivityScreen.js';
 import { BarreFichier } from './BarreFichier.js';
+import { EspaceEnseignant, type EtatAcces } from './EspaceEnseignant.js';
 import { EtapeCompetences } from './EtapeCompetences.js';
 import { EtapeElements } from './EtapeElements.js';
 import { EtapeMatiere } from './EtapeMatiere.js';
@@ -18,7 +22,11 @@ const NOM_ETAPE: Record<Etape, string> = {
   jeux: 'Vos jeux',
 };
 
-function stockageDuNavigateur(): Stockage | null {
+type Rpc = (nom: string, args?: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }>;
+
+const rpcSupabase: Rpc = (nom, args) => getSupabase().rpc(nom, args) as unknown as PromiseLike<{ data: unknown; error: unknown }>;
+
+function stockageDuNavigateur(): (Stockage & StockageLocal) | null {
   try {
     return typeof window !== 'undefined' ? window.localStorage : null;
   } catch {
@@ -30,10 +38,20 @@ function stockageDuNavigateur(): Stockage | null {
 export function Parcours({
   stockage = stockageDuNavigateur(),
   telecharger,
+  rpc = rpcSupabase,
+  stockageInvitation = stockageDuNavigateur(),
 }: {
   stockage?: Stockage | null;
   telecharger?: (nom: string, contenu: string) => void;
+  rpc?: Rpc;
+  stockageInvitation?: StockageLocal | null;
 }) {
+  const compte = useAuthOptionnel();
+  const [acces, setAcces] = useState<EtatAcces>('inconnu');
+  // « Mon espace » s'ouvre tout seul quand on arrive par un lien d'invitation (ou au retour du courriel de confirmation).
+  const [espaceOuvert, setEspaceOuvert] = useState(
+    () => typeof window !== 'undefined' && (lireCodeDansAdresse(new URL(window.location.href)).code !== null || codeConserve(stockageInvitation) !== null),
+  );
   const [etat, envoyer] = useReducer(reduire, stockage, chargerBrouillon);
   const [exemple, setExemple] = useState(false);
   const premier = useRef(true);
@@ -121,6 +139,13 @@ export function Parcours({
 
       {barreVisible && (
         <BarreFichier brouillon={b} enCours={enCours} onCharger={(brouillon) => envoyer({ type: 'charger', brouillon })} telecharger={telecharger} />
+      )}
+
+      {compte?.disponible && (
+        <details className="espace-pliee" open={espaceOuvert} onToggle={(e) => setEspaceOuvert((e.currentTarget as HTMLDetailsElement).open)}>
+          <summary>{acces === 'enseignant' ? 'Mon espace : connecté' : 'Mon espace'}</summary>
+          <EspaceEnseignant rpc={rpc} stockage={stockageInvitation} onAcces={setAcces} />
+        </details>
       )}
     </div>
   );

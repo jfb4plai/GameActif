@@ -3,10 +3,17 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Parcours } from '../../src/ui/Parcours';
+import { AuthProvider } from '../../src/compte/auth';
+import { fauxAuth } from '../compte/fauxAuth';
 import { CalmProvider } from '../../src/ui/CalmContext';
 import type { Stockage } from '../../src/parcours/stockage.js';
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  window.history.replaceState(null, '', '/');
+});
+
+const CODE = 'AbCdEfGhIjKlMnOpQrStUvWxYz012345';
 
 function memoire(): Stockage {
   const data = new Map<string, string>();
@@ -16,6 +23,21 @@ function memoire(): Stockage {
 function monter(stockage: Stockage | null = memoire(), telecharger?: (nom: string, contenu: string) => void) {
   window.matchMedia = (() => ({ matches: false, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
   return render(<CalmProvider><Parcours stockage={stockage} telecharger={telecharger} /></CalmProvider>);
+}
+
+function montrerAvecCompte(adresse: string) {
+  window.history.replaceState(null, '', adresse);
+  window.matchMedia = (() => ({ matches: false, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+  const rpc = async () => ({ data: false, error: null });
+  const local = memoire() as Stockage & { removeItem(k: string): void };
+  local.removeItem = () => {};
+  return render(
+    <CalmProvider>
+      <AuthProvider client={fauxAuth().client}>
+        <Parcours stockage={memoire()} rpc={rpc} stockageInvitation={local} />
+      </AuthProvider>
+    </CalmProvider>,
+  );
 }
 
 const clic = (nom: string | RegExp, role: 'button' | 'checkbox' = 'button') => userEvent.click(screen.getByRole(role, { name: nom }));
@@ -158,6 +180,40 @@ describe('Parcours', () => {
     await clic('Mathématiques');
     await clic('Suivant');
     expect(screen.queryByLabelText('Ouvrir une activité (fichier)')).toBeNull();
+  });
+
+  it('Mon espace n’apparaît que dans un fournisseur d’authentification, et le parcours reste utilisable sans', async () => {
+    monter();
+    expect(screen.queryByText('Mon espace')).toBeNull();
+    await clic('P3');
+    expect(screen.getByRole('button', { name: 'P3' }).getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('sans configuration de connexion (aucune clé), « Mon espace » reste caché : l’écran public ne change pas', async () => {
+    window.matchMedia = (() => ({ matches: false, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+    render(
+      <CalmProvider>
+        <AuthProvider>
+          <Parcours stockage={memoire()} />
+        </AuthProvider>
+      </CalmProvider>,
+    );
+    await waitFor(() => expect(screen.getByText('Étape 1 sur 5 : Niveau')).toBeTruthy());
+    expect(screen.queryByText('Mon espace')).toBeNull();
+    expect(document.querySelector('details.espace-pliee')).toBeNull();
+  });
+
+  it('avec un fournisseur d’authentification, « Mon espace » est présent et fermé par défaut', async () => {
+    montrerAvecCompte('/');
+    await waitFor(() => expect(screen.getByText('Mon espace')).toBeTruthy());
+    expect((document.querySelector('details.espace-pliee') as HTMLDetailsElement).open).toBe(false);
+  });
+
+  it('arriver par un lien d’invitation ouvre « Mon espace » sur la création de compte', async () => {
+    montrerAvecCompte(`/?invitation=${CODE}`);
+    await waitFor(() => expect(screen.getByText('Vous avez reçu une invitation à GameActif.')).toBeTruthy());
+    expect((document.querySelector('details.espace-pliee') as HTMLDetailsElement).open).toBe(true);
+    expect(window.location.search).toBe('');
   });
 
   it('place le focus sur le titre de l’étape quand on change d’étape', async () => {
