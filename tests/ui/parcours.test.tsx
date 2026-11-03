@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { Parcours } from '../../src/ui/Parcours';
 import { AuthProvider } from '../../src/compte/auth';
 import { fauxAuth } from '../compte/fauxAuth';
+import { magasinMemoire } from '../../src/compte/activites';
 import { CalmProvider } from '../../src/ui/CalmContext';
 import type { Stockage } from '../../src/parcours/stockage.js';
 
@@ -15,6 +16,17 @@ afterEach(() => {
 
 const CODE = 'AbCdEfGhIjKlMnOpQrStUvWxYz012345';
 
+import { brouillonVide } from '../../src/atelier/brouillon';
+const brouillonDeTest = () => ({
+  ...brouillonVide(),
+  niveau: 'P4',
+  matiere: 'mathematiques',
+  cibles: ['M.P4.1.1.i1.a1'],
+  titre: 'Les positions',
+  contexte: '18 élèves.',
+  paires: 'devant | derrière\nà droite | à gauche',
+});
+
 function memoire(): Stockage {
   const data = new Map<string, string>();
   return { getItem: (k) => data.get(k) ?? null, setItem: (k, v) => void data.set(k, v) };
@@ -23,6 +35,23 @@ function memoire(): Stockage {
 function monter(stockage: Stockage | null = memoire(), telecharger?: (nom: string, contenu: string) => void) {
   window.matchMedia = (() => ({ matches: false, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
   return render(<CalmProvider><Parcours stockage={stockage} telecharger={telecharger} /></CalmProvider>);
+}
+
+function montrerEnseignant(estEnseignant: boolean, avecSession = true) {
+  window.history.replaceState(null, '', '/');
+  window.matchMedia = (() => ({ matches: false, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+  const rpc = async () => ({ data: estEnseignant, error: null });
+  const local = memoire() as Stockage & { removeItem(k: string): void };
+  local.removeItem = () => {};
+  const magasin = magasinMemoire();
+  const rendu = render(
+    <CalmProvider>
+      <AuthProvider client={fauxAuth({ session: avecSession ? { id: 'u1', email: 'prof@ecole.be' } : null }).client}>
+        <Parcours stockage={memoire()} rpc={rpc} stockageInvitation={local} magasin={magasin} />
+      </AuthProvider>
+    </CalmProvider>,
+  );
+  return { magasin, ...rendu };
 }
 
 function montrerAvecCompte(adresse: string) {
@@ -214,6 +243,43 @@ describe('Parcours', () => {
     await waitFor(() => expect(screen.getByText('Vous avez reçu une invitation à GameActif.')).toBeTruthy());
     expect((document.querySelector('details.espace-pliee') as HTMLDetailsElement).open).toBe(true);
     expect(window.location.search).toBe('');
+  });
+
+  it('un enseignant connecté peut enregistrer son activité dans son espace et la retrouver', async () => {
+    const { magasin } = montrerEnseignant(true);
+    await waitFor(() => expect(screen.getByText('Mon espace : connecté')).toBeTruthy());
+    await versElements();
+    await remplir();
+    await clic('Enregistrer dans mon espace');
+    await waitFor(() => expect(screen.getByText('Activité enregistrée : Les positions.')).toBeTruthy());
+    expect((await magasin.lister())[0].brouillon.titre).toBe('Les positions');
+  });
+
+  it('« Ouvrir » une activité enregistrée la charge dans le parcours', async () => {
+    const { magasin } = montrerEnseignant(true);
+    await magasin.enregistrer({ ...brouillonDeTest(), titre: 'Venue de mon espace' });
+    await waitFor(() => expect(screen.getByText('Mon espace : connecté')).toBeTruthy());
+    await clic('P4');
+    await clic('Suivant');
+    await clic('Mathématiques');
+    await clic('Suivant');
+    await clic(/M\.P4\.1\.1\.i1\.a1(?!\d)/, 'checkbox');
+    await clic('Suivant');
+    await clic('Ouvrir : Venue de mon espace');
+    await clic('Remplacer');
+    await waitFor(() => expect((screen.getByRole('textbox', { name: 'Titre de l’activité' }) as HTMLInputElement).value).toBe('Venue de mon espace'));
+  });
+
+  it('un compte connecté sans accès ou un visiteur anonyme ne voit pas « Mes activités » (Review Focus 2)', async () => {
+    montrerEnseignant(false);
+    await waitFor(() => expect(screen.getByText('Mon espace')).toBeTruthy());
+    await versElements();
+    expect(screen.queryByRole('button', { name: 'Enregistrer dans mon espace' })).toBeNull();
+    cleanup();
+    montrerEnseignant(false, false);
+    await waitFor(() => expect(screen.getByText('Mon espace')).toBeTruthy());
+    await versElements();
+    expect(screen.queryByRole('button', { name: 'Enregistrer dans mon espace' })).toBeNull();
   });
 
   it('place le focus sur le titre de l’étape quand on change d’étape', async () => {

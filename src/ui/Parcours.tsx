@@ -2,6 +2,7 @@ import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { construireActivite } from '../atelier/brouillon.js';
 import { activitePilote } from '../data/pilote.js';
 import { ETAPES, problemesEtape, reduire, type Etape } from '../parcours/etapes.js';
+import { magasinSupabase, type ActivitesStore, type ClientActivites } from '../compte/activites.js';
 import { useAuthOptionnel } from '../compte/auth.js';
 import { codeConserve, lireCodeDansAdresse, type StockageLocal } from '../compte/invitation.js';
 import { getSupabase } from '../lib/supabase.js';
@@ -9,6 +10,7 @@ import { chargerBrouillon, sauverBrouillon, type Stockage } from '../parcours/st
 import { ActivityScreen } from './ActivityScreen.js';
 import { BarreFichier } from './BarreFichier.js';
 import { EspaceEnseignant, type EtatAcces } from './EspaceEnseignant.js';
+import { MesActivites } from './MesActivites.js';
 import { EtapeCompetences } from './EtapeCompetences.js';
 import { EtapeElements } from './EtapeElements.js';
 import { EtapeMatiere } from './EtapeMatiere.js';
@@ -40,14 +42,22 @@ export function Parcours({
   telecharger,
   rpc = rpcSupabase,
   stockageInvitation = stockageDuNavigateur(),
+  magasin: magasinImpose,
 }: {
   stockage?: Stockage | null;
   telecharger?: (nom: string, contenu: string) => void;
   rpc?: Rpc;
   stockageInvitation?: StockageLocal | null;
+  /** Magasin d'activités ; par défaut celui de la base Supabase pour le compte connecté. */
+  magasin?: ActivitesStore;
 }) {
   const compte = useAuthOptionnel();
   const [acces, setAcces] = useState<EtatAcces>('inconnu');
+  const userId = compte?.user?.id ?? null;
+  const magasin = useMemo<ActivitesStore | null>(
+    () => magasinImpose ?? (userId !== null ? magasinSupabase(getSupabase() as unknown as ClientActivites, userId) : null),
+    [magasinImpose, userId],
+  );
   // « Mon espace » s'ouvre tout seul quand on arrive par un lien d'invitation (ou au retour du courriel de confirmation).
   const [espaceOuvert, setEspaceOuvert] = useState(
     () => typeof window !== 'undefined' && (lireCodeDansAdresse(new URL(window.location.href)).code !== null || codeConserve(stockageInvitation) !== null),
@@ -139,6 +149,10 @@ export function Parcours({
 
       {barreVisible && (
         <BarreFichier brouillon={b} enCours={enCours} onCharger={(brouillon) => envoyer({ type: 'charger', brouillon })} telecharger={telecharger} />
+      )}
+
+      {acces === 'enseignant' && magasin !== null && (etat.etape === 'elements' || etat.etape === 'jeux') && (
+        <MesActivites store={magasin} brouillon={b} enCours={enCours} onOuvrir={(brouillon) => envoyer({ type: 'charger', brouillon })} />
       )}
 
       {compte?.disponible && (
