@@ -158,3 +158,21 @@ Le plan 2 affiche aussi le lien avec le programme pour le jeu sur écran. Phrase
 - Remettre en ordre : « Les élèves rangent les mots premier, deuxième, troisième, dernier dans l'ordre. Le jeu travaille le vocabulaire ordinal ; il ne travaille pas avant et après. »
 - Placer : « Les élèves placent un objet dessiné selon une consigne de position. Le jeu ne travaille pas les positions relatives, qui dépendent du point de vue, ni le placement dans l'espace réel. »
 - Attendu ajouté en classe pour Placer (`M.P4.1.1.i3.a1`) : « En classe, l'élève acteur déplace un objet doux en suivant une consigne orale lue à voix basse. L'écran ne permet pas ce déplacement dans l'espace réel. »
+
+## 13. Parcours de sélection et atelier de saisie (demandé par JF le 2026-11-03)
+
+JF veut choisir le niveau, puis la matière, puis la ou les compétences visées, avant d'arriver sur la page des jeux sur écran et des jeux physiques. Un jeu a besoin d'éléments (mots, paires, étapes) : le parcours comporte donc une étape de saisie.
+
+Parcours en cinq étapes : 1. Niveau. 2. Matière. 3. Compétences visées (1 à 3 attendus du programme, texte officiel affiché). 4. Saisie de ses propres éléments, guidée par jeu. 5. Page des jeux en regard (existante).
+
+Vocabulaire : dans le référentiel, « Compétence » est aussi un type d'item (à côté de Savoir et Savoir-faire). Dans l'interface, « Compétences visées » désigne les attendus choisis, quel que soit leur type ; le type s'affiche à côté de chaque attendu.
+
+Couverture des données (constaté le 2026-11-03, comptage par script) : mathématiques P1 à P6 = 73, 122, 150, 173, 176, 167 attendus, soit 861, même structure de fichier. Français : structure différente (compétences de réception et de production), adaptateur à écrire plus tard. Autres matières : non inspectées. Le parcours n'affiche que les niveaux et matières présents dans les données.
+
+Décisions de conception (hypothèses de ma part, à confirmer par JF) :
+- Les éléments tapés par l'enseignant sont considérés comme validés (il les a écrits) ; la validation carte par carte reste réservée aux propositions de l'IA du plan suivant.
+- « Placer dans une scène » n'est pas proposé dans l'atelier : il exige une scène dessinée. Il reste disponible pour l'exemple des positions.
+- Le brouillon reste dans le navigateur de l'enseignant (stockage local, rien n'est envoyé). Aucun nom d'élève n'est à saisir ; le champ le rappelle.
+- Aucune phrase de lien n'est inventée : hors pilote, la fiche affiche « À compléter par l'enseignant ».
+
+Limite : les quatre jeux conviennent aux attendus qui consistent à classer, relier ou ordonner (vocabulaire, nombres à ordonner, fractions à relier à leur écriture décimale). Ils ne conviennent pas à ceux qui demandent de tracer, mesurer ou construire ; l'atelier le dit, sans filtrer les attendus.
