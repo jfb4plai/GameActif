@@ -110,3 +110,43 @@ Limites et points ouverts :
 4. Un glisser lancé pendant le retour animé de l'objet a été ignoré une fois en essai : traité au développement (reproduire d'abord, puis corriger). Pris comme accepté par JF.
 5. Mouvement contre sobriété : tension relevée en spec section 12 ; animations courtes sans clignotement, mode calme obligatoire, à tester avec des élèves dont des élèves TDAH.
 6. Effet sur l'apprentissage : aucune preuve ajoutée ; l'engagement visé n'est pas un résultat d'apprentissage.
+
+## 12. Jeux physiques en regard (décidé par JF le 2026-11-03)
+
+Règle : chaque mécanique numérique proposée pour une activité a un jeu physique en regard, sur les mêmes éléments validés et les mêmes cibles. L'enseignant n'a rien à ressaisir : les cartes s'impriment depuis les éléments de l'activité.
+
+Contraintes demandées par JF.
+- Positives : au moins une des deux, manipulation ou déplacement.
+- Négatives : pas de risque de débordement ; respect du calme.
+
+Définition opérationnelle de « débordement » et de « calme » (hypothèse de ma part, à confirmer par JF) : pas de course ; un seul groupe se déplace à la fois ; pas de chronomètre ; pas de compétition entre équipes ; matériel léger, sans petite pièce ni objet qui roule ou se lance ; voix chuchotée ou silence ; un signal d'arrêt visuel connu de tous (main levée, carton) ; chemin balisé au sol. Chaque modèle de jeu doit déclarer ces garde-fous ; un test du plan 2 refuse un modèle qui n'en déclare pas.
+
+### Les quatre jeux (modèles fixes PLAI, remplis avec les éléments de l'activité)
+
+| Mécanique numérique | Jeu physique | Manipulation / déplacement | Matériel principal |
+|---|---|---|---|
+| Trier | Les boîtes aux lettres | glisser une carte dans une boîte (manipulation) ; marcher jusqu'au poste (déplacement) | cartes-mots, une boîte ou enveloppe par catégorie, étiquettes, ruban de masquage pour le chemin, carton vert |
+| Associer | Les paires à pincer | pincer une carte partenaire à côté de sa carte (manipulation) ; aller au poste (déplacement, ou jeu sur table sans déplacement) | cartes de gauche sur une ficelle tendue ou en colonne sur un bureau, cartes de droite en pochette, pinces à linge |
+| Remettre en ordre | La chaîne silencieuse | tenir sa carte (manipulation) ; se placer sur un ruban au sol, un ou deux pas (déplacement) | une carte par élève, ruban de masquage au sol, équipes de 4 à 5 |
+| Placer dans une scène | Place-le dans la classe | déplacer un objet réel selon une consigne (manipulation) ; déplacement d'un élève acteur à la fois | objets doux (peluche, foulard, gobelet en carton), meubles de la classe (table, chaise, boîte), cartes-consignes, cartons vert et orange |
+
+Fiche enseignant par jeu : titre, durée indicative, matériel avec quantités calculées (nombre de cartes, de boîtes, d'équipes), mise en place, déroulement en étapes, garde-fous de calme, adaptation par profil (Soutien, Standard, Défi), vérification avec un corrigé, lien avec le programme.
+
+### Lien avec le programme, jeu physique
+Chaque fiche affiche les cibles de l'activité : code, texte officiel, puis une phrase qui dit ce que le jeu travaille et ne travaille pas. Une phrase n'est écrite à l'avance que pour les attendus du pilote (maths P4, sous-point 1.1). Pour tout autre attendu, la fiche affiche le texte officiel et « À compléter par l'enseignant : en quoi ce jeu travaille cet attendu » ; aucune phrase n'est inventée.
+
+Le jeu physique peut atteindre des attendus que l'écran n'atteint pas. « Place-le dans la classe » travaille « Se déplacer ou déplacer un objet dans l'espace 3D (réel, vécu, miniaturisé) en suivant des consignes orales » (P4, 1.1, item 3, attendu 1) et le placement d'objets dans l'espace 3D réel (item 2, attendu 2). La fiche les signale comme « attendus travaillés en plus en classe ».
+
+### Phrases du pilote (copie exacte, maths P4, sous-point 1.1)
+- Trier, attendus i1.a1, i1.a2, i1.a3 : « Les élèves rangent chaque mot dans sa famille de position. Le jeu fait manipuler le vocabulaire de l'attendu ; il ne montre pas si l'élève sait l'employer dans une phrase. »
+- Associer, attendus i1.a1 et i1.a2 : « Les élèves relient des mots de position contraires (devant et derrière, à droite et à gauche). Le jeu travaille le sens de ces mots ; il ne travaille pas leur emploi en situation. »
+- Remettre en ordre, attendu i1.a3 : « Les élèves se rangent dans l'ordre premier, deuxième, troisième, dernier. Le corps vit le vocabulaire ordinal ; le jeu ne travaille pas avant et après. »
+- Placer, attendus i1.a1 et i2.a2, avec en plus en classe i3.a1 : « Les élèves placent un objet selon une consigne de position. En classe, ils déplacent un objet réel, ce que l'écran ne permet pas. Le jeu ne travaille pas les positions relatives, qui dépendent du point de vue. »
+
+### Vérification RISS (2026-11-03)
+Recherches plein texte : manipulation en mathématiques au primaire ; déplacements corporels et cognition incarnée. Résultat : uniquement des mémoires (`dumas-03790385`, `dumas-05467855`, `dumas-02309727`, `dumas-03798306`, `dumas-03792885`) et quelques articles (`hal-04807520`, `hal-02309246`). Les mémoires ne sont pas relus par des pairs. Constat utile pour la conception : `dumas-02309727` relève que la gestion de la manipulation en classe est une limite (matériel, organisation), ce qui appuie nos garde-fous ; `dumas-05467855` cite le triptyque manipulation, verbalisation, abstraction (rapport Villani) ; les études sur le mouvement corporel (Ruiter et al., 2015 ; Mavilidi et al., 2018) sont réelles mais citées via des mémoires de maternelle, hors corpus en source primaire. Force du soutien : faible. Conséquence : l'application n'affiche aucune affirmation d'efficacité sur la manipulation ou le mouvement.
+
+### Limites
+- Le tableau de bord ne voit pas les parties physiques : aucune donnée n'est recueillie. Une saisie manuelle des résultats d'un jeu physique n'est pas prévue au lot 1.
+- Aucun essai en classe réelle : durées, effectifs et niveau de bruit sont des hypothèses.
+- Le matériel suppose une classe à tables mobiles et un espace de circulation ; à adapter si la classe est très encombrée.
