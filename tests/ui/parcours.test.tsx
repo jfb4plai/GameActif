@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, afterEach } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Parcours } from '../../src/ui/Parcours';
 import { CalmProvider } from '../../src/ui/CalmContext';
@@ -13,9 +13,9 @@ function memoire(): Stockage {
   return { getItem: (k) => data.get(k) ?? null, setItem: (k, v) => void data.set(k, v) };
 }
 
-function monter(stockage: Stockage | null = memoire()) {
+function monter(stockage: Stockage | null = memoire(), telecharger?: (nom: string, contenu: string) => void) {
   window.matchMedia = (() => ({ matches: false, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
-  return render(<CalmProvider><Parcours stockage={stockage} /></CalmProvider>);
+  return render(<CalmProvider><Parcours stockage={stockage} telecharger={telecharger} /></CalmProvider>);
 }
 
 const clic = (nom: string | RegExp, role: 'button' | 'checkbox' = 'button') => userEvent.click(screen.getByRole(role, { name: nom }));
@@ -128,6 +128,36 @@ describe('Parcours', () => {
     await clic('Recommencer');
     expect(screen.getByText('Étape 1 sur 5 : Niveau')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'P4' }).getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('une activité téléchargée puis ouverte dans un parcours neuf retrouve titre et saisie', async () => {
+    const reçu: { nom: string; contenu: string }[] = [];
+    const telecharger = (nom: string, contenu: string) => void reçu.push({ nom, contenu });
+    const premier = monter(memoire(), telecharger);
+    await versElements();
+    await remplir();
+    await clic('Télécharger mon activité');
+    expect(reçu).toHaveLength(1);
+    expect(reçu[0].nom).toMatch(/^gameactif-les-positions-\d{4}-\d{2}-\d{2}\.json$/);
+    premier.unmount();
+
+    monter(memoire(), telecharger);
+    expect(screen.getByText('Étape 1 sur 5 : Niveau')).toBeTruthy();
+    await userEvent.upload(screen.getByLabelText('Ouvrir une activité (fichier)'), new File([reçu[0].contenu], reçu[0].nom, { type: 'application/json' }));
+    await waitFor(() => expect(screen.getByText('Étape 4 sur 5 : Vos éléments')).toBeTruthy());
+    expect((screen.getByRole('textbox', { name: 'Titre de l’activité' }) as HTMLInputElement).value).toBe('Les positions');
+    expect((screen.getByRole('textbox', { name: 'Paires à relier' }) as HTMLTextAreaElement).value).toBe('devant | derrière\nà droite | à gauche');
+  });
+
+  it('la barre de fichier est visible aux étapes 1, 4 et 5 et absente aux étapes 2 et 3', async () => {
+    monter();
+    expect(screen.getByLabelText('Ouvrir une activité (fichier)')).toBeTruthy();
+    await clic('P4');
+    await clic('Suivant');
+    expect(screen.queryByLabelText('Ouvrir une activité (fichier)')).toBeNull();
+    await clic('Mathématiques');
+    await clic('Suivant');
+    expect(screen.queryByLabelText('Ouvrir une activité (fichier)')).toBeNull();
   });
 
   it('place le focus sur le titre de l’étape quand on change d’étape', async () => {

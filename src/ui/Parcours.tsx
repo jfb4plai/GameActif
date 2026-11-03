@@ -4,6 +4,7 @@ import { activitePilote } from '../data/pilote.js';
 import { ETAPES, problemesEtape, reduire, type Etape } from '../parcours/etapes.js';
 import { chargerBrouillon, sauverBrouillon, type Stockage } from '../parcours/stockage.js';
 import { ActivityScreen } from './ActivityScreen.js';
+import { BarreFichier } from './BarreFichier.js';
 import { EtapeCompetences } from './EtapeCompetences.js';
 import { EtapeElements } from './EtapeElements.js';
 import { EtapeMatiere } from './EtapeMatiere.js';
@@ -26,7 +27,13 @@ function stockageDuNavigateur(): Stockage | null {
 }
 
 /** Parcours : niveau, matière, compétences visées, saisie des éléments, puis les jeux sur écran et en classe. */
-export function Parcours({ stockage = stockageDuNavigateur() }: { stockage?: Stockage | null }) {
+export function Parcours({
+  stockage = stockageDuNavigateur(),
+  telecharger,
+}: {
+  stockage?: Stockage | null;
+  telecharger?: (nom: string, contenu: string) => void;
+}) {
   const [etat, envoyer] = useReducer(reduire, stockage, chargerBrouillon);
   const [exemple, setExemple] = useState(false);
   const premier = useRef(true);
@@ -65,6 +72,9 @@ export function Parcours({ stockage = stockageDuNavigateur() }: { stockage?: Sto
 
   const index = ETAPES.indexOf(etat.etape);
   const raisons = problemesEtape(etat);
+  const b = etat.brouillon;
+  const enCours = b.niveau !== '' || [b.titre, b.contexte, b.paires, b.etapes].some((t) => t.trim() !== '') || b.familles.some((f) => f.label.trim() !== '' || f.elements.trim() !== '');
+  const barreVisible = etat.etape === 'niveau' || etat.etape === 'elements' || etat.etape === 'jeux';
 
   return (
     <div className="parcours">
@@ -107,6 +117,10 @@ export function Parcours({ stockage = stockageDuNavigateur() }: { stockage?: Sto
         <ul className="raisons">
           {raisons.map((r) => <li key={r}>{r}</li>)}
         </ul>
+      )}
+
+      {barreVisible && (
+        <BarreFichier brouillon={b} enCours={enCours} onCharger={(brouillon) => envoyer({ type: 'charger', brouillon })} telecharger={telecharger} />
       )}
     </div>
   );

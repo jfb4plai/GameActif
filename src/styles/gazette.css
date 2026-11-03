@@ -130,6 +130,11 @@ input[type='search'], textarea, input[type='text'] { font-family: var(--lecture)
 .raisons { padding-left: 18px; color: var(--encre); font-weight: bold; }
 #titre-etape:focus { outline: none; }
 
+/* Fichier : télécharger et ouvrir une activité */
+.barre-fichier { margin-top: 18px; }
+.barre-fichier input[type='file'] { font-family: var(--lecture); font-size: 16px; max-width: 100%; }
+.confirmation { border: 2px solid var(--encre); background: var(--vert); padding: 10px 14px; margin: 10px 0; box-shadow: 4px 4px 0 var(--ombre); }
+
 /* Mode calme : tout mouvement décoratif coupé, rotations retirées. */
 body.calme .entete .rayons { animation: none; }
 body.calme *, body.calme *::before, body.calme *::after { animation: none !important; transition: none !important; }

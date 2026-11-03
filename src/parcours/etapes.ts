@@ -20,6 +20,7 @@ export type Evenement =
   | { type: 'suivant' }
   | { type: 'precedent' }
   | { type: 'aller'; etape: Etape }
+  | { type: 'charger'; brouillon: Brouillon }
   | { type: 'recommencer' };
 
 const MAX_CIBLES = 3;
@@ -92,6 +93,8 @@ export function reduire(etat: EtatParcours, ev: Evenement): EtatParcours {
       const bloque = ETAPES.slice(depuis, vers).some((e) => problemesEtape({ ...etat, etape: e }).length > 0);
       return bloque ? etat : { ...etat, etape: ev.etape };
     }
+    case 'charger':
+      return { etape: 'elements', brouillon: ev.brouillon };
     case 'recommencer':
       return etatInitial();
   }

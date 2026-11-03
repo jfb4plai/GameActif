@@ -136,4 +136,18 @@ describe('parcours, étapes', () => {
     expect(problemesEtape(e).some((p) => p.startsWith('Deux familles portent le même nom'))).toBe(true);
     expect(a(e, { type: 'suivant' }).etape).toBe('elements');
   });
+
+  it('charger remplace le brouillon et place l’étape sur les éléments', () => {
+    const importe = { ...brouillonVide(), niveau: 'P5', matiere: 'mathematiques', cibles: ['M.P5.2.4.i1.a4'], titre: 'Importée' };
+    const e = a(etatInitial(), { type: 'charger', brouillon: importe });
+    expect(e.etape).toBe('elements');
+    expect(e.brouillon).toEqual(importe);
+  });
+
+  it('un brouillon chargé reste modifiable', () => {
+    const importe = { ...brouillonVide(), niveau: 'P5', matiere: 'mathematiques', cibles: ['M.P5.2.4.i1.a4'], titre: 'Importée' };
+    const e = a(etatInitial(), { type: 'charger', brouillon: importe }, { type: 'modifier', champ: { titre: 'Retouchée' } });
+    expect(e.brouillon.titre).toBe('Retouchée');
+    expect(a(e, { type: 'precedent' }).etape).toBe('competences');
+  });
 });
