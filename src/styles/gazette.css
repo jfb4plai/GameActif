@@ -106,6 +106,18 @@ svg.scene { display: block; width: 100%; height: auto; touch-action: none; }
   .fiche { font-size: 12pt; }
 }
 
+/* Parcours : niveau, matière, compétences */
+.choix { display: flex; flex-wrap: wrap; gap: 14px; margin: 12px 0 18px; }
+.choix button { min-width: 88px; font-size: 20px; }
+.retour-court { min-height: 28px; font-weight: bold; color: var(--encre); }
+.groupe-competences { border: 2px solid var(--encre); margin: 10px 0; background: var(--papier); box-shadow: 3px 3px 0 var(--ombre); }
+.groupe-competences > summary { cursor: pointer; padding: 10px 14px; font-family: var(--machine); font-size: 18px; min-height: 44px; }
+.groupe-competences .att { display: flex; gap: 10px; padding: 8px 14px; border-top: 1px dashed var(--encre); align-items: flex-start; }
+.groupe-competences .att input { width: 26px; height: 26px; margin-top: 4px; flex: none; accent-color: var(--sarcelle); }
+.groupe-competences .att label { font-weight: normal; }
+.type { font-family: var(--machine); font-size: 14px; background: var(--jaune); border: 1px solid var(--encre); padding: 0 6px; margin-right: 6px; }
+input[type='search'], textarea, input[type='text'] { font-family: var(--lecture); font-size: 18px; min-height: 44px; padding: 6px 10px; border: 2px solid var(--encre); background: #fff; border-radius: 0; width: 100%; max-width: 640px; }
+
 /* Mode calme : tout mouvement décoratif coupé, rotations retirées. */
 body.calme .entete .rayons { animation: none; }
 body.calme *, body.calme *::before, body.calme *::after { animation: none !important; transition: none !important; }
