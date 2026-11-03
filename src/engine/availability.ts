@@ -49,6 +49,15 @@ export function availableMechanics(activity: Activity): Record<MechanicId, Mecha
     trier = { available: false, missing: 'Il faut au moins 3 éléments classés.' };
   }
 
+  let placer: MechanicAvailability = { available: true, missing: null };
+  if (!activity.sceneId) {
+    placer = { available: false, missing: 'Il faut choisir une scène.' };
+  } else if (filledCategories.size < 2) {
+    placer = { available: false, missing: 'Il faut au moins 2 zones contenant chacune une consigne.' };
+  } else if (memberships.length < 3) {
+    placer = { available: false, missing: 'Il faut au moins 3 consignes.' };
+  }
+
   return {
     associer:
       validPairs(activity).length >= 2
@@ -59,5 +68,6 @@ export function availableMechanics(activity: Activity): Record<MechanicId, Mecha
       rankedItemIds(activity) !== null
         ? { available: true, missing: null }
         : { available: false, missing: 'Il faut au moins 3 éléments avec des positions 1, 2, 3…' },
+    placer,
   };
 }

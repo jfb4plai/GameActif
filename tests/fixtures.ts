@@ -67,6 +67,42 @@ export function eauActivity(): Activity {
   };
 }
 
+/**
+ * Activité « Place le chat » (mécanique placer) : les consignes sont des éléments, les zones de la scène
+ * sont des catégories. Les libellés de zone sont des noms neutres de la scène, pas la consigne.
+ */
+export function sceneActivity(): Activity {
+  return {
+    id: 'act-scene',
+    title: 'Place le chat',
+    discipline: 'Mathématiques',
+    year: '4e primaire',
+    context: 'Classe de 18 élèves, vocabulaire de position travaillé la semaine passée.',
+    cibles: ['TEST.scene.1'],
+    sceneId: 'chat-table-boite-arbres',
+    items: [
+      item('k1', 'Pose le chat sur la table.'),
+      item('k2', 'Pose le chat sous la table.'),
+      item('k3', 'Pose le chat dans la boîte.'),
+      item('k4', 'Pose le chat entre les deux arbres.'),
+    ],
+    categories: [
+      { id: 'z-sur', label: 'sur la table' },
+      { id: 'z-sous', label: 'sous la table' },
+      { id: 'z-dans', label: 'dans la boîte' },
+      { id: 'z-entre', label: 'entre les deux arbres' },
+    ],
+    pairs: [],
+    memberships: [
+      { itemId: 'k1', categoryId: 'z-sur' },
+      { itemId: 'k2', categoryId: 'z-sous' },
+      { itemId: 'k3', categoryId: 'z-dans' },
+      { itemId: 'k4', categoryId: 'z-entre' },
+    ],
+    ranks: [],
+  };
+}
+
 /** Joue un tour en choisissant la bonne option pour chaque élément. */
 export function solveAll(state: RoundState): RoundState {
   let s = state;

@@ -29,6 +29,8 @@ export interface ElementResult {
 
 export interface RoundState {
   mechanic: MechanicId;
+  /** Scène à afficher (mécanique « placer » seulement) ; le moteur ne connaît pas ses coordonnées. */
+  sceneId?: string;
   /** Une option résolue ne peut plus être choisie par un autre élément. */
   exclusive: boolean;
   /** Éléments dans l'ordre d'affichage. */

@@ -1,6 +1,6 @@
 export type Difficulty = 'facile' | 'moyen' | 'difficile';
 export type ProfileId = 'soutien' | 'standard' | 'defi';
-export type MechanicId = 'associer' | 'trier' | 'ordre';
+export type MechanicId = 'associer' | 'trier' | 'ordre' | 'placer';
 
 export interface Item {
   id: string;
@@ -46,6 +46,11 @@ export interface Activity {
   context: string;
   /** Codes d'attendus du référentiel FWB visés (1 à 3), forme `M.P4.1.1.i1.a1`. Obligatoires pour publier. */
   cibles: string[];
+  /**
+   * Scène choisie pour la mécanique « placer » (bibliothèque fixe PLAI). Les zones de la scène sont des
+   * catégories, chaque consigne est un élément classé dans la zone attendue (memberships).
+   */
+  sceneId?: string;
   items: Item[];
   categories: Category[];
   pairs: Pair[];

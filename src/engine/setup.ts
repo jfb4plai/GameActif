@@ -5,6 +5,7 @@ import type { Rng } from './rng.js';
 import { setupAssocier } from './associer.js';
 import { setupTrier } from './trier.js';
 import { setupOrdre } from './ordre.js';
+import { setupPlacer } from './placer.js';
 
 /** Prépare un tour pour la mécanique demandée. Vérifier `availableMechanics` avant : lève une erreur sinon. */
 export function setupRound(
@@ -21,5 +22,7 @@ export function setupRound(
       return setupTrier(activity, profile, rng, overrides);
     case 'ordre':
       return setupOrdre(activity, profile, rng, overrides);
+    case 'placer':
+      return setupPlacer(activity, profile, rng, overrides);
   }
 }
