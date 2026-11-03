@@ -115,6 +115,27 @@ export function PhysicalKitView({ kit, links }: Props) {
         ))}
       </ol>
 
+      {kit.mechanic === 'associer' && (
+        <>
+          <h3>Cartes de droite à imprimer</h3>
+          <ol className="cartes-imprimer" aria-label="Cartes de droite à imprimer">
+            {kit.stations.map((s) => (
+              <li key={s.id} className="carte-imprimer">{s.label}</li>
+            ))}
+          </ol>
+        </>
+      )}
+      {kit.mechanic === 'trier' && (
+        <>
+          <h3>Étiquettes à imprimer</h3>
+          <ol className="cartes-imprimer" aria-label="Étiquettes à imprimer">
+            {kit.stations.map((s) => (
+              <li key={s.id} className="carte-imprimer">{s.label}</li>
+            ))}
+          </ol>
+        </>
+      )}
+
       <p className="hors-impression">
         <button type="button" onClick={imprimer}>Imprimer la fiche</button>
       </p>

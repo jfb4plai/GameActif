@@ -88,4 +88,29 @@ describe('PhysicalKitView', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Imprimer la fiche' }));
     expect(print).toHaveBeenCalledTimes(1);
   });
+
+  it('Associer : les cartes de droite sont imprimables, pas seulement celles de gauche', () => {
+    const kit = buildPhysicalKit(pilote(), 'associer', 'standard', 1, 24);
+    render(<PhysicalKitView kit={kit} links={[]} />);
+    const droite = screen.getByRole('list', { name: 'Cartes de droite à imprimer' });
+    const items = within(droite).getAllByRole('listitem');
+    expect(items).toHaveLength(kit.stations.length);
+    for (const st of kit.stations) expect(within(droite).getByText(st.label)).toBeTruthy();
+  });
+
+  it('Trier : les étiquettes de catégorie sont imprimables', () => {
+    const kit = buildPhysicalKit(pilote(), 'trier', 'standard', 1, 24);
+    render(<PhysicalKitView kit={kit} links={[]} />);
+    const etiquettes = screen.getByRole('list', { name: 'Étiquettes à imprimer' });
+    expect(within(etiquettes).getAllByRole('listitem')).toHaveLength(kit.stations.length);
+  });
+
+  it('Remettre en ordre et Placer n’ont pas de seconde série à imprimer', () => {
+    for (const m of ['ordre', 'placer'] as const) {
+      cleanup();
+      render(<PhysicalKitView kit={buildPhysicalKit(pilote(), m, 'standard', 1, 24)} links={[]} />);
+      expect(screen.queryByRole('list', { name: 'Cartes de droite à imprimer' })).toBeNull();
+      expect(screen.queryByRole('list', { name: 'Étiquettes à imprimer' })).toBeNull();
+    }
+  });
 });
