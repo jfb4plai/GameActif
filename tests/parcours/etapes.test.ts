@@ -124,4 +124,16 @@ describe('parcours, étapes', () => {
     const e = a(pretPourElements(), { type: 'recommencer' });
     expect(e).toEqual({ etape: 'niveau', brouillon: brouillonVide() });
   });
+
+  it('deux familles au même nom bloquent le passage aux jeux', () => {
+    let e = pretPourElements();
+    const familles = [
+      { label: 'Position absolue', elements: 'entre\nsur' },
+      { label: 'Position absolue', elements: 'sous\ndans' },
+      { label: '', elements: '' },
+    ];
+    e = a(e, { type: 'modifier', champ: { ...valide, familles } });
+    expect(problemesEtape(e).some((p) => p.startsWith('Deux familles portent le même nom'))).toBe(true);
+    expect(a(e, { type: 'suivant' }).etape).toBe('elements');
+  });
 });

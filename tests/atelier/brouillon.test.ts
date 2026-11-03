@@ -207,5 +207,38 @@ describe('problemesSaisie et statutsJeux', () => {
     expect(s.trier.available).toBe(true);
     expect(s.ordre.available).toBe(true);
   });
+
+  it('refuse deux familles qui portent le même nom, en le disant clairement', () => {
+    const b = complet({
+      familles: [
+        { label: 'Position absolue', elements: 'entre\nà l’intérieur' },
+        { label: 'Position absolue', elements: 'sur\nsous' },
+        { label: '', elements: '' },
+      ],
+    });
+    expect(problemesSaisie(b)).toContain(
+      'Deux familles portent le même nom : « Position absolue » (familles 1 et 2). Donnez-leur des noms différents ou regroupez leurs éléments dans une seule famille.',
+    );
+  });
+
+  it('ignore la casse et les espaces en trop pour reconnaître deux noms identiques', () => {
+    const b = complet({
+      familles: [
+        { label: 'Position absolue', elements: 'entre' },
+        { label: '  position   ABSOLUE ', elements: 'sur\nsous' },
+        { label: '', elements: '' },
+      ],
+    });
+    expect(problemesSaisie(b).some((p) => p.startsWith('Deux familles portent le même nom'))).toBe(true);
+  });
+
+  it('deux familles sans nom ne sont pas signalées comme identiques', () => {
+    const b = complet({ familles: [{ label: '', elements: 'x' }, { label: '', elements: 'y' }, { label: '', elements: '' }] });
+    expect(problemesSaisie(b).some((p) => p.startsWith('Deux familles portent'))).toBe(false);
+  });
+
+  it('refuse deux paires qui ont le même élément à droite', () => {
+    expect(problemesSaisie(complet({ paires: 'a | x\nb | x' }))).toContain('Le mot « x » est à droite dans deux paires.');
+  });
 });
 

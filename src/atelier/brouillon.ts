@@ -79,12 +79,29 @@ export function problemesSaisie(b: Brouillon): string[] {
     }
   });
 
+  // Deux familles au même nom sont indiscernables pour l'élève : l'une accepterait un mot que l'autre refuse.
+  const noms = new Map<string, { nom: string; numero: number }>();
+  b.familles.forEach((f, i) => {
+    if (f.label.trim() === '') return;
+    const nom = compacter(f.label);
+    const avant = noms.get(cle(nom));
+    if (!avant) noms.set(cle(nom), { nom, numero: i + 1 });
+    else {
+      problemes.push(
+        `Deux familles portent le même nom : « ${avant.nom} » (familles ${avant.numero} et ${i + 1}). Donnez-leur des noms différents ou regroupez leurs éléments dans une seule famille.`,
+      );
+    }
+  });
+
   const { paires, erreurs } = analysePaires(b.paires);
   for (const e of erreurs) problemes.push(`Paires, ligne ${e.numero} : ${e.message}`);
   const gauches = new Set<string>();
+  const droites = new Set<string>();
   for (const p of paires) {
     if (gauches.has(cle(p.gauche))) problemes.push(`Le mot « ${p.gauche} » est à gauche dans deux paires.`);
+    if (droites.has(cle(p.droite))) problemes.push(`Le mot « ${p.droite} » est à droite dans deux paires.`);
     gauches.add(cle(p.gauche));
+    droites.add(cle(p.droite));
   }
   return problemes;
 }
