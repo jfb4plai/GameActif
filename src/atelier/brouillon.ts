@@ -1,4 +1,5 @@
 import type { Activity, Item } from '../engine/types.js';
+import { availableMechanics, type MechanicAvailability } from '../engine/availability.js';
 import { matieres } from '../data/catalogue.js';
 import type { Brouillon, Famille, Ligne } from './types.js';
 
@@ -62,13 +63,9 @@ const cle = (s: string) => s.toLowerCase();
 const nomFamille = (f: Famille, i: number) => (f.label.trim() !== '' ? compacter(f.label) : `Famille ${i + 1}`);
 const estVide = (f: Famille) => f.label.trim() === '' && lignes(f.elements).length === 0;
 
-/** Problèmes de cohérence du brouillon, en français. Liste vide : le brouillon peut devenir une activité. */
-export function problemesBrouillon(b: Brouillon): string[] {
+/** Problèmes de la saisie elle-même (doublons, paires mal écrites), sans les champs obligatoires. */
+export function problemesSaisie(b: Brouillon): string[] {
   const problemes: string[] = [];
-  if (b.titre.trim() === '') problemes.push('Le titre est obligatoire.');
-  if (b.contexte.trim() === '') problemes.push('Le contexte de classe est obligatoire.');
-  if (b.cibles.length < 1 || b.cibles.length > 3) problemes.push('Il faut choisir de 1 à 3 compétences visées.');
-
   const vu = new Map<string, { texte: string; famille: number }>();
   b.familles.forEach((f, i) => {
     if (estVide(f)) return;
@@ -92,18 +89,24 @@ export function problemesBrouillon(b: Brouillon): string[] {
   return problemes;
 }
 
+/** Problèmes de cohérence du brouillon, en français. Liste vide : le brouillon peut devenir une activité. */
+export function problemesBrouillon(b: Brouillon): string[] {
+  const problemes: string[] = [];
+  if (b.titre.trim() === '') problemes.push('Le titre est obligatoire.');
+  if (b.contexte.trim() === '') problemes.push('Le contexte de classe est obligatoire.');
+  if (b.cibles.length < 1 || b.cibles.length > 3) problemes.push('Il faut choisir de 1 à 3 compétences visées.');
+  return [...problemes, ...problemesSaisie(b)];
+}
+
 function item(id: string, text: string): Item {
   return { id, text, difficulty: 'moyen', validated: true, origin: 'manuel', modified: false };
 }
 
 /**
- * Transforme le brouillon en activité du moteur. Les éléments tapés par l'enseignant sont validés
- * (il les a écrits). Une famille vide est ignorée ; les autres gardent leur numéro de position.
+ * Assemble les éléments saisis en activité, sans contrôler le brouillon : sert à connaître les jeux déjà
+ * disponibles pendant la saisie. Une famille vide est ignorée ; les autres gardent leur numéro de position.
  */
-export function construireActivite(b: Brouillon): Activity {
-  const problemes = problemesBrouillon(b);
-  if (problemes.length > 0) throw new Error(problemes.join(' '));
-
+function assembler(b: Brouillon): Activity {
   const items: Item[] = [];
   const categories: Activity['categories'] = [];
   const memberships: Activity['memberships'] = [];
@@ -144,4 +147,20 @@ export function construireActivite(b: Brouillon): Activity {
     memberships,
     ranks,
   };
+}
+
+/** Jeux disponibles avec ce qui est déjà saisi, avec le message du moteur pour les autres. */
+export function statutsJeux(b: Brouillon): Record<'trier' | 'associer' | 'ordre', MechanicAvailability> {
+  const m = availableMechanics(assembler(b));
+  return { trier: m.trier, associer: m.associer, ordre: m.ordre };
+}
+
+/**
+ * Transforme le brouillon en activité du moteur. Les éléments tapés par l'enseignant sont validés
+ * (il les a écrits). Lève une erreur si le brouillon a des problèmes.
+ */
+export function construireActivite(b: Brouillon): Activity {
+  const problemes = problemesBrouillon(b);
+  if (problemes.length > 0) throw new Error(problemes.join(' '));
+  return assembler(b);
 }

@@ -6,6 +6,8 @@ import {
   problemesBrouillon,
   construireActivite,
   libelleNiveau,
+  problemesSaisie,
+  statutsJeux,
 } from '../../src/atelier/brouillon.js';
 import type { Brouillon } from '../../src/atelier/types.js';
 import { availableMechanics } from '../../src/engine/availability.js';
@@ -180,3 +182,30 @@ describe('libelleNiveau et brouillonVide', () => {
     expect(b.niveau).toBe('');
   });
 });
+
+describe('problemesSaisie et statutsJeux', () => {
+  it('problemesSaisie ne contient ni le titre, ni le contexte, ni les compétences', () => {
+    const p = problemesSaisie(complet({ titre: '', contexte: '', cibles: [], paires: 'a | b\nsans' }));
+    expect(p).toEqual(['Paires, ligne 2 : Il manque le séparateur « | » entre les deux éléments.']);
+  });
+
+  it('problemesBrouillon reprend problemesSaisie', () => {
+    const b = complet({ paires: 'a | b\nsans' });
+    for (const p of problemesSaisie(b)) expect(problemesBrouillon(b)).toContain(p);
+  });
+
+  it('statutsJeux d’un brouillon vide donne le message du moteur pour chaque jeu', () => {
+    const s = statutsJeux(brouillonVide());
+    expect(s.trier).toEqual({ available: false, missing: 'Il faut au moins 2 catégories contenant chacune un élément.' });
+    expect(s.associer).toEqual({ available: false, missing: 'Il faut au moins 2 paires.' });
+    expect(s.ordre).toEqual({ available: false, missing: 'Il faut au moins 3 éléments avec des positions 1, 2, 3…' });
+  });
+
+  it('statutsJeux marque disponible ce qui est assez rempli, même si le brouillon a d’autres problèmes', () => {
+    const s = statutsJeux(complet({ titre: '', paires: 'a | b\nc | d\nsans' }));
+    expect(s.associer.available).toBe(true);
+    expect(s.trier.available).toBe(true);
+    expect(s.ordre.available).toBe(true);
+  });
+});
+
