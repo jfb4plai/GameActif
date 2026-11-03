@@ -1,0 +1,75 @@
+import type { Activity, Difficulty, Item } from '../src/engine/types.js';
+import { step, type RoundState } from '../src/engine/round.js';
+
+function item(id: string, text: string, difficulty: Difficulty = 'moyen'): Item {
+  return { id, text, difficulty, validated: true, origin: 'manuel', modified: false };
+}
+
+/** Activité d'exemple FWB (sciences, cycle et états de l'eau) avec les trois types de relations. */
+export function eauActivity(): Activity {
+  return {
+    id: 'act-eau',
+    title: 'L’eau dans la nature',
+    discipline: 'Sciences',
+    year: '2e primaire',
+    context: 'Classe de 12 élèves, vocabulaire très simple, beaucoup de lecture à voix haute.',
+    items: [
+      item('a1', 'évaporation', 'facile'),
+      item('b1', 'passage du liquide au gaz'),
+      item('a2', 'condensation'),
+      item('b2', 'passage du gaz au liquide'),
+      item('a3', 'solidification', 'difficile'),
+      item('b3', 'passage du liquide au solide'),
+      item('a4', 'fusion'),
+      item('b4', 'passage du solide au liquide'),
+      item('t1', 'glace', 'facile'),
+      item('t2', 'neige', 'facile'),
+      item('t3', 'grêle', 'difficile'),
+      item('t4', 'pluie', 'facile'),
+      item('t5', 'rivière'),
+      item('t6', 'rosée'),
+      item('t7', 'vapeur d’eau'),
+      item('o1', 'L’eau des océans chauffe'),
+      item('o2', 'L’eau s’évapore'),
+      item('o3', 'La vapeur forme des nuages'),
+      item('o4', 'La pluie tombe'),
+      item('o5', 'L’eau s’infiltre dans le sol'),
+    ],
+    categories: [
+      { id: 'c1', label: 'Eau solide' },
+      { id: 'c2', label: 'Eau liquide' },
+      { id: 'c3', label: 'Eau gazeuse' },
+    ],
+    pairs: [
+      { leftId: 'a1', rightId: 'b1' },
+      { leftId: 'a2', rightId: 'b2' },
+      { leftId: 'a3', rightId: 'b3' },
+      { leftId: 'a4', rightId: 'b4' },
+    ],
+    memberships: [
+      { itemId: 't1', categoryId: 'c1' },
+      { itemId: 't2', categoryId: 'c1' },
+      { itemId: 't3', categoryId: 'c1' },
+      { itemId: 't4', categoryId: 'c2' },
+      { itemId: 't5', categoryId: 'c2' },
+      { itemId: 't6', categoryId: 'c2' },
+      { itemId: 't7', categoryId: 'c3' },
+    ],
+    ranks: [
+      { itemId: 'o1', position: 1 },
+      { itemId: 'o2', position: 2 },
+      { itemId: 'o3', position: 3 },
+      { itemId: 'o4', position: 4 },
+      { itemId: 'o5', position: 5 },
+    ],
+  };
+}
+
+/** Joue un tour en choisissant la bonne option pour chaque élément. */
+export function solveAll(state: RoundState): RoundState {
+  let s = state;
+  for (const el of state.elements) {
+    s = step(s, { type: 'choose', elementId: el.id, optionId: el.correct }).state;
+  }
+  return s;
+}
