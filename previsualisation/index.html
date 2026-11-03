@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GameActif, aperçu de l'ancrage référentiel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  /* Charte « gazette » : palette et polices inspirées de la page Flint demandée par JF.
+     Les textes que l'élève doit lire restent en Arial (règle PLAI : lisibilité dyslexie). */
+  :root {
+    --journal:#EFE6D2; --papier:#FBF6E9; --encre:#161616; --sarcelle:#1F8A8C; --jaune:#F6BE2C; --vermillon:#E8412A;
+    --ombre:rgba(0,0,0,.38); --vert:#CFE8D5;
+    --titre:'Alfa Slab One', Georgia, 'Times New Roman', serif;
+    --machine:'Special Elite', 'Courier New', monospace;
+    --lecture:Arial, Helvetica, sans-serif;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--journal); color:var(--encre); font-family:var(--lecture); font-size:18px; line-height:1.55; }
+  body::before { content:''; position:fixed; inset:0; pointer-events:none; opacity:.35;
+    background-image:radial-gradient(rgba(0,0,0,.18) 1px, transparent 1px); background-size:5px 5px; }
+
+  /* En-tête : soleil et rayons */
+  header { position:relative; overflow:hidden; border-bottom:3px solid var(--encre); background:var(--papier); padding:18px 20px 22px; }
+  header .rayons { position:absolute; right:-160px; top:-260px; width:560px; height:560px; border-radius:50%;
+    background:repeating-conic-gradient(var(--jaune) 0 9deg, transparent 9deg 22deg); opacity:.85; animation:tourne 120s linear infinite; }
+  header .soleil { position:absolute; right:-40px; top:-120px; width:300px; height:300px; border-radius:50%; background:var(--sarcelle); border:2px solid var(--encre); }
+  header .contenu { position:relative; max-width:1000px; margin:0 auto; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  header img { height:32px; width:auto; background:var(--papier); padding:2px 4px; border:2px solid var(--encre); box-shadow:3px 3px 0 var(--ombre); }
+  header h1 { font-family:var(--titre); font-weight:400; font-size:clamp(24px,5vw,40px); margin:0; line-height:1.1; text-shadow:3px 3px 0 var(--jaune); }
+  .etiquette { font-family:var(--machine); font-size:15px; background:var(--jaune); border:2px solid var(--encre); box-shadow:3px 3px 0 var(--ombre); padding:2px 10px; transform:rotate(-2deg); display:inline-block; }
+  @keyframes tourne { to { transform:rotate(360deg); } }
+
+  main { position:relative; max-width:1000px; margin:0 auto; padding:20px; }
+  nav[role=tablist] { display:flex; gap:10px; flex-wrap:wrap; margin:6px 0 20px; }
+  button { font-family:var(--machine); font-size:17px; min-height:44px; padding:8px 16px; cursor:pointer; color:var(--encre);
+    background:var(--jaune); border:2px solid var(--encre); border-radius:0; box-shadow:4px 4px 0 var(--ombre); transition:transform .12s, box-shadow .12s; }
+  button:hover { transform:translate(-1px,-1px); box-shadow:5px 5px 0 var(--ombre); }
+  button:active { transform:translate(3px,3px); box-shadow:1px 1px 0 var(--ombre); }
+  button:focus-visible, input:focus-visible, select:focus-visible, .chat:focus-visible { outline:4px solid var(--vermillon); outline-offset:2px; }
+  button[aria-selected=true], button[aria-pressed=true] { background:var(--encre); color:var(--papier); }
+  nav button { transform:rotate(-1deg); } nav button:nth-child(2) { transform:rotate(1deg); } nav button:nth-child(3) { transform:rotate(-.5deg); }
+  nav button:hover { transform:rotate(0) translate(-1px,-1px); }
+
+  .carte { background:var(--papier); border:2px solid var(--encre); box-shadow:5px 5px 0 var(--ombre); padding:16px 18px; margin-bottom:22px; }
+  h2 { font-family:var(--titre); font-weight:400; font-size:26px; margin:0 0 8px; line-height:1.2; }
+  label { display:block; font-weight:bold; margin-bottom:4px; }
+  .aide { color:#3b3b3b; font-size:16px; margin:4px 0 10px; }
+  input[type=search], select { font-family:var(--lecture); font-size:18px; min-height:44px; padding:6px 10px; border:2px solid var(--encre); background:#fff; width:100%; max-width:420px; border-radius:0; }
+  .row { display:flex; gap:20px; flex-wrap:wrap; align-items:flex-end; }
+  details { border:2px solid var(--encre); margin:10px 0; background:var(--papier); box-shadow:3px 3px 0 var(--ombre); }
+  summary { cursor:pointer; padding:10px 14px; font-family:var(--machine); font-size:18px; min-height:44px; }
+  details.pilote { background:#FFF3C4; box-shadow:5px 5px 0 var(--ombre); }
+  .att { display:flex; gap:10px; padding:8px 14px; border-top:1px dashed var(--encre); align-items:flex-start; }
+  .att input { width:26px; height:26px; margin-top:4px; flex:none; accent-color:var(--sarcelle); }
+  .code { font-family:var(--machine); font-size:14px; color:#3b3b3b; display:block; }
+  .type { font-family:var(--machine); font-size:14px; background:var(--jaune); border:1px solid var(--encre); padding:0 6px; margin-right:6px; }
+  .cibles { background:var(--vert); border:2px solid var(--encre); box-shadow:4px 4px 0 var(--ombre); padding:12px 16px; margin-bottom:18px; }
+
+  /* Jeu Trier */
+  .zone-jeu { position:relative; }
+  .mots { display:flex; flex-wrap:wrap; gap:14px; margin:14px 0; min-height:70px; padding:12px; border:2px dashed var(--encre); background:rgba(255,255,255,.5); }
+  .mot { font-family:var(--lecture); font-weight:bold; font-size:21px; background:var(--papier); padding:10px 18px; touch-action:none; cursor:grab; user-select:none;
+    transform:rotate(var(--r)); }
+  .mots.neuf .mot { animation:entre .4s ease both; animation-delay:calc(var(--i) * 60ms); }
+  .mot:hover { transform:rotate(0) translate(-2px,-3px); box-shadow:6px 6px 0 var(--ombre); }
+  .mot.glisse { cursor:grabbing; z-index:50; box-shadow:10px 12px 0 var(--ombre); transition:none; pointer-events:none; transform:rotate(3deg) scale(1.06); }
+  .mot.revient { transition:transform .3s ease, box-shadow .3s ease; }
+  .mot.vole { transition:transform .32s ease-in, opacity .32s ease-in; opacity:0; pointer-events:none; }
+  .mot.secoue { animation:secoue .4s ease; }
+  @keyframes entre { from { opacity:0; transform:translateY(-24px) rotate(var(--r)); } to { opacity:1; } }
+  @keyframes secoue { 0%,100% { translate:0 } 20% { translate:-9px 0 } 40% { translate:8px 0 } 60% { translate:-6px 0 } 80% { translate:4px 0 } }
+  .bins { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:18px; margin-top:12px; }
+  .bin { background:var(--papier); border:2px solid var(--encre); box-shadow:5px 5px 0 var(--ombre); padding:0 0 10px; min-height:190px; transition:transform .15s, background .15s; }
+  .bin:nth-child(1) { transform:rotate(-.8deg); } .bin:nth-child(2) { transform:rotate(.6deg); } .bin:nth-child(3) { transform:rotate(-.4deg); }
+  .bin.survol { background:#FFF3C4; transform:rotate(0) scale(1.03); }
+  .bin h3 { font-family:var(--titre); font-weight:400; font-size:19px; margin:0 0 8px; padding:8px 12px; color:var(--papier); line-height:1.2; }
+  .bin:nth-child(1) h3 { background:var(--sarcelle); color:var(--encre); } .bin:nth-child(2) h3 { background:var(--jaune); } .bin:nth-child(3) h3 { background:var(--vermillon); color:var(--encre); }
+  .bin .place { display:block; margin:6px 12px 10px; font-size:15px; min-height:44px; background:var(--papier); }
+  .bin .contenu-bin { padding:0 12px; }
+  .placé { display:inline-block; font-weight:bold; background:var(--vert); border:2px solid var(--encre); padding:2px 10px; margin:4px 6px 0 0; }
+  .placé.dernier { animation:colle .35s ease both; }
+  @keyframes colle { from { transform:scale(1.5) rotate(-6deg); opacity:0; } to { transform:scale(1) rotate(0); opacity:1; } }
+  #retour, #retour-scene { min-height:58px; padding:10px 14px; background:var(--papier); border:2px solid var(--encre); border-left:12px solid var(--sarcelle); margin:10px 0; font-size:19px; }
+  .tampon { display:inline-block; font-family:var(--titre); font-size:28px; color:var(--vermillon); border:4px solid var(--vermillon); padding:2px 16px; transform:rotate(-6deg); animation:tampon .4s ease both; background:rgba(251,246,233,.9); }
+  @keyframes tampon { from { transform:scale(2.4) rotate(-14deg); opacity:0; } to { transform:scale(1) rotate(-6deg); opacity:1; } }
+
+  /* Jeu Scène */
+  .scene-cadre { background:#DDEFF0; border:2px solid var(--encre); box-shadow:5px 5px 0 var(--ombre); }
+  svg.scene { display:block; width:100%; height:auto; touch-action:none; }
+  .chat { cursor:grab; transition:transform .32s ease; }
+  .chat.glisse { cursor:grabbing; transition:none; }
+  .chat.secoue-svg { animation:secoue-svg .4s ease; }
+  @keyframes secoue-svg { 0%,100% { rotate:0deg } 25% { rotate:-14deg } 75% { rotate:14deg } }
+  .indice-zone { fill:rgba(232,65,42,.12); stroke:var(--vermillon); stroke-width:3; stroke-dasharray:8 6; }
+  .consigne { font-size:24px; font-weight:bold; margin:0 0 4px; }
+  .points span { display:inline-block; width:18px; height:18px; border:2px solid var(--encre); background:var(--papier); margin-right:6px; }
+  .points span.fait { background:var(--sarcelle); }
+  table { border-collapse:collapse; width:100%; background:#fff; }
+  th, td { border:2px solid var(--encre); padding:6px 10px; text-align:left; font-size:16px; }
+  th { background:var(--jaune); font-family:var(--machine); font-weight:400; }
+  .limites { font-size:16px; border-left:12px solid var(--vermillon); }
+
+  /* Mode calme : tout mouvement décoratif coupé, rotations retirées */
+  body.calme header .rayons { animation:none; }
+  body.calme *, body.calme *::before, body.calme *::after { animation:none !important; transition:none !important; }
+  body.calme .mot, body.calme .bin, body.calme nav button { transform:none !important; }
+  @media (prefers-reduced-motion: reduce) { header .rayons { animation:none; } * { animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="rayons" aria-hidden="true"></div><div class="soleil" aria-hidden="true"></div>
+  <div class="contenu">
+    <img src="plai-logo.jpg" alt="PLAI">
+    <h1>GameActif</h1>
+    <span class="etiquette">Maquette : aucune donnée enregistrée</span>
+  </div>
+</header>
+<main>
+  <nav role="tablist" aria-label="Sections de l'aperçu">
+    <button role="tab" id="t1" aria-selected="true" aria-controls="p1">1. Choisir les attendus</button>
+    <button role="tab" id="t2" aria-selected="false" aria-controls="p2">2. Jeu : Trier</button>
+    <button role="tab" id="t3" aria-selected="false" aria-controls="p3">3. Jeu : Place le chat</button>
+  </nav>
+
+  <section id="p1" role="tabpanel" aria-labelledby="t1">
+    <div class="carte">
+      <div class="row">
+        <div>
+          <label for="annee">Année</label>
+          <select id="annee"><option value="P4" selected>P4</option><option value="P3">P3</option></select>
+          <p class="aide">Mathématiques, tronc commun FWB. Seules P3 et P4 sont chargées pour l'instant.</p>
+        </div>
+        <div style="flex:1">
+          <label for="q">Chercher dans les attendus</label>
+          <input id="q" type="search" placeholder="Exemple : vocabulaire, quadrillage, fractions">
+          <p class="aide">Le filtre porte sur le texte officiel. Il sert à retrouver l'attendu que l'activité travaille ; il ne change pas ce que le jeu produira.</p>
+        </div>
+      </div>
+      <p class="aide" id="compte" role="status"></p>
+    </div>
+    <div class="cibles" id="cibles" aria-live="polite"></div>
+    <div id="liste"></div>
+  </section>
+
+  <section id="p2" role="tabpanel" aria-labelledby="t2" hidden>
+    <div class="carte">
+      <h2>Trier : position absolue, relative ou ordinale</h2>
+      <p>Exemple tiré mot pour mot du sous-point 1.1 (P4). Les neuf mots viennent des listes de l'attendu. Ils n'ont pas été relus par un enseignant : dans l'application, chaque carte serait validée avant publication.</p>
+      <div class="cibles" id="cibles-jeu" style="margin-bottom:0"></div>
+    </div>
+    <div class="carte zone-jeu">
+      <button id="calme" aria-pressed="false">Mode calme : désactivé</button>
+      <p style="margin:12px 0 0"><strong>Glisser chaque mot dans le bon groupe.</strong> Sans souris : choisir un mot, puis « Placer ici » sous le bon groupe.</p>
+      <div class="mots" id="mots" role="group" aria-label="Mots à placer"></div>
+      <div id="retour" role="status" aria-live="polite">Choisis un mot pour commencer.</div>
+      <div class="bins" id="bins"></div>
+      <p><button id="rejouer">Recommencer</button></p>
+    </div>
+    <div class="carte">
+      <h2>Ce que verrait l'enseignant</h2>
+      <p class="aide">Simulation locale : échecs au 1er essai regroupés par attendu. Dans l'application, un signal n'apparaît qu'à partir de 5 élèves ; ici un seul joueur, donc seulement les chiffres bruts.</p>
+      <table>
+        <thead><tr><th>Attendu visé</th><th>Mots joués</th><th>Réussis au 1er essai</th><th>Lecture</th></tr></thead>
+        <tbody id="tableau"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="p3" role="tabpanel" aria-labelledby="t3" hidden>
+    <div class="carte">
+      <h2>Place le chat</h2>
+      <p>Exemple d'une quatrième mécanique, « placer dans une scène », qui n'est pas dans la spec du 2026-10-01 : à décider avant tout développement. Elle vise l'attendu « Placer un ensemble d'objets selon des consignes données, en 2D » ainsi que le vocabulaire des positions absolues.</p>
+      <div class="cibles" id="cibles-scene" style="margin-bottom:0"></div>
+    </div>
+    <div class="carte">
+      <p class="points" aria-hidden="true" id="points"></p>
+      <p class="consigne" id="consigne">…</p>
+      <p><button id="lire">Écouter la consigne</button> <button id="calme2" aria-pressed="false">Mode calme : désactivé</button></p>
+      <div class="scene-cadre">
+        <svg class="scene" id="scene" viewBox="0 0 600 340" role="img" aria-label="Scène avec une table, une boîte, deux arbres et un chat à déplacer">
+          <rect x="0" y="0" width="600" height="340" fill="#DDEFF0"/>
+          <rect x="0" y="292" width="600" height="48" fill="#B9D9A8" stroke="#161616" stroke-width="3"/>
+          <g id="indice"></g>
+          <!-- table -->
+          <g stroke="#161616" stroke-width="3" fill="#E8412A">
+            <rect x="56" y="168" width="170" height="20"/>
+            <rect x="68" y="188" width="14" height="104"/><rect x="200" y="188" width="14" height="104"/>
+          </g>
+          <!-- boîte ouverte -->
+          <g stroke="#161616" stroke-width="3" fill="#F6BE2C">
+            <rect x="282" y="226" width="100" height="66"/>
+            <polygon points="282,226 266,208 282,208"/><polygon points="382,226 398,208 382,208"/>
+          </g>
+          <!-- arbres -->
+          <g stroke="#161616" stroke-width="3">
+            <rect x="421" y="190" width="18" height="102" fill="#8a5a2b"/><circle cx="430" cy="160" r="48" fill="#1F8A8C"/>
+            <rect x="531" y="190" width="18" height="102" fill="#8a5a2b"/><circle cx="540" cy="160" r="48" fill="#1F8A8C"/>
+          </g>
+          <g id="chat" class="chat" tabindex="0" role="button" aria-label="Le chat. Flèches du clavier pour le déplacer, Entrée pour le poser.">
+            <g stroke="#161616" stroke-width="3" fill="#F6BE2C">
+              <polygon points="-20,-8 -22,-30 -6,-16"/><polygon points="20,-8 22,-30 6,-16"/>
+              <circle cx="0" cy="0" r="22"/>
+            </g>
+            <circle cx="-8" cy="-3" r="3" fill="#161616"/><circle cx="8" cy="-3" r="3" fill="#161616"/>
+            <polygon points="-3,5 3,5 0,9" fill="#E8412A"/>
+            <path d="M-4 10 Q0 14 4 10" stroke="#161616" stroke-width="2" fill="none"/>
+          </g>
+        </svg>
+      </div>
+      <div id="retour-scene" role="status" aria-live="polite">Glisse le chat, ou sélectionne-le et utilise les flèches puis Entrée.</div>
+      <p><button id="suivante" hidden>Consigne suivante</button> <button id="rejouer-scene">Recommencer</button></p>
+    </div>
+    <div class="carte limites">
+      <strong>Ce que ces jeux ne travaillent pas.</strong> Les autres attendus du sous-point 1.1 demandent de situer, placer ou déplacer des objets dans l'espace réel ou sur un plan (par exemple « Se déplacer ou déplacer un objet dans l'espace 3D en suivant des consignes orales »). Un jeu sur écran ne les atteint pas. Les trois positions relatives (devant, derrière, à gauche) dépendent du point de vue : cette scène ne les propose pas, pour éviter une consigne ambiguë.
+    </div>
+  </section>
+</main>
+<script src="referentiel-data.js"></script>
+<script>
+(function () {
+  var REF = window.REFERENTIEL;
+  var cibles = {};
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+  function texteAttendu(code) { return REF.filter(function (x) { return x.code === code; })[0].texte; }
+  function blocCibles(codes, titre) {
+    var h = '<strong>' + titre + '</strong>';
+    codes.forEach(function (c) { h += '<p style="margin:6px 0"><span class="code">' + esc(c) + '</span>' + esc(texteAttendu(c)) + '</p>'; });
+    return h;
+  }
+  var reduit = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Mode calme (partagé entre les deux jeux)
+  function setCalme(on) {
+    document.body.classList.toggle('calme', on);
+    ['calme', 'calme2'].forEach(function (id) {
+      $(id).setAttribute('aria-pressed', String(on));
+      $(id).textContent = 'Mode calme : ' + (on ? 'activé' : 'désactivé');
+    });
+  }
+  $('calme').onclick = function () { setCalme($('calme').getAttribute('aria-pressed') !== 'true'); };
+  $('calme2').onclick = $('calme').onclick;
+  setCalme(reduit);
+  function calme() { return document.body.classList.contains('calme'); }
+
+  // Onglets
+  function onglet(n) {
+    ['1', '2', '3'].forEach(function (k) {
+      $('t' + k).setAttribute('aria-selected', String(k === n));
+      $('p' + k).hidden = (k !== n);
+    });
+    if (n === '2') $('cibles-jeu').innerHTML = blocCibles(CIBLES_JEU.map(function (c) { return c.code; }), 'Attendus visés (extraits du référentiel)');
+    if (n === '3') $('cibles-scene').innerHTML = blocCibles(['M.P4.1.1.i1.a1', 'M.P4.1.1.i2.a2'], 'Attendus visés (extraits du référentiel)');
+  }
+  ['1', '2', '3'].forEach(function (k) { $('t' + k).onclick = function () { onglet(k); }; });
+
+  // ---------- Écran 1 : choix des attendus ----------
+  function rendreCibles() {
+    var codes = Object.keys(cibles);
+    var h = '<strong>Attendus visés par l\'activité (' + codes.length + ' sur 3 au maximum)</strong>';
+    if (!codes.length) h += '<p class="aide" style="margin:6px 0 0">Cocher de 1 à 3 attendus. La publication d\'une activité serait refusée sans cible.</p>';
+    codes.forEach(function (c) { h += '<p style="margin:6px 0"><span class="code">' + esc(c) + '</span>' + esc(cibles[c]) + '</p>'; });
+    $('cibles').innerHTML = h;
+  }
+  function rendreListe() {
+    var annee = $('annee').value, q = $('q').value.trim().toLowerCase();
+    var e = REF.filter(function (x) { return x.annee === annee && (!q || x.texte.toLowerCase().indexOf(q) >= 0 || x.item_contenu.toLowerCase().indexOf(q) >= 0); });
+    $('compte').textContent = e.length + ' attendu(s) affiché(s) sur ' + REF.filter(function (x) { return x.annee === annee; }).length + ' en ' + annee + '.';
+    var groupes = {}, ordre = [];
+    e.forEach(function (x) {
+      var k = x.sous_point;
+      if (!groupes[k]) { groupes[k] = { titre: x.sous_point_titre, items: [] }; ordre.push(k); }
+      groupes[k].items.push(x);
+    });
+    var h = '';
+    ordre.forEach(function (k) {
+      var g = groupes[k], pilote = (annee === 'P4' && k === '1.1');
+      h += '<details' + (pilote || q ? ' open' : '') + (pilote ? ' class="pilote"' : '') + '><summary>' + esc(k + ' ' + g.titre) + (pilote ? ' <span class="etiquette">Pilote</span>' : '') + ' (' + g.items.length + ')</summary>';
+      g.items.forEach(function (x) {
+        var id = 'c_' + x.code.replace(/\./g, '_');
+        h += '<div class="att"><input type="checkbox" id="' + id + '" data-code="' + esc(x.code) + '"' + (cibles[x.code] ? ' checked' : '') + '>' +
+          '<label for="' + id + '" style="font-weight:normal"><span class="type">' + esc(x.item_type) + '</span><span class="code">' + esc(x.code) + '</span>' + esc(x.texte) + '</label></div>';
+      });
+      h += '</details>';
+    });
+    $('liste').innerHTML = h || '<p class="aide">Aucun attendu ne correspond à ce filtre.</p>';
+    Array.prototype.forEach.call($('liste').querySelectorAll('input[type=checkbox]'), function (cb) {
+      cb.onchange = function () {
+        var c = cb.getAttribute('data-code');
+        if (cb.checked) {
+          if (Object.keys(cibles).length >= 3) { cb.checked = false; $('compte').textContent = 'Trois attendus au maximum : décocher un attendu avant d\'en choisir un autre.'; return; }
+          cibles[c] = texteAttendu(c);
+        } else { delete cibles[c]; }
+        rendreCibles();
+      };
+    });
+  }
+  $('annee').onchange = rendreListe;
+  $('q').oninput = rendreListe;
+
+  // ---------- Écran 2 : Trier (glisser-déposer, ou choisir puis « Placer ici ») ----------
+  var CIBLES_JEU = [
+    { code: 'M.P4.1.1.i1.a1', groupe: 'Position absolue', indice: 'Où se trouve un objet, sans dépendre du regard de quelqu\'un.' },
+    { code: 'M.P4.1.1.i1.a2', groupe: 'Position relative (liée au regard)', indice: 'Cela dépend du point de vue de la personne qui regarde.' },
+    { code: 'M.P4.1.1.i1.a3', groupe: 'Position ordinale (rang)', indice: 'Cela donne un rang : premier, deuxième… dernier.' }
+  ];
+  var MOTS = [
+    ['à l\'intérieur', 0], ['à l\'extérieur', 0], ['entre', 0],
+    ['devant', 1], ['derrière', 1], ['à gauche', 1],
+    ['premier', 2], ['deuxième', 2], ['dernier', 2]
+  ];
+  var etat;
+  function melanger(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function nouveau() {
+    etat = { choisi: null, reste: melanger(MOTS.map(function (m, i) { return { id: i, mot: m[0], cible: m[1] }; })), places: [[], [], []], essais: {}, premier: {}, fini: false, neuf: true, dernier: null };
+    dessiner();
+    $('retour').textContent = 'Choisis un mot pour commencer.';
+  }
+  function dessiner() {
+    var h = '';
+    etat.reste.forEach(function (m, i) {
+      var r = ((m.id * 37) % 7 - 3) * 0.7;
+      h += '<button class="mot" style="--i:' + i + ';--r:' + r + 'deg" data-id="' + m.id + '" aria-pressed="' + (etat.choisi === m.id) + '">' + esc(m.mot) + '</button>';
+    });
+    $('mots').classList.toggle('neuf', etat.neuf === true); etat.neuf = false;
+    $('mots').innerHTML = h || (etat.fini ? '<span class="tampon">Bien joué !</span>' : '<span>Tous les mots sont placés.</span>');
+    var b = '';
+    CIBLES_JEU.forEach(function (c, i) {
+      b += '<div class="bin" data-bin="' + i + '"><h3>' + esc(c.groupe) + '</h3><button class="place" data-bin="' + i + '">Placer ici</button><div class="contenu-bin">';
+      etat.places[i].forEach(function (m) { b += '<span class="placé' + (m.id === etat.dernier ? ' dernier' : '') + '">' + esc(m.mot) + '</span>'; });
+      b += '</div></div>';
+    });
+    $('bins').innerHTML = b;
+    Array.prototype.forEach.call($('mots').querySelectorAll('button.mot'), brancherMot);
+    Array.prototype.forEach.call($('bins').querySelectorAll('button.place'), function (x) {
+      x.onclick = function () { placer(Number(x.getAttribute('data-bin')), null); };
+    });
+    tableau();
+  }
+  function brancherMot(el) {
+    var id = Number(el.getAttribute('data-id'));
+    var dep = null, glisse = false;
+    el.addEventListener('pointerdown', function (e) {
+      if (e.button !== undefined && e.button !== 0) return;
+      dep = { x: e.clientX, y: e.clientY }; glisse = false;
+      el.setPointerCapture(e.pointerId);
+    });
+    el.addEventListener('pointermove', function (e) {
+      if (!dep) return;
+      var dx = e.clientX - dep.x, dy = e.clientY - dep.y;
+      if (!glisse && Math.hypot(dx, dy) > 6) { glisse = true; el.classList.remove('revient'); el.classList.add('glisse'); }
+      if (glisse) {
+        el.style.translate = dx + 'px ' + dy + 'px';
+        var cible = binSous(e.clientX, e.clientY);
+        Array.prototype.forEach.call(document.querySelectorAll('.bin'), function (b) { b.classList.toggle('survol', b === cible); });
+      }
+    });
+    el.addEventListener('pointerup', function (e) {
+      if (!dep) return;
+      var etaitGlisse = glisse; dep = null; glisse = false;
+      Array.prototype.forEach.call(document.querySelectorAll('.bin'), function (b) { b.classList.remove('survol'); });
+      if (!etaitGlisse) return; // simple clic : le gestionnaire « click » choisit le mot
+      var bin = binSous(e.clientX, e.clientY);
+      el.classList.remove('glisse');
+      if (!bin) { el.classList.add('revient'); el.style.translate = '0 0'; return; }
+      etat.choisi = id;
+      placer(Number(bin.getAttribute('data-bin')), el);
+    });
+    el.addEventListener('click', function () {
+      if (el.classList.contains('glisse') || el.classList.contains('revient')) return;
+      etat.choisi = id; dessiner(); $('retour').textContent = 'Mot choisi : ' + MOTS[id][0] + '. Choisis son groupe.';
+      var again = $('mots').querySelector('button[data-id="' + id + '"]'); if (again) again.focus();
+    });
+  }
+  function binSous(x, y) {
+    var l = document.elementsFromPoint(x, y);
+    for (var i = 0; i < l.length; i++) { if (l[i].classList && l[i].classList.contains('bin')) return l[i]; }
+    return null;
+  }
+  function placer(i, el) {
+    if (etat.choisi === null) { $('retour').textContent = 'Choisis d\'abord un mot.'; return; }
+    var m = etat.reste.filter(function (r) { return r.id === etat.choisi; })[0];
+    etat.essais[m.id] = (etat.essais[m.id] || 0) + 1;
+    if (m.cible === i) {
+      if (etat.essais[m.id] === 1) etat.premier[m.id] = true;
+      var fin = function () {
+        etat.places[i].push(m);
+        etat.reste = etat.reste.filter(function (r) { return r.id !== m.id; });
+        etat.choisi = null; etat.dernier = m.id;
+        etat.fini = etat.reste.length === 0;
+        dessiner();
+        $('retour').textContent = etat.fini ? 'Tous les mots sont placés. Tu peux recommencer pour t\'entraîner.' : 'Bien placé : ' + m.mot + '.';
+      };
+      if (el && !calme()) {
+        var bin = $('bins').querySelectorAll('.bin')[i].getBoundingClientRect(), r0 = el.getBoundingClientRect();
+        var dx = (bin.left + bin.width / 2) - (r0.left + r0.width / 2), dy = (bin.top + 30) - (r0.top + r0.height / 2);
+        var cur = (el.style.translate || '0px 0px').split(' ');
+        el.classList.add('vole'); el.style.translate = (parseFloat(cur[0]) + dx) + 'px ' + (parseFloat(cur[1]) + dy) + 'px';
+        setTimeout(fin, 320);
+      } else { fin(); }
+    } else {
+      var msg = 'Pas tout à fait. Regarde l\'indice : ' + CIBLES_JEU[m.cible].indice + ' Tu peux réessayer.';
+      if (el) {
+        el.classList.add('revient'); el.style.translate = '0 0';
+        if (!calme()) { el.classList.remove('secoue'); void el.offsetWidth; el.classList.add('secoue'); }
+        $('retour').textContent = msg; tableau();
+      } else { dessiner(); $('retour').textContent = msg; }
+    }
+  }
+  function tableau() {
+    var h = '';
+    CIBLES_JEU.forEach(function (c, i) {
+      var joues = 0, reussis = 0;
+      MOTS.forEach(function (m, id) { if (m[1] === i && etat.essais[id]) { joues++; if (etat.premier[id]) reussis++; } });
+      h += '<tr><td><span class="code">' + esc(c.code) + '</span>' + esc(c.groupe) + '</td><td>' + joues + '</td><td>' + reussis + '</td><td>' + (joues ? 'peu de données (1 joueur)' : 'pas encore joué') + '</td></tr>';
+    });
+    $('tableau').innerHTML = h;
+  }
+  $('rejouer').onclick = nouveau;
+
+  // ---------- Écran 3 : Place le chat (scène, glisser ou flèches + Entrée) ----------
+  var ZONES = {
+    sur:   { x1: 56,  y1: 100, x2: 226, y2: 168, nom: 'sur la table',            repos: [141, 140] },
+    sous:  { x1: 84,  y1: 192, x2: 196, y2: 290, nom: 'sous la table',           repos: [140, 262] },
+    dans:  { x1: 286, y1: 214, x2: 380, y2: 290, nom: 'dans la boîte',           repos: [333, 252] },
+    entre: { x1: 452, y1: 200, x2: 518, y2: 290, nom: 'entre les deux arbres',   repos: [485, 262] }
+  };
+  var CONSIGNES = [
+    { zone: 'sur',   texte: 'Pose le chat sur la table.' },
+    { zone: 'sous',  texte: 'Pose le chat sous la table.' },
+    { zone: 'dans',  texte: 'Pose le chat dans la boîte.' },
+    { zone: 'entre', texte: 'Pose le chat entre les deux arbres.' }
+  ];
+  var DEPART = [300, 56];
+  var sc, pos, tour, essaisTour, bloque;
+  var chat = $('chat'), svg = $('scene');
+  function placeChat(x, y) { pos = [x, y]; chat.style.transform = 'translate(' + x + 'px,' + y + 'px)'; }
+  function nouvelleScene() {
+    sc = { ordre: melanger(CONSIGNES), i: 0, reussis: 0 };
+    essaisTour = 0; bloque = false;
+    $('suivante').hidden = true;
+    montrerConsigne();
+  }
+  function montrerConsigne() {
+    var c = sc.ordre[sc.i];
+    $('consigne').textContent = c.texte;
+    $('indice').innerHTML = '';
+    var p = ''; for (var k = 0; k < sc.ordre.length; k++) p += '<span class="' + (k < sc.i ? 'fait' : '') + '"></span>';
+    $('points').innerHTML = p;
+    $('retour-scene').textContent = 'Consigne ' + (sc.i + 1) + ' sur ' + sc.ordre.length + '. Glisse le chat, ou sélectionne-le puis flèches et Entrée.';
+    essaisTour = 0; bloque = false; $('suivante').hidden = true;
+    placeChat(DEPART[0], DEPART[1]);
+  }
+  function enSvg(e) {
+    var pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    var q = pt.matrixTransform(svg.getScreenCTM().inverse()); return [q.x, q.y];
+  }
+  function zoneDe(x, y) {
+    for (var k in ZONES) { var z = ZONES[k]; if (x >= z.x1 && x <= z.x2 && y >= z.y1 && y <= z.y2) return k; }
+    return null;
+  }
+  function poser() {
+    if (bloque) return;
+    var c = sc.ordre[sc.i], z = zoneDe(pos[0], pos[1]);
+    essaisTour++;
+    if (z === c.zone) {
+      bloque = true;
+      placeChat(ZONES[z].repos[0], ZONES[z].repos[1]);
+      sc.i++;
+      var finis = sc.i >= sc.ordre.length;
+      $('retour-scene').innerHTML = finis ? '<span class="tampon">Bien joué !</span> Le chat est bien placé 4 fois.' : '<span class="tampon">Bien placé</span>';
+      var pts = $('points').querySelectorAll('span'); for (var k = 0; k < sc.i; k++) pts[k].className = 'fait';
+      $('suivante').hidden = finis;
+      if (!finis) $('suivante').focus();
+    } else {
+      var msg = 'Pas tout à fait. Relis la consigne, puis réessaie.';
+      if (essaisTour >= 2) {
+        var zz = ZONES[c.zone];
+        $('indice').innerHTML = '<rect class="indice-zone" x="' + zz.x1 + '" y="' + zz.y1 + '" width="' + (zz.x2 - zz.x1) + '" height="' + (zz.y2 - zz.y1) + '" rx="6"/>';
+        msg += ' Un cadre rouge montre la zone.';
+      }
+      $('retour-scene').textContent = msg;
+      if (!calme()) { chat.classList.remove('secoue-svg'); void chat.getBoundingClientRect(); chat.classList.add('secoue-svg'); }
+      placeChat(DEPART[0], DEPART[1]);
+    }
+  }
+  var glisseChat = false;
+  chat.addEventListener('pointerdown', function (e) {
+    if (bloque) return;
+    glisseChat = true; chat.classList.add('glisse'); chat.setPointerCapture(e.pointerId);
+    var p = enSvg(e); placeChat(p[0], p[1]);
+  });
+  chat.addEventListener('pointermove', function (e) {
+    if (!glisseChat) return;
+    var p = enSvg(e); placeChat(Math.max(24, Math.min(576, p[0])), Math.max(34, Math.min(290, p[1])));
+  });
+  chat.addEventListener('pointerup', function () {
+    if (!glisseChat) return; glisseChat = false; chat.classList.remove('glisse'); poser();
+  });
+  chat.addEventListener('keydown', function (e) {
+    if (bloque) return;
+    var pas = e.shiftKey ? 40 : 15, x = pos[0], y = pos[1];
+    if (e.key === 'ArrowLeft') x -= pas; else if (e.key === 'ArrowRight') x += pas;
+    else if (e.key === 'ArrowUp') y -= pas; else if (e.key === 'ArrowDown') y += pas;
+    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); poser(); return; }
+    else return;
+    e.preventDefault(); placeChat(Math.max(24, Math.min(576, x)), Math.max(34, Math.min(290, y)));
+  });
+  $('suivante').onclick = function () { montrerConsigne(); chat.focus(); };
+  $('rejouer-scene').onclick = nouvelleScene;
+  $('lire').onclick = function () {
+    if (!window.speechSynthesis) { $('retour-scene').textContent = 'La lecture à voix haute n\'est pas disponible sur cet appareil.'; return; }
+    var u = new SpeechSynthesisUtterance(sc.ordre[sc.i].texte); u.lang = 'fr-BE';
+    var v = window.speechSynthesis.getVoices().filter(function (x) { return /^fr/i.test(x.lang); })[0]; if (v) u.voice = v;
+    window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
+  };
+
+  rendreCibles(); rendreListe(); nouveau(); nouvelleScene();
+})();
+</script>
+</body>
+</html>
