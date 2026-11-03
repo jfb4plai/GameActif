@@ -68,6 +68,13 @@ input[type='number'], select { font-family: var(--lecture); font-size: 18px; min
 .place-fait { display: inline-block; font-weight: bold; background: var(--vert); border: 2px solid var(--encre); padding: 2px 10px; margin: 4px 6px 0 0; }
 body.calme .mot { transform: none !important; }
 
+/* Jeu Placer dans une scène */
+.consigne { font-size: 24px; font-weight: bold; margin: 0 0 4px; }
+.scene-cadre { background: #ddeff0; border: 2px solid var(--encre); box-shadow: 5px 5px 0 var(--ombre); }
+svg.scene { display: block; width: 100%; height: auto; touch-action: none; }
+.chat { cursor: grab; transition: transform 0.32s ease; }
+.indice-zone { fill: rgba(232, 65, 42, 0.12); stroke: var(--vermillon); stroke-width: 3; stroke-dasharray: 8 6; }
+
 /* Mode calme : tout mouvement décoratif coupé, rotations retirées. */
 body.calme .entete .rayons { animation: none; }
 body.calme *, body.calme *::before, body.calme *::after { animation: none !important; transition: none !important; }
