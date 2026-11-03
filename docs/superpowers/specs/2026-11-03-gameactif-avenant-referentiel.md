@@ -176,3 +176,23 @@ Décisions de conception (hypothèses de ma part, à confirmer par JF) :
 - Aucune phrase de lien n'est inventée : hors pilote, la fiche affiche « À compléter par l'enseignant ».
 
 Limite : les quatre jeux conviennent aux attendus qui consistent à classer, relier ou ordonner (vocabulaire, nombres à ordonner, fractions à relier à leur écriture décimale). Ils ne conviennent pas à ceux qui demandent de tracer, mesurer ou construire ; l'atelier le dit, sans filtrer les attendus.
+
+## 14. Compte enseignant par lien d'invitation (décidé par JF le 2026-11-03)
+
+Décisions de JF : export de fichier d'abord (fait), puis compte enseignant ; peut s'inscrire toute personne à qui JF communique le lien ; le partage entre collègues se fait par fichier ; rien ne doit gêner le suivi des élèves par code (plan C, plus tard).
+
+Modèle d'accès (proposition de ma part, à confirmer) :
+- Le lien d'invitation contient un code long et aléatoire (au moins 128 bits). La base ne conserve que son empreinte, jamais le code.
+- Un compte (e-mail et mot de passe) ne donne accès à GameActif qu'après avoir utilisé un code valide : une ligne dans `game_teachers`. Un compte créé pour une autre app PLAI (le projet Supabase est partagé) n'ouvre donc pas GameActif.
+- Un code a une date limite, un nombre d'utilisations maximal et peut être révoqué ; JF les crée et les révoque par SQL (aucune interface d'administration au départ). Révoquer un code n'enlève pas l'accès aux enseignants déjà inscrits.
+- Utiliser deux fois le même code avec le même compte ne consomme qu'une place.
+
+Données (préfixe `game_`, projet partagé, jamais de table `profiles` ni de trigger recréés) :
+- `game_invitations` : empreinte du code, utilisations maximales, nombre d'utilisations, date limite, révocation. Aucun droit pour les utilisateurs ; accès par fonction serveur seulement.
+- `game_teachers` : un compte, la date d'accès. L'utilisateur lit sa propre ligne ; il ne peut pas en écrire.
+- `game_activities` : une activité enregistrée = le brouillon du fichier d'échange (`brouillon jsonb`), titre, niveau, matière, propriétaire, dates. Un enseignant ne voit, ne modifie et ne supprime que les siennes.
+- Aucune table d'élèves, de séances ni de résultats : elles viennent avec le plan C et référenceront `game_activities.id`. Aucun nom d'élève n'est stocké.
+
+Sécurité : droits explicites dans la même migration (rien pour `anon`), sécurité par ligne sur chaque table, contrôle d'accès par fonctions `security definer` (jamais de sous-requête sur la même table dans une règle), clé service_role jamais dans le navigateur, migration jamais appliquée sans l'accord de JF et essayée d'abord dans une transaction annulée.
+
+Limites : sans interface d'administration, JF crée les codes en SQL. Le courriel de confirmation et ses adresses de redirection dépendent de réglages du projet partagé que seul JF peut modifier. Les comptes de test ne peuvent pas être créés par Claude : c'est à JF de faire le parcours d'inscription réel.
