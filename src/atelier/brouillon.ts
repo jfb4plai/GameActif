@@ -3,6 +3,22 @@ import { availableMechanics, type MechanicAvailability } from '../engine/availab
 import { matieres } from '../data/catalogue.js';
 import type { Brouillon, Famille, Ligne } from './types.js';
 
+const estTexte = (x: unknown): x is string => typeof x === 'string';
+
+/** Vrai si x a la forme d'un brouillon (types des champs, trois familles). Sert au stockage local et aux fichiers. */
+export function formeBrouillonValide(x: unknown): x is Brouillon {
+  if (typeof x !== 'object' || x === null) return false;
+  const b = x as Record<string, unknown>;
+  return (
+    ['niveau', 'matiere', 'titre', 'contexte', 'paires', 'etapes'].every((k) => estTexte(b[k])) &&
+    Array.isArray(b.cibles) &&
+    b.cibles.every(estTexte) &&
+    Array.isArray(b.familles) &&
+    b.familles.length === 3 &&
+    b.familles.every((f) => typeof f === 'object' && f !== null && estTexte((f as Record<string, unknown>).label) && estTexte((f as Record<string, unknown>).elements))
+  );
+}
+
 export function brouillonVide(): Brouillon {
   return {
     niveau: '',
