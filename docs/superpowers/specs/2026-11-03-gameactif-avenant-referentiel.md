@@ -150,3 +150,11 @@ Recherches plein texte : manipulation en mathématiques au primaire ; déplaceme
 - Le tableau de bord ne voit pas les parties physiques : aucune donnée n'est recueillie. Une saisie manuelle des résultats d'un jeu physique n'est pas prévue au lot 1.
 - Aucun essai en classe réelle : durées, effectifs et niveau de bruit sont des hypothèses.
 - Le matériel suppose une classe à tables mobiles et un espace de circulation ; à adapter si la classe est très encombrée.
+
+### Phrases du pilote, jeu sur écran (ajout du 2026-11-03, plan 2 tâche 2)
+Le plan 2 affiche aussi le lien avec le programme pour le jeu sur écran. Phrases écrites pour le pilote (maths P4, 1.1), à relire par JF :
+- Trier : « Les élèves rangent chaque mot dans sa famille de position. Le jeu fait reconnaître le vocabulaire de l'attendu ; il ne montre pas si l'élève sait l'employer dans une phrase. »
+- Associer : même phrase que pour le jeu physique.
+- Remettre en ordre : « Les élèves rangent les mots premier, deuxième, troisième, dernier dans l'ordre. Le jeu travaille le vocabulaire ordinal ; il ne travaille pas avant et après. »
+- Placer : « Les élèves placent un objet dessiné selon une consigne de position. Le jeu ne travaille pas les positions relatives, qui dépendent du point de vue, ni le placement dans l'espace réel. »
+- Attendu ajouté en classe pour Placer (`M.P4.1.1.i3.a1`) : « En classe, l'élève acteur déplace un objet doux en suivant une consigne orale lue à voix basse. L'écran ne permet pas ce déplacement dans l'espace réel. »
