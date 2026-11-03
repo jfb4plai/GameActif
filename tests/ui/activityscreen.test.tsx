@@ -100,4 +100,24 @@ describe('ActivityScreen', () => {
     const article = screen.getByRole('heading', { name: 'Jeu sur écran : Placer dans une scène' }).closest('article') as HTMLElement;
     expect(within(article).getByRole('region', { name: 'Place le chat' })).toBeTruthy();
   });
+
+  it('les quatre fiches physiques sont repliées par défaut, avec un résumé clair', () => {
+    mount();
+    const fiches = document.querySelectorAll<HTMLDetailsElement>('details.fiche-pliee');
+    expect(fiches).toHaveLength(4);
+    for (const d of fiches) {
+      expect(d.open).toBe(false);
+      expect(d.querySelector('summary')?.textContent).toBe('Voir la fiche : matériel, déroulement, cartes');
+    }
+  });
+
+  it('avant l’impression toutes les fiches s’ouvrent, après elles reprennent leur état', () => {
+    mount();
+    const fiches = [...document.querySelectorAll<HTMLDetailsElement>('details.fiche-pliee')];
+    fiches[1].open = true;
+    window.dispatchEvent(new Event('beforeprint'));
+    expect(fiches.every((d) => d.open)).toBe(true);
+    window.dispatchEvent(new Event('afterprint'));
+    expect(fiches.map((d) => d.open)).toEqual([false, true, false, false]);
+  });
 });

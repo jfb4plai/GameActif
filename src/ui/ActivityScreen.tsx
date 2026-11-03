@@ -57,6 +57,28 @@ export function ActivityScreen({ activity }: { activity: Activity }) {
     gameRef.current?.focus?.({ preventScroll: true });
   }, [playing]);
 
+  // Les fiches sont repliées : on les ouvre le temps de l'impression (bouton ou Ctrl+P), puis on restaure.
+  useEffect(() => {
+    const before = new Map<HTMLDetailsElement, boolean>();
+    const onBefore = () =>
+      document.querySelectorAll<HTMLDetailsElement>('details.fiche-pliee').forEach((d) => {
+        before.set(d, d.open);
+        d.open = true;
+      });
+    const onAfter = () => {
+      before.forEach((wasOpen, d) => {
+        d.open = wasOpen;
+      });
+      before.clear();
+    };
+    window.addEventListener('beforeprint', onBefore);
+    window.addEventListener('afterprint', onAfter);
+    return () => {
+      window.removeEventListener('beforeprint', onBefore);
+      window.removeEventListener('afterprint', onAfter);
+    };
+  }, []);
+
   const available = availableMechanics(activity);
   const mechanics = ORDER.filter((m) => available[m].available);
   const pupils = Number.parseInt(pupilsText, 10);
@@ -120,7 +142,10 @@ export function ActivityScreen({ activity }: { activity: Activity }) {
           </div>
           <div className="carte carte-classe">
             <h2>{`En classe, sans écran : ${kits[m].title}`}</h2>
-            <PhysicalKitView kit={kits[m]} links={programmeLinks(m, 'physique', activity.cibles)} />
+            <details className="fiche-pliee">
+              <summary>Voir la fiche : matériel, déroulement, cartes</summary>
+              <PhysicalKitView kit={kits[m]} links={programmeLinks(m, 'physique', activity.cibles)} />
+            </details>
           </div>
           {playing?.mechanic === m && round && (
             <div className="carte jeu-en-cours" ref={gameRef} tabIndex={-1}>

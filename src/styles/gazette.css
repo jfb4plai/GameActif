@@ -78,9 +78,14 @@ svg.scene { display: block; width: 100%; height: auto; touch-action: none; }
 /* Écran d'activité : jeu sur écran et jeu physique en regard */
 .champs { display: flex; gap: 28px; flex-wrap: wrap; }
 .deux-cartes { display: grid; grid-template-columns: 1fr; gap: 0 22px; }
-@media (min-width: 900px) { .deux-cartes { grid-template-columns: 1fr 2fr; } }
+@media (min-width: 900px) { .deux-cartes { grid-template-columns: 1fr 1fr; } }
 .jeu-en-cours { grid-column: 1 / -1; scroll-margin-top: 12px; }
 .jeu-en-cours:focus { outline: none; }
+.fiche-pliee > summary { cursor: pointer; list-style: none; min-height: 44px; display: flex; align-items: center; font-family: var(--machine); font-size: 17px; border: 2px solid var(--encre); background: var(--jaune); padding: 6px 12px; box-shadow: 4px 4px 0 var(--ombre); }
+.fiche-pliee > summary::-webkit-details-marker { display: none; }
+.fiche-pliee > summary::before { content: 'B6'; margin-right: 10px; font-size: 14px; }
+.fiche-pliee[open] > summary::before { content: 'BC'; }
+.fiche-pliee > summary:focus-visible { outline: 4px solid var(--vermillon); outline-offset: 2px; }
 .liens-programme { padding-left: 18px; }
 .liens-programme li { margin-bottom: 10px; }
 .fiche h3 { font-family: var(--machine); font-weight: 400; font-size: 20px; margin: 18px 0 6px; border-bottom: 2px solid var(--encre); }
