@@ -17,8 +17,8 @@ const PLACER_PHYSIQUE =
 const texteOf = (code: string) => REFERENTIEL.find((e) => e.code === code)?.texte;
 
 describe('jeu de données du référentiel', () => {
-  it('expose 323 attendus et leurs codes', () => {
-    expect(REFERENTIEL).toHaveLength(323);
+  it('expose 861 attendus et leurs codes', () => {
+    expect(REFERENTIEL).toHaveLength(861);
     expect(referentielCodes().has(A1)).toBe(true);
   });
 });

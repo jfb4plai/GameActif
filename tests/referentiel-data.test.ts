@@ -8,7 +8,7 @@ interface Entree {
   annee: string;
   texte: string;
 }
-const entrees: Entree[] = JSON.parse(readFileSync(new URL('../data/referentiel-maths-p3-p4.json', import.meta.url), 'utf-8'));
+const entrees: Entree[] = JSON.parse(readFileSync(new URL('../data/referentiel-maths.json', import.meta.url), 'utf-8'));
 const codes = new Set(entrees.map((e) => e.code));
 
 describe('jeu de données du référentiel (maths P3-P4)', () => {
