@@ -79,6 +79,8 @@ svg.scene { display: block; width: 100%; height: auto; touch-action: none; }
 .champs { display: flex; gap: 28px; flex-wrap: wrap; }
 .deux-cartes { display: grid; grid-template-columns: 1fr; gap: 0 22px; }
 @media (min-width: 900px) { .deux-cartes { grid-template-columns: 1fr 2fr; } }
+.jeu-en-cours { grid-column: 1 / -1; scroll-margin-top: 12px; }
+.jeu-en-cours:focus { outline: none; }
 .liens-programme { padding-left: 18px; }
 .liens-programme li { margin-bottom: 10px; }
 .fiche h3 { font-family: var(--machine); font-weight: 400; font-size: 20px; margin: 18px 0 6px; border-bottom: 2px solid var(--encre); }

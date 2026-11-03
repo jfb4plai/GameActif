@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Activity, MechanicId, ProfileId } from '../engine/types.js';
 import { availableMechanics } from '../engine/availability.js';
 import { PROFILE_LABELS } from '../engine/profiles.js';
@@ -48,6 +48,14 @@ export function ActivityScreen({ activity }: { activity: Activity }) {
   const [playing, setPlaying] = useState<{ mechanic: MechanicId; seed: number } | null>(null);
   const [plays, setPlays] = useState(0);
   const [finished, setFinished] = useState<number | null>(null);
+  const gameRef = useRef<HTMLDivElement>(null);
+
+  // Le jeu s'ouvre sous son bouton « Jouer » : la page y défile, sinon le clic semble ne rien faire.
+  useEffect(() => {
+    if (!playing) return;
+    gameRef.current?.scrollIntoView?.({ block: 'start' });
+    gameRef.current?.focus?.({ preventScroll: true });
+  }, [playing]);
 
   const available = availableMechanics(activity);
   const mechanics = ORDER.filter((m) => available[m].available);
@@ -114,22 +122,22 @@ export function ActivityScreen({ activity }: { activity: Activity }) {
             <h2>{`En classe, sans écran : ${kits[m].title}`}</h2>
             <PhysicalKitView kit={kits[m]} links={programmeLinks(m, 'physique', activity.cibles)} />
           </div>
+          {playing?.mechanic === m && round && (
+            <div className="carte jeu-en-cours" ref={gameRef} tabIndex={-1}>
+              <p>
+                <button type="button" onClick={() => { setPlaying(null); setFinished(null); }}>Fermer le jeu</button>
+              </p>
+              {m === 'placer' ? (
+                <SceneBoard key={playing.seed} round={round} profile={profile} onDone={onDone} />
+              ) : (
+                <RoundBoard key={playing.seed} round={round} onDone={onDone} />
+              )}
+              {finished !== null && <p className="aide">{`Tour terminé : ${finished} éléments joués.`}</p>}
+            </div>
+          )}
         </article>
       ))}
 
-      {playing && round && (
-        <div className="carte jeu-en-cours">
-          <p>
-            <button type="button" onClick={() => { setPlaying(null); setFinished(null); }}>Fermer le jeu</button>
-          </p>
-          {playing.mechanic === 'placer' ? (
-            <SceneBoard key={playing.seed} round={round} profile={profile} onDone={onDone} />
-          ) : (
-            <RoundBoard key={playing.seed} round={round} onDone={onDone} />
-          )}
-          {finished !== null && <p className="aide">{`Tour terminé : ${finished} éléments joués.`}</p>}
-        </div>
-      )}
     </div>
   );
 }

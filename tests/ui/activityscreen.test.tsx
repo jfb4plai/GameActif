@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ActivityScreen } from '../../src/ui/ActivityScreen';
@@ -78,5 +78,26 @@ describe('ActivityScreen', () => {
     mount();
     await userEvent.click(screen.getByRole('button', { name: 'Jouer : Placer dans une scène' }));
     expect(screen.getByRole('region', { name: 'Place le chat' })).toBeTruthy();
+  });
+
+  it('le jeu s’ouvre sous le bouton Jouer, dans la même paire de cartes, et la page y défile', async () => {
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    mount();
+    await userEvent.click(screen.getByRole('button', { name: 'Jouer : Associer' }));
+    const article = screen.getByRole('heading', { name: 'Jeu sur écran : Associer' }).closest('article') as HTMLElement;
+    expect(within(article).getByRole('region', { name: 'Plateau de jeu' })).toBeTruthy();
+    expect(scroll).toHaveBeenCalled();
+    expect(screen.getAllByRole('region', { name: 'Plateau de jeu' })).toHaveLength(1);
+  });
+
+  it('ouvrir un autre jeu ferme le premier et ouvre le second sous sa propre paire de cartes', async () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    mount();
+    await userEvent.click(screen.getByRole('button', { name: 'Jouer : Trier' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Jouer : Placer dans une scène' }));
+    expect(screen.queryByRole('region', { name: 'Plateau de jeu' })).toBeNull();
+    const article = screen.getByRole('heading', { name: 'Jeu sur écran : Placer dans une scène' }).closest('article') as HTMLElement;
+    expect(within(article).getByRole('region', { name: 'Place le chat' })).toBeTruthy();
   });
 });
