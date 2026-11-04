@@ -221,3 +221,22 @@ describe('construirePrompt', () => {
     expect(() => construirePrompt(seulementPaires(), 'bulles', 'standard', 1)).toThrow('Ce mode n\'est pas disponible pour cette activité.');
   });
 });
+
+describe('style visuel', () => {
+  it('donne la charte GameActif aux deux modes, texte élève en Arial', () => {
+    for (const mode of ['bulles', 'briques'] as const) {
+      const t = construirePrompt(activitePilote(), mode, 'standard', 1).texte;
+      expect(t).toContain('STYLE VISUEL :');
+      for (const couleur of ['#efe6d2', '#fbf6e9', '#161616', '#1f8a8c', '#f6be2c', '#e8412a']) expect(t).toContain(couleur);
+      expect(t).toContain('reste en Arial');
+      expect(t).toContain('jamais la couleur seule');
+    }
+  });
+
+  it('décrit le Tir aux bulles comme un jeu de tir de bulles (mur, canon, visée), sans le nommer', () => {
+    const t = construirePrompt(activitePilote(), 'bulles', 'standard', 1).texte;
+    expect(t).toContain('mur dense de bulles colorées');
+    expect(t).toContain('canon');
+    expect(t).toContain('ligne pointillée de visée');
+  });
+});

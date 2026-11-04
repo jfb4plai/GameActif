@@ -5,57 +5,45 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tir aux bulles : positions</title>
 <style>
-  :root { --encre: #1a1a1a; --fond: #fffdf6; --accent: #0f6e56; --alerte: #b45309; }
+  :root { --journal: #efe6d2; --papier: #fbf6e9; --encre: #161616; --sarcelle: #1f8a8c; --jaune: #f6be2c; --vermillon: #e8412a; --vert: #cfe8d5; --ombre: rgba(0,0,0,0.38); }
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 18px; line-height: 1.5; color: var(--encre); background: var(--fond); }
-  body.calme { background: #ffffff; }
-  main { max-width: 860px; margin: 0 auto; padding: 16px; }
-  h1 { font-size: 26px; margin: 0 0 8px; }
-  button { font: inherit; min-height: 44px; min-width: 44px; padding: 8px 16px; border: 2px solid var(--encre); background: #fff; color: var(--encre); border-radius: 8px; cursor: pointer; }
-  button:focus-visible { outline: 4px solid #1d4ed8; outline-offset: 2px; }
-  .barre { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
-  .consigne { margin: 8px 0; }
-  .groupes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 16px 0; }
-  .groupe { min-height: 120px; padding: 12px; text-align: left; display: block; width: 100%; border: 3px solid var(--encre); border-radius: 16px; background: #fff; }
-  .groupe[aria-pressed="true"] { border-width: 6px; border-style: double; }
-  .groupe.ecartee { border-style: dashed; opacity: 0.55; }
-  .groupe .nom { font-weight: bold; display: block; margin-bottom: 6px; }
-  .groupe .mention { display: block; font-size: 18px; }
-  .bulles { display: flex; flex-wrap: wrap; gap: 8px; }
-  .bulle { display: inline-block; padding: 8px 14px; border: 2px solid var(--encre); border-radius: 999px; background: #e6f4ef; }
-  .zone-tir { position: relative; min-height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 10px; }
-  .canon { width: 0; height: 0; border-left: 28px solid transparent; border-right: 28px solid transparent; border-bottom: 48px solid var(--encre); }
-  .bulle-chargee { padding: 12px 22px; border: 3px solid var(--encre); border-radius: 999px; background: #fff7d6; font-size: 22px; min-height: 52px; }
-  body:not(.calme) .bulle-chargee.tir { animation: tir 0.5s ease-out; }
-  @keyframes tir { from { transform: translateY(0) scale(1); } to { transform: translateY(-120px) scale(0.8); } }
-  #retour { min-height: 60px; padding: 10px 14px; border: 2px solid var(--encre); border-left: 12px solid var(--accent); background: #fff; margin: 12px 0; }
-  #retour.doux { border-left-color: var(--alerte); }
-  .fin { border: 3px solid var(--accent); padding: 12px 16px; border-radius: 12px; margin-top: 16px; background: #fff; }
-  .fin h2 { font-size: 22px; margin: 0 0 8px; }
+  body { margin: 0; background: var(--journal); color: var(--encre); font-family: Arial, Helvetica, sans-serif; font-size: 18px; line-height: 1.5; }
+  body.calme { background: #fff; }
+  main { max-width: 780px; margin: 0 auto; padding: 14px; }
+  h1 { font-family: Georgia, 'Times New Roman', serif; font-weight: 900; font-size: 34px; margin: 0 0 10px; text-shadow: 3px 3px 0 var(--jaune); }
+  .panneau { background: var(--papier); border: 2px solid var(--encre); box-shadow: 4px 4px 0 var(--ombre); padding: 12px 14px; margin-bottom: 14px; }
+  button { font-family: 'Courier New', monospace; font-size: 18px; min-height: 44px; min-width: 44px; padding: 8px 16px; cursor: pointer; color: var(--encre); background: var(--jaune); border: 2px solid var(--encre); border-radius: 0; box-shadow: 4px 4px 0 var(--ombre); }
+  button:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ombre); }
+  button[aria-pressed="true"] { background: var(--encre); color: var(--papier); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  button:focus-visible, canvas:focus-visible { outline: 4px solid var(--vermillon); outline-offset: 2px; }
+  .barre { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+  #terrain { display: block; width: 100%; height: auto; border: 2px solid var(--encre); box-shadow: 4px 4px 0 var(--ombre); background: var(--papier); touch-action: none; cursor: crosshair; }
+  #retour { min-height: 64px; margin: 14px 0; padding: 10px 14px; background: #fff; border: 2px solid var(--encre); border-left: 14px solid var(--sarcelle); font-size: 20px; font-weight: bold; }
+  #retour.doux { border-left-color: var(--jaune); }
+  .consignes p { margin: 0 0 4px; }
+  .fin { margin-top: 14px; }
+  .fin h2 { font-family: Georgia, serif; font-size: 26px; margin: 0 0 8px; }
   [hidden] { display: none !important; }
-  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
 </head>
 <body>
 <main>
   <h1>Tir aux bulles</h1>
-  <p class="consigne">Lire la bulle.</p>
-  <p class="consigne">Choisir la famille.</p>
-  <p class="consigne">Tirer.</p>
+  <div class="panneau consignes">
+    <p>Lire le mot dans le canon.</p>
+    <p>Viser le bon groupe de bulles.</p>
+    <p>Tirer.</p>
+  </div>
   <div class="barre">
     <button type="button" id="calme" aria-pressed="false">Mode calme : désactivé</button>
     <button type="button" id="ecouter">Écouter</button>
     <button type="button" id="indice">Indice</button>
   </div>
-  <div class="zone-tir">
-    <div class="bulle-chargee" id="chargee" aria-live="polite"></div>
-    <div class="canon" aria-hidden="true"></div>
-  </div>
-  <p class="consigne" id="progression"></p>
-  <div id="retour" role="status" aria-live="polite">Choisir une famille avec la souris, le doigt ou les flèches, puis Entrée.</div>
-  <div class="groupes" id="groupes" role="group" aria-label="Familles"></div>
-  <div class="fin" id="fin" hidden>
-    <h2>Tous les éléments sont classés.</h2>
+  <canvas id="terrain" width="720" height="620" tabindex="0" aria-label="Terrain de tir. Flèches gauche et droite : changer de groupe. Entrée : tirer."></canvas>
+  <div id="retour" role="status" aria-live="polite"></div>
+  <div class="panneau fin" id="fin" hidden>
+    <h2>Tous les mots sont classés.</h2>
     <div id="recap"></div>
     <button type="button" id="rejouer">Rejouer</button>
   </div>
@@ -70,150 +58,181 @@
       { nom: 'Position relative (liée au regard)', elements: ['devant', 'à gauche'] }
     ]
   };
-  var MAX_ERREURS = 3;
-  var file, courant, erreurs, indiceUtilise, ecartee, place, choix = 0;
+  var COULEURS = ['#1f8a8c', '#f6be2c', '#e8412a', '#cfe8d5'];
+  var W = 720, H = 620, CX = 360, CY = 560, R = 24;
+  var cv = document.getElementById('terrain'), ctx = cv.getContext('2d');
+  var $retour = document.getElementById('retour'), $indice = document.getElementById('indice'), $fin = document.getElementById('fin');
+  var fam = DONNEES.familles, n = fam.length;
+  var file, pos, erreurs, indiceUtilise, ecartee, place, angle, cible, vol, calme = false;
 
-  function melange(a) {
-    var b = a.slice();
-    for (var i = b.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = b[i]; b[i] = b[j]; b[j] = t; }
-    return b;
+  function melange(a) { var b = a.slice(); for (var i = b.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = b[i]; b[i] = b[j]; b[j] = t; } return b; }
+  function message(t, doux) { $retour.textContent = t; $retour.className = doux ? 'doux' : ''; }
+
+  // Position de chaque amas : centres répartis en largeur.
+  function centre(i) { return { x: (W / (n + 1)) * (i + 1), y: 175 }; }
+  // Emplacements de l'amas en nid d'abeilles (8 emplacements pleins au départ).
+  var DECAL = [[-1, 0], [1, 0], [0, 0], [-0.5, 0.87], [0.5, 0.87], [0, 1.74], [-1, 1.74], [1, 1.74], [-0.5, -0.87], [0.5, -0.87]];
+  function emplacement(i, k) { var c = centre(i), d = DECAL[k % DECAL.length]; return { x: c.x + d[0] * R * 2 - 0, y: c.y - 25 + d[1] * R * 2 }; }
+
+  function marque(i, x, y, r, couleurFond) {
+    ctx.save(); ctx.translate(x, y); ctx.fillStyle = '#161616'; ctx.strokeStyle = '#161616'; ctx.lineWidth = 3;
+    var m = i % 4;
+    if (m === 0) { ctx.beginPath(); ctx.arc(0, 0, r * 0.28, 0, 6.2832); ctx.fill(); }
+    else if (m === 1) { ctx.fillRect(-r * 0.5, -r * 0.12, r, r * 0.24); }
+    else if (m === 2) { ctx.beginPath(); for (var k = 0; k < 10; k++) { var a = k * Math.PI / 5 - Math.PI / 2, rr = k % 2 ? r * 0.2 : r * 0.5; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } ctx.closePath(); ctx.fill(); }
+    else { ctx.beginPath(); ctx.moveTo(0, -r * 0.5); ctx.lineTo(r * 0.4, 0); ctx.lineTo(0, r * 0.5); ctx.lineTo(-r * 0.4, 0); ctx.closePath(); ctx.fill(); }
+    ctx.restore();
   }
-  function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; }
-  var $groupes = document.getElementById('groupes');
-  var $chargee = document.getElementById('chargee');
-  var $retour = document.getElementById('retour');
-  var $prog = document.getElementById('progression');
-  var $indice = document.getElementById('indice');
-  var $fin = document.getElementById('fin');
-  var boutons = [];
-
-  function message(txt, doux) { $retour.textContent = txt; $retour.className = doux ? 'doux' : ''; }
-
-  function demarrer() {
-    file = [];
-    DONNEES.familles.forEach(function (f, i) { f.elements.forEach(function (t) { file.push({ texte: t, famille: i }); }); });
-    file = melange(file);
-    place = DONNEES.familles.map(function () { return []; });
-    courant = 0; erreurs = 0; indiceUtilise = false; ecartee = -1; choix = 0;
-    $fin.hidden = true;
-    dessiner();
-    message('Choisir une famille avec la souris, le doigt ou les flèches, puis Entrée.');
+  function bulle(x, y, r, couleur, famIdx, grise) {
+    ctx.save();
+    ctx.globalAlpha = grise ? 0.35 : 1;
+    ctx.fillStyle = couleur; ctx.strokeStyle = '#161616'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.65)'; ctx.beginPath(); ctx.ellipse(x - r * 0.35, y - r * 0.4, r * 0.28, r * 0.16, -0.6, 0, 6.2832); ctx.fill();
+    if (famIdx !== null) marque(famIdx, x + r * 0.08, y + r * 0.12, r, couleur);
+    ctx.restore();
+  }
+  function texteCentre(t, x, y, largeurMax, taille) {
+    ctx.font = 'bold ' + taille + 'px Arial, Helvetica, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#161616';
+    var mots = t.split(' '), lignes = [], cur = '';
+    mots.forEach(function (m) { var essai = cur ? cur + ' ' + m : m; if (ctx.measureText(essai).width > largeurMax && cur) { lignes.push(cur); cur = m; } else cur = essai; });
+    lignes.push(cur);
+    var h = taille * 1.25;
+    lignes.forEach(function (l, i) { ctx.fillText(l, x, y + (i - (lignes.length - 1) / 2) * h); });
   }
 
   function dessiner() {
-    var avaitLeFocus = $groupes.contains(document.activeElement);
-    $groupes.textContent = '';
-    boutons = [];
-    DONNEES.familles.forEach(function (f, i) {
-      var b = el('button', 'groupe');
-      b.type = 'button';
-      b.setAttribute('aria-pressed', String(i === choix));
-      if (i === ecartee) { b.className += ' ecartee'; }
-      b.appendChild(el('span', 'nom', f.nom));
-      if (i === ecartee) b.appendChild(el('span', 'mention', 'Écartée par l\'indice'));
-      var liste = el('span', 'bulles');
-      place[i].forEach(function (t) { liste.appendChild(el('span', 'bulle', t)); });
-      b.appendChild(liste);
-      b.addEventListener('click', function () { choix = i; tirer(i); });
-      b.addEventListener('focus', function () { choix = i; majChoix(); });
-      boutons.push(b);
-      $groupes.appendChild(b);
-    });
-    if (avaitLeFocus && boutons[choix] && document.getElementById('fin').hidden) boutons[choix].focus();
-    majBulle();
-  }
-
-  function majChoix() {
-    boutons.forEach(function (b, i) { b.setAttribute('aria-pressed', String(i === choix)); });
-  }
-
-  function majBulle() {
-    var restant = file.length - courant;
-    $chargee.textContent = courant < file.length ? file[courant].texte : '';
-    $prog.textContent = courant < file.length ? ('Élément ' + (courant + 1) + ' sur ' + file.length) : '';
-    $indice.disabled = courant >= file.length || indiceUtilise;
-  }
-
-  function tirer(i) {
-    if (courant >= file.length) return;
-    var e = file[courant];
-    if (i === ecartee) { message('Cette famille est écartée par l\'indice. Choisir une autre famille.', true); return; }
-    if (!document.body.classList.contains('calme')) {
-      $chargee.classList.remove('tir'); void $chargee.offsetWidth; $chargee.classList.add('tir');
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = calme ? '#ffffff' : '#fbf6e9'; ctx.fillRect(0, 0, W, H);
+    if (!calme) { // décor : rayons discrets
+      ctx.save(); ctx.globalAlpha = 0.18; ctx.fillStyle = '#f6be2c';
+      for (var r = 0; r < 14; r++) { ctx.beginPath(); ctx.moveTo(CX, CY); ctx.arc(CX, CY, 900, -Math.PI + r * 0.24, -Math.PI + r * 0.24 + 0.12); ctx.closePath(); ctx.fill(); }
+      ctx.restore();
     }
-    if (e.famille === i) {
-      place[i].push(e.texte);
-      message('Bien vu.');
-      suivant();
-    } else {
-      erreurs++;
-      if (erreurs >= MAX_ERREURS) {
-        place[e.famille].push(e.texte);
-        message('Voici la bonne réponse : « ' + e.texte + ' » va dans « ' + DONNEES.familles[e.famille].nom + ' ». On continue.');
-        suivant();
-      } else {
-        message('Pas tout à fait. Regarde l\'indice.', true);
-      }
+    // Amas et plaques
+    for (var i = 0; i < n; i++) {
+      var c = centre(i), g = (i === ecartee);
+      for (var k = 0; k < 8; k++) { var e = emplacement(i, k); bulle(e.x, e.y, R, COULEURS[i % 4], i, g); }
+      for (var q = 0; q < place[i].length; q++) { var e2 = emplacement(i, 8 + (q % 2)); bulle(e2.x, e2.y + Math.floor(q / 2) * 0, R, COULEURS[i % 4], i, g); }
+      // plaque
+      var pw = 200, ph = 62, px = c.x - pw / 2, py = 8;
+      ctx.save(); ctx.fillStyle = 'rgba(0,0,0,0.38)'; ctx.fillRect(px + 4, py + 4, pw, ph);
+      ctx.fillStyle = g ? '#e9e4d6' : '#fbf6e9'; ctx.strokeStyle = '#161616'; ctx.lineWidth = g ? 2 : (i === cible ? 6 : 3);
+      if (g) ctx.setLineDash([8, 6]);
+      ctx.fillRect(px, py, pw, ph); ctx.strokeRect(px, py, pw, ph); ctx.restore();
+      texteCentre(fam[i].nom, c.x, py + ph / 2, pw - 14, 18);
+      if (g) texteCentre('Écartée', c.x, py + ph + 16, pw, 18);
+      // mots déjà classés
+      place[i].forEach(function (t, k) { texteCentre(t, c.x, 300 + k * 26, 220, 18); });
+      if (i === cible) { ctx.save(); ctx.strokeStyle = '#e8412a'; ctx.lineWidth = 4; ctx.setLineDash([2, 8]); ctx.lineCap = 'round'; ctx.beginPath(); ctx.arc(c.x, 175, 100, 0, 6.2832); ctx.stroke(); ctx.restore(); }
+    }
+    // visée pointillée
+    if (!vol && pos < file.length) {
+      ctx.save(); ctx.strokeStyle = '#161616'; ctx.lineWidth = 4; ctx.setLineDash([2, 12]); ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(CX, CY); ctx.lineTo(CX + Math.sin(angle) * 430, CY - Math.cos(angle) * 430); ctx.stroke(); ctx.restore();
+    }
+    // canon
+    ctx.save(); ctx.translate(CX, CY); ctx.rotate(angle);
+    ctx.fillStyle = '#161616'; ctx.strokeStyle = '#161616'; ctx.fillRect(-26, -90, 52, 90);
+    ctx.fillStyle = '#1f8a8c'; ctx.fillRect(-26, -90, 52, 20); ctx.strokeRect(-26, -90, 52, 90);
+    ctx.restore();
+    ctx.fillStyle = '#161616'; ctx.beginPath(); ctx.arc(CX, CY + 20, 70, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = '#f6be2c'; ctx.fillRect(CX - 70, CY + 20, 140, 36); ctx.strokeStyle = '#161616'; ctx.lineWidth = 3; ctx.strokeRect(CX - 70, CY + 20, 140, 36);
+    // bulle chargée ou en vol
+    if (pos < file.length) {
+      var bx = CX, by = CY, br = 52;
+      if (vol) { bx = vol.x; by = vol.y; br = 52 - 20 * vol.t; }
+      ctx.save(); ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#161616'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(bx, by, br, 0, 6.2832); ctx.fill(); ctx.stroke(); ctx.restore();
+      texteCentre(file[pos].texte, bx, by, br * 1.7, br > 40 ? 20 : 18);
     }
   }
 
+  function viserVers(i) { cible = i; var c = centre(i); angle = Math.atan2(c.x - CX, CY - c.y); dessiner(); }
+  function viserPointeur(ev) {
+    var r = cv.getBoundingClientRect(), x = (ev.clientX - r.left) * W / r.width, y = (ev.clientY - r.top) * H / r.height;
+    angle = Math.max(-1.2, Math.min(1.2, Math.atan2(x - CX, CY - y)));
+    var best = 0, bd = 1e9;
+    for (var i = 0; i < n; i++) { var c = centre(i), d = Math.abs((c.x - CX) * Math.cos(angle) + (c.y - CY) * Math.sin(angle)); if (d < bd) { bd = d; best = i; } }
+    cible = best; dessiner();
+  }
+
+  function tirer() {
+    if (vol || pos >= file.length) return;
+    if (cible === ecartee) { message('Ce groupe est écarté par l\'indice. Viser un autre groupe.', true); return; }
+    var e = file[pos], c = centre(cible), ok = (e.famille === cible);
+    var fin = { x: c.x, y: 175 + 95 };
+    if (calme) { resultat(ok, e); return; }
+    vol = { x: CX, y: CY, t: 0, de: { x: CX, y: CY }, vers: fin, retour: !ok, ok: ok, e: e };
+    avancer();
+  }
+  function avancer() {
+    if (!vol) return;
+    vol.t = Math.min(1, vol.t + 0.04);
+    var t = vol.retour && vol.t > 0.5 ? 1 - vol.t + 0.5 : vol.t * (vol.retour ? 2 : 1);
+    t = Math.min(1, t);
+    vol.x = vol.de.x + (vol.vers.x - vol.de.x) * t; vol.y = vol.de.y + (vol.vers.y - vol.de.y) * t;
+    dessiner();
+    if (vol.t >= 1) { var v = vol; vol = null; resultat(v.ok, v.e); return; }
+    requestAnimationFrame(avancer);
+  }
+
+  function resultat(ok, e) {
+    if (ok) { place[e.famille].push(e.texte); message('Bien vu.'); suivant(); return; }
+    erreurs++;
+    if (erreurs >= 3) { place[e.famille].push(e.texte); message('Voici la bonne réponse : « ' + e.texte + ' » va dans « ' + fam[e.famille].nom + ' ». On continue.'); suivant(); return; }
+    message('Pas tout à fait. Regarde l\'indice.', true); dessiner();
+  }
   function suivant() {
-    courant++; erreurs = 0; indiceUtilise = false; ecartee = -1;
-    if (courant >= file.length) { dessiner(); terminer(); return; }
+    pos++; erreurs = 0; indiceUtilise = false; ecartee = -1; document.getElementById('indice').disabled = false;
+    if (pos >= file.length) { terminer(); return; }
     dessiner();
   }
-
   function terminer() {
-    var recap = document.getElementById('recap');
-    recap.textContent = '';
-    DONNEES.familles.forEach(function (f, i) {
-      var p = el('p');
-      p.appendChild(el('strong', null, f.nom + ' : '));
-      p.appendChild(document.createTextNode(place[i].join(', ')));
-      recap.appendChild(p);
-    });
-    $fin.hidden = false;
-    $indice.disabled = true;
+    var recap = document.getElementById('recap'); recap.textContent = '';
+    fam.forEach(function (f, i) { var p = document.createElement('p'); var s = document.createElement('strong'); s.textContent = f.nom + ' : '; p.appendChild(s); p.appendChild(document.createTextNode(place[i].join(', '))); recap.appendChild(p); });
+    $fin.hidden = false; document.getElementById('indice').disabled = true; dessiner();
   }
 
-  $indice.addEventListener('click', function () {
-    if (courant >= file.length || indiceUtilise) return;
-    var e = file[courant];
-    var candidates = [];
-    DONNEES.familles.forEach(function (f, i) { if (i !== e.famille) candidates.push(i); });
-    ecartee = candidates[0];
-    indiceUtilise = true;
-    $indice.disabled = true;
-    dessiner();
-    message('Indice : une famille est écartée. Choisir parmi les autres.');
+  document.getElementById('indice').addEventListener('click', function () {
+    if (pos >= file.length || indiceUtilise) return;
+    var e = file[pos]; for (var i = 0; i < n; i++) if (i !== e.famille && i !== cible) { ecartee = i; break; }
+    if (ecartee < 0) for (var j = 0; j < n; j++) if (j !== e.famille) { ecartee = j; break; }
+    indiceUtilise = true; this.disabled = true; message('Indice : un groupe est écarté. Choisir parmi les autres.'); dessiner();
   });
 
-  document.getElementById('calme').addEventListener('click', function () { basculerCalme(!document.body.classList.contains('calme')); });
+  cv.addEventListener('pointermove', function (ev) { if (!vol) viserPointeur(ev); });
+  cv.addEventListener('click', function (ev) { viserPointeur(ev); tirer(); });
+  cv.addEventListener('keydown', function (ev) {
+    if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') { viserVers((cible + 1) % n); ev.preventDefault(); }
+    else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') { viserVers((cible + n - 1) % n); ev.preventDefault(); }
+    else if (ev.key === 'Enter' || ev.key === ' ') { tirer(); ev.preventDefault(); }
+  });
+
   function basculerCalme(actif) {
-    document.body.classList.toggle('calme', actif);
-    var b = document.getElementById('calme');
-    b.setAttribute('aria-pressed', String(actif));
-    b.textContent = 'Mode calme : ' + (actif ? 'activé' : 'désactivé');
+    calme = actif; document.body.classList.toggle('calme', actif);
+    var b = document.getElementById('calme'); b.setAttribute('aria-pressed', String(actif)); b.textContent = 'Mode calme : ' + (actif ? 'activé' : 'désactivé');
+    if (file) dessiner();
   }
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) basculerCalme(true);
+  document.getElementById('calme').addEventListener('click', function () { basculerCalme(!calme); });
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) calme = true;
 
   document.getElementById('ecouter').addEventListener('click', function () {
-    if (!('speechSynthesis' in window) || courant >= file.length) { message('La lecture à voix haute n\'est pas disponible ici.', true); return; }
-    var u = new SpeechSynthesisUtterance(file[courant].texte);
-    var voix = window.speechSynthesis.getVoices();
+    if (!('speechSynthesis' in window) || pos >= file.length) { message('La lecture à voix haute n\'est pas disponible ici.', true); return; }
+    var u = new SpeechSynthesisUtterance(file[pos].texte), voix = window.speechSynthesis.getVoices();
     var v = voix.filter(function (x) { return x.lang === 'fr-BE'; })[0] || voix.filter(function (x) { return x.lang && x.lang.indexOf('fr') === 0; })[0];
     if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'fr-FR'; }
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(u);
+    window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
   });
 
-  document.addEventListener('keydown', function (ev) {
-    if ($fin.hidden === false) return;
-    if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') { choix = (choix + 1) % boutons.length; boutons[choix].focus(); ev.preventDefault(); }
-    else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') { choix = (choix + boutons.length - 1) % boutons.length; boutons[choix].focus(); ev.preventDefault(); }
-  });
-
+  function demarrer() {
+    file = []; fam.forEach(function (f, i) { f.elements.forEach(function (t) { file.push({ texte: t, famille: i }); }); });
+    file = melange(file); pos = 0; erreurs = 0; indiceUtilise = false; ecartee = -1; vol = null;
+    place = fam.map(function () { return []; }); $fin.hidden = true; document.getElementById('indice').disabled = false;
+    viserVers(Math.floor(n / 2)); message('Viser un groupe avec la souris, le doigt ou les flèches, puis tirer.');
+  }
   document.getElementById('rejouer').addEventListener('click', demarrer);
+  basculerCalme(calme);
   demarrer();
 })();
 </script>

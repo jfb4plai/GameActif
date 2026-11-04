@@ -25,3 +25,7 @@ Fichiers : `bulles.html`, `briques.html` (ouverts en http local, pas en `file://
 - Ouverture par double-clic (`file://`), tablette, lecteur d'écran.
 - Casse-briques en mode balle : trajectoire toujours identique à chaque lancer (constat de lecture du code et d'un essai) ; jouabilité pour un élève non testée.
 - Copie du prompt : le volet intégré refuse l'écriture du presse-papiers (chemin d'échec constaté) ; dans Chrome, un vrai clic affiche « Prompt copié. » mais le contenu du presse-papiers n'a pas été relu.
+
+## Mise à jour 2026-11-04 : refonte du Tir aux bulles
+
+Sur demande de JF (jeu de tir de bulles d'arcade, charte GameActif), la consigne du mode et un bloc « STYLE VISUEL » ont été réécrits. ulles.html a été regénéré par Claude à partir du nouveau prompt : mur de bulles par famille, canon avec visée pointillée, bulle chargée qui porte le mot. Constaté en navigateur : rendu (capture), tir au clavier réel (Entrée) correct puis erroné, retour doux « Pas tout à fait. Regarde l'indice. ». Les garde-fous mesurables (réseau, taille de police, mode calme, indice, révélation après 3 erreurs) n'ont pas été remesurés sur cette version. Un essai ne prouve pas la fiabilité moyenne.
