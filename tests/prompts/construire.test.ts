@@ -163,7 +163,7 @@ describe('construirePrompt', () => {
     for (const x of textes) expect(bloc(t)).toContain(JSON.stringify(x));
   });
 
-  it('reste sous 15 000 caractères avec 8 éléments de 90 caractères', () => {
+  it('reste sous 30 000 caractères (fichier de référence inclus) avec 8 éléments de 90 caractères', () => {
     const longs = Array.from({ length: 8 }, (_, i) => item(`x${i}`, `${i}`.repeat(1) + 'é'.repeat(89)));
     const a: Activity = {
       ...eauActivity(),
@@ -175,7 +175,7 @@ describe('construirePrompt', () => {
     };
     const p = construirePrompt(a, 'bulles', 'defi', 1);
     expect(p.nbElements).toBe(8);
-    expect(p.texte.length).toBeLessThan(15000);
+    expect(p.texte.length).toBeLessThan(30000);
   });
 
   it('décrit le mode pas à pas du Casse-briques et interdit la descente des bulles', () => {
@@ -248,5 +248,37 @@ describe('Casse-briques d\'arcade', () => {
     expect(t).toContain('raquette');
     expect(t).toContain('ne doit jamais indiquer la famille');
     expect(t).toContain('pas à pas');
+  });
+});
+
+describe('fichier de référence', () => {
+  it('est inclus pour les familles, avec la consigne de ne remplacer que DONNEES', () => {
+    for (const mode of ['bulles', 'briques'] as const) {
+      const t = construirePrompt(activitePilote(), mode, 'standard', 1).texte;
+      expect(t).toContain('FICHIER DE RÉFÉRENCE');
+      expect(t).toContain('Remplacer seulement le contenu de la constante DONNEES');
+      expect(t).toContain('<!DOCTYPE html>');
+      expect(t).toContain('var DONNEES = {');
+      expect(t).toContain('Famille A');
+    }
+  });
+
+  it('n\'est pas inclus pour le Casse-briques avec des paires', () => {
+    const t = construirePrompt(seulementPaires(), 'briques', 'standard', 1).texte;
+    expect(t).not.toContain('FICHIER DE RÉFÉRENCE');
+    expect(t).not.toContain('<!DOCTYPE html>');
+  });
+
+  it('respecte les garde-fous mesurables en lecture de code (réseau, stockage, minuteur, police)', () => {
+    for (const mode of ['bulles', 'briques'] as const) {
+      const t = construirePrompt(activitePilote(), mode, 'standard', 1).texte;
+      const debut = t.indexOf('<!DOCTYPE html>');
+      const html = t.slice(debut, t.indexOf('</html>', debut) + 7);
+      expect(html).not.toMatch(/fetch\(|XMLHttpRequest|WebSocket|localStorage|sessionStorage|document\.cookie|console\.|setInterval|setTimeout|https?:\/\/|<link|@import|innerHTML/);
+      expect(html).toContain('Arial');
+      expect(html).toContain('prefers-reduced-motion');
+      expect(html).toContain('speechSynthesis');
+      expect(html).not.toContain('—');
+    }
   });
 });

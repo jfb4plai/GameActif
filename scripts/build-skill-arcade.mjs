@@ -5,6 +5,9 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const racine = join(dirname(fileURLToPath(import.meta.url)), '..');
+const lireReference = (nom) => readFileSync(join(racine, 'src/prompts/references', nom), 'utf8').split('\r\n').join('\n');
+const refBulles = lireReference('bulles.html');
+const refBriques = lireReference('briques.html');
 const garde = JSON.parse(readFileSync(join(racine, 'src/prompts/garde-fous.json'), 'utf8'));
 
 const description =
@@ -46,6 +49,22 @@ const lignes = [
   '## Casse-briques',
   '',
   garde.modes.briques.consigne,
+  '',
+  '## Fichiers de référence',
+  '',
+  'Pour des familles, reproduire le fichier de référence du mode en entier, sans retirer aucun comportement, en remplaçant seulement le contenu de la constante DONNEES par les familles et les éléments (mot pour mot, de 2 à 4 familles) et en adaptant le titre si utile. Pour des paires (Casse-briques), s\'en inspirer : consigne = un élément, briques = partenaires possibles.',
+  '',
+  '### Tir aux bulles',
+  '',
+  '```html',
+  refBulles.trimEnd(),
+  '```',
+  '',
+  '### Casse-briques',
+  '',
+  '```html',
+  refBriques.trimEnd(),
+  '```',
   '',
   '## À faire vérifier par l\'enseignant',
   '',
