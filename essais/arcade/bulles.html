@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tir aux bulles : positions</title>
+<style>
+  :root { --encre: #1a1a1a; --fond: #fffdf6; --accent: #0f6e56; --alerte: #b45309; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 18px; line-height: 1.5; color: var(--encre); background: var(--fond); }
+  body.calme { background: #ffffff; }
+  main { max-width: 860px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 26px; margin: 0 0 8px; }
+  button { font: inherit; min-height: 44px; min-width: 44px; padding: 8px 16px; border: 2px solid var(--encre); background: #fff; color: var(--encre); border-radius: 8px; cursor: pointer; }
+  button:focus-visible { outline: 4px solid #1d4ed8; outline-offset: 2px; }
+  .barre { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+  .consigne { margin: 8px 0; }
+  .groupes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 16px 0; }
+  .groupe { min-height: 120px; padding: 12px; text-align: left; display: block; width: 100%; border: 3px solid var(--encre); border-radius: 16px; background: #fff; }
+  .groupe[aria-pressed="true"] { border-width: 6px; border-style: double; }
+  .groupe.ecartee { border-style: dashed; opacity: 0.55; }
+  .groupe .nom { font-weight: bold; display: block; margin-bottom: 6px; }
+  .groupe .mention { display: block; font-size: 18px; }
+  .bulles { display: flex; flex-wrap: wrap; gap: 8px; }
+  .bulle { display: inline-block; padding: 8px 14px; border: 2px solid var(--encre); border-radius: 999px; background: #e6f4ef; }
+  .zone-tir { position: relative; min-height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 10px; }
+  .canon { width: 0; height: 0; border-left: 28px solid transparent; border-right: 28px solid transparent; border-bottom: 48px solid var(--encre); }
+  .bulle-chargee { padding: 12px 22px; border: 3px solid var(--encre); border-radius: 999px; background: #fff7d6; font-size: 22px; min-height: 52px; }
+  body:not(.calme) .bulle-chargee.tir { animation: tir 0.5s ease-out; }
+  @keyframes tir { from { transform: translateY(0) scale(1); } to { transform: translateY(-120px) scale(0.8); } }
+  #retour { min-height: 60px; padding: 10px 14px; border: 2px solid var(--encre); border-left: 12px solid var(--accent); background: #fff; margin: 12px 0; }
+  #retour.doux { border-left-color: var(--alerte); }
+  .fin { border: 3px solid var(--accent); padding: 12px 16px; border-radius: 12px; margin-top: 16px; background: #fff; }
+  .fin h2 { font-size: 22px; margin: 0 0 8px; }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Tir aux bulles</h1>
+  <p class="consigne">Lire la bulle.</p>
+  <p class="consigne">Choisir la famille.</p>
+  <p class="consigne">Tirer.</p>
+  <div class="barre">
+    <button type="button" id="calme" aria-pressed="false">Mode calme : désactivé</button>
+    <button type="button" id="ecouter">Écouter</button>
+    <button type="button" id="indice">Indice</button>
+  </div>
+  <div class="zone-tir">
+    <div class="bulle-chargee" id="chargee" aria-live="polite"></div>
+    <div class="canon" aria-hidden="true"></div>
+  </div>
+  <p class="consigne" id="progression"></p>
+  <div id="retour" role="status" aria-live="polite">Choisir une famille avec la souris, le doigt ou les flèches, puis Entrée.</div>
+  <div class="groupes" id="groupes" role="group" aria-label="Familles"></div>
+  <div class="fin" id="fin" hidden>
+    <h2>Tous les éléments sont classés.</h2>
+    <div id="recap"></div>
+    <button type="button" id="rejouer">Rejouer</button>
+  </div>
+</main>
+<script>
+(function () {
+  'use strict';
+  var DONNEES = {
+    familles: [
+      { nom: 'Position ordinale (rang)', elements: ['premier', 'deuxième'] },
+      { nom: 'Position absolue', elements: ['entre', 'à l\'intérieur'] },
+      { nom: 'Position relative (liée au regard)', elements: ['devant', 'à gauche'] }
+    ]
+  };
+  var MAX_ERREURS = 3;
+  var file, courant, erreurs, indiceUtilise, ecartee, place, choix = 0;
+
+  function melange(a) {
+    var b = a.slice();
+    for (var i = b.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = b[i]; b[i] = b[j]; b[j] = t; }
+    return b;
+  }
+  function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; }
+  var $groupes = document.getElementById('groupes');
+  var $chargee = document.getElementById('chargee');
+  var $retour = document.getElementById('retour');
+  var $prog = document.getElementById('progression');
+  var $indice = document.getElementById('indice');
+  var $fin = document.getElementById('fin');
+  var boutons = [];
+
+  function message(txt, doux) { $retour.textContent = txt; $retour.className = doux ? 'doux' : ''; }
+
+  function demarrer() {
+    file = [];
+    DONNEES.familles.forEach(function (f, i) { f.elements.forEach(function (t) { file.push({ texte: t, famille: i }); }); });
+    file = melange(file);
+    place = DONNEES.familles.map(function () { return []; });
+    courant = 0; erreurs = 0; indiceUtilise = false; ecartee = -1; choix = 0;
+    $fin.hidden = true;
+    dessiner();
+    message('Choisir une famille avec la souris, le doigt ou les flèches, puis Entrée.');
+  }
+
+  function dessiner() {
+    var avaitLeFocus = $groupes.contains(document.activeElement);
+    $groupes.textContent = '';
+    boutons = [];
+    DONNEES.familles.forEach(function (f, i) {
+      var b = el('button', 'groupe');
+      b.type = 'button';
+      b.setAttribute('aria-pressed', String(i === choix));
+      if (i === ecartee) { b.className += ' ecartee'; }
+      b.appendChild(el('span', 'nom', f.nom));
+      if (i === ecartee) b.appendChild(el('span', 'mention', 'Écartée par l\'indice'));
+      var liste = el('span', 'bulles');
+      place[i].forEach(function (t) { liste.appendChild(el('span', 'bulle', t)); });
+      b.appendChild(liste);
+      b.addEventListener('click', function () { choix = i; tirer(i); });
+      b.addEventListener('focus', function () { choix = i; majChoix(); });
+      boutons.push(b);
+      $groupes.appendChild(b);
+    });
+    if (avaitLeFocus && boutons[choix] && document.getElementById('fin').hidden) boutons[choix].focus();
+    majBulle();
+  }
+
+  function majChoix() {
+    boutons.forEach(function (b, i) { b.setAttribute('aria-pressed', String(i === choix)); });
+  }
+
+  function majBulle() {
+    var restant = file.length - courant;
+    $chargee.textContent = courant < file.length ? file[courant].texte : '';
+    $prog.textContent = courant < file.length ? ('Élément ' + (courant + 1) + ' sur ' + file.length) : '';
+    $indice.disabled = courant >= file.length || indiceUtilise;
+  }
+
+  function tirer(i) {
+    if (courant >= file.length) return;
+    var e = file[courant];
+    if (i === ecartee) { message('Cette famille est écartée par l\'indice. Choisir une autre famille.', true); return; }
+    if (!document.body.classList.contains('calme')) {
+      $chargee.classList.remove('tir'); void $chargee.offsetWidth; $chargee.classList.add('tir');
+    }
+    if (e.famille === i) {
+      place[i].push(e.texte);
+      message('Bien vu.');
+      suivant();
+    } else {
+      erreurs++;
+      if (erreurs >= MAX_ERREURS) {
+        place[e.famille].push(e.texte);
+        message('Voici la bonne réponse : « ' + e.texte + ' » va dans « ' + DONNEES.familles[e.famille].nom + ' ». On continue.');
+        suivant();
+      } else {
+        message('Pas tout à fait. Regarde l\'indice.', true);
+      }
+    }
+  }
+
+  function suivant() {
+    courant++; erreurs = 0; indiceUtilise = false; ecartee = -1;
+    if (courant >= file.length) { dessiner(); terminer(); return; }
+    dessiner();
+  }
+
+  function terminer() {
+    var recap = document.getElementById('recap');
+    recap.textContent = '';
+    DONNEES.familles.forEach(function (f, i) {
+      var p = el('p');
+      p.appendChild(el('strong', null, f.nom + ' : '));
+      p.appendChild(document.createTextNode(place[i].join(', ')));
+      recap.appendChild(p);
+    });
+    $fin.hidden = false;
+    $indice.disabled = true;
+  }
+
+  $indice.addEventListener('click', function () {
+    if (courant >= file.length || indiceUtilise) return;
+    var e = file[courant];
+    var candidates = [];
+    DONNEES.familles.forEach(function (f, i) { if (i !== e.famille) candidates.push(i); });
+    ecartee = candidates[0];
+    indiceUtilise = true;
+    $indice.disabled = true;
+    dessiner();
+    message('Indice : une famille est écartée. Choisir parmi les autres.');
+  });
+
+  document.getElementById('calme').addEventListener('click', function () { basculerCalme(!document.body.classList.contains('calme')); });
+  function basculerCalme(actif) {
+    document.body.classList.toggle('calme', actif);
+    var b = document.getElementById('calme');
+    b.setAttribute('aria-pressed', String(actif));
+    b.textContent = 'Mode calme : ' + (actif ? 'activé' : 'désactivé');
+  }
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) basculerCalme(true);
+
+  document.getElementById('ecouter').addEventListener('click', function () {
+    if (!('speechSynthesis' in window) || courant >= file.length) { message('La lecture à voix haute n\'est pas disponible ici.', true); return; }
+    var u = new SpeechSynthesisUtterance(file[courant].texte);
+    var voix = window.speechSynthesis.getVoices();
+    var v = voix.filter(function (x) { return x.lang === 'fr-BE'; })[0] || voix.filter(function (x) { return x.lang && x.lang.indexOf('fr') === 0; })[0];
+    if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'fr-FR'; }
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  });
+
+  document.addEventListener('keydown', function (ev) {
+    if ($fin.hidden === false) return;
+    if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') { choix = (choix + 1) % boutons.length; boutons[choix].focus(); ev.preventDefault(); }
+    else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') { choix = (choix + boutons.length - 1) % boutons.length; boutons[choix].focus(); ev.preventDefault(); }
+  });
+
+  document.getElementById('rejouer').addEventListener('click', demarrer);
+  demarrer();
+})();
+</script>
+</body>
+</html>

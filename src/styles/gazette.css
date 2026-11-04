@@ -94,6 +94,8 @@ svg.scene { display: block; width: 100%; height: auto; touch-action: none; }
 .avertissement { border: 2px solid var(--encre); border-left: 12px solid var(--vermillon); background: #fff; padding: 10px 14px; font-size: 18px; margin: 10px 0; }
 .actions-prompt { display: flex; flex-wrap: wrap; gap: 14px; margin: 10px 0; }
 .mode-arcade textarea { max-width: 100%; font-family: var(--lecture); font-size: 16px; }
+.etapes-prompt { list-style: decimal; padding-left: 28px; }
+.verification-prompt { list-style: disc; padding-left: 28px; }
 .etapes-prompt li, .verification-prompt li { margin-bottom: 6px; }
 .liens-programme { padding-left: 18px; }
 .liens-programme li { margin-bottom: 10px; }

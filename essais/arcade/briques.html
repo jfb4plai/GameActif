@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Casse-briques : positions</title>
+<style>
+  :root { --encre: #1a1a1a; --fond: #fffdf6; --accent: #0f6e56; --alerte: #b45309; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 18px; line-height: 1.5; color: var(--encre); background: var(--fond); }
+  body.calme { background: #ffffff; }
+  main { max-width: 860px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 26px; margin: 0 0 8px; }
+  button { font: inherit; min-height: 44px; min-width: 44px; padding: 8px 16px; border: 2px solid var(--encre); background: #fff; color: var(--encre); border-radius: 8px; cursor: pointer; }
+  button:focus-visible { outline: 4px solid #1d4ed8; outline-offset: 2px; }
+  .barre { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+  #consigne { font-size: 22px; font-weight: bold; margin: 12px 0; }
+  #terrain { position: relative; border: 3px solid var(--encre); border-radius: 12px; background: #fff; padding: 12px; min-height: 360px; }
+  #mur { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .brique { min-height: 56px; border-radius: 6px; border: 3px solid var(--encre); background: #e6f4ef; padding: 8px; text-align: center; }
+  .brique.cassee { visibility: hidden; }
+  .brique.choisie { border-style: double; border-width: 6px; }
+  .brique.indice { outline: 4px dotted var(--accent); outline-offset: 2px; }
+  #raquette { position: absolute; bottom: 12px; left: 50%; width: 120px; height: 16px; margin-left: -60px; background: var(--encre); border-radius: 8px; }
+  #balle { position: absolute; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); border: 2px solid var(--encre); }
+  #retour { min-height: 60px; padding: 10px 14px; border: 2px solid var(--encre); border-left: 12px solid var(--accent); background: #fff; margin: 12px 0; }
+  #retour.doux { border-left-color: var(--alerte); }
+  .fin { border: 3px solid var(--accent); padding: 12px 16px; border-radius: 12px; margin-top: 16px; background: #fff; }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Casse-briques</h1>
+  <p>Lire la consigne.</p>
+  <p>Choisir les briques qui vont avec la consigne.</p>
+  <div class="barre">
+    <button type="button" id="calme" aria-pressed="false">Mode calme : désactivé</button>
+    <button type="button" id="pas" aria-pressed="false">Mode pas à pas : désactivé</button>
+    <button type="button" id="ecouter">Écouter</button>
+    <button type="button" id="indice">Indice</button>
+  </div>
+  <p id="consigne"></p>
+  <div id="retour" role="status" aria-live="polite"></div>
+  <div id="terrain">
+    <div id="mur" role="group" aria-label="Briques"></div>
+    <div id="balle" hidden></div>
+    <div id="raquette" aria-hidden="true" hidden></div>
+  </div>
+  <p id="aide-touches"></p>
+  <div class="fin" id="fin" hidden>
+    <h2>Toutes les consignes sont jouées.</h2>
+    <button type="button" id="rejouer">Rejouer</button>
+  </div>
+</main>
+<script>
+(function () {
+  'use strict';
+  var DONNEES = {
+    familles: [
+      { nom: 'Position ordinale (rang)', elements: ['premier', 'deuxième'] },
+      { nom: 'Position absolue', elements: ['entre', 'à l\'intérieur'] },
+      { nom: 'Position relative (liée au regard)', elements: ['devant', 'à gauche'] }
+    ]
+  };
+  var MAX_ERREURS = 3;
+  var briques, tour, erreurs, sel, indiceUtilise, raf = 0;
+  var balle = { x: 0, y: 0, vx: 0, vy: 0, enJeu: false }, raquetteX = 0;
+
+  function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; }
+  function melange(a) { var b = a.slice(); for (var i = b.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = b[i]; b[i] = b[j]; b[j] = t; } return b; }
+  var $mur = document.getElementById('mur'), $retour = document.getElementById('retour'), $consigne = document.getElementById('consigne');
+  var $terrain = document.getElementById('terrain'), $balle = document.getElementById('balle'), $raq = document.getElementById('raquette');
+  var $indice = document.getElementById('indice'), $fin = document.getElementById('fin'), $aide = document.getElementById('aide-touches');
+  function calme() { return document.body.classList.contains('calme'); }
+  function pasAPas() { return document.getElementById('pas').getAttribute('aria-pressed') === 'true'; }
+  function modeBalle() { return !calme() && !pasAPas(); }
+  function message(t, doux) { $retour.textContent = t; $retour.className = doux ? 'doux' : ''; }
+
+  function demarrer() {
+    briques = [];
+    DONNEES.familles.forEach(function (f, i) { f.elements.forEach(function (t) { briques.push({ texte: t, famille: i, cassee: false, erreurs: 0, el: null }); }); });
+    briques = melange(briques);
+    tour = 0; erreurs = 0; sel = 0; indiceUtilise = false;
+    $mur.textContent = '';
+    briques.forEach(function (b, i) {
+      var e = el('button', 'brique', b.texte);
+      e.type = 'button';
+      e.addEventListener('click', function () { sel = i; viser(i); });
+      e.addEventListener('focus', function () { sel = i; majSel(); });
+      b.el = e; $mur.appendChild(e);
+    });
+    $fin.hidden = true;
+    consigne();
+    majMode();
+  }
+
+  function restantes(fam) { return briques.filter(function (b) { return b.famille === fam && !b.cassee; }); }
+
+  function consigne() {
+    if (tour >= DONNEES.familles.length) { terminer(); return; }
+    $consigne.textContent = 'Casser les briques de la famille : ' + DONNEES.familles[tour].nom;
+    message('Choisir une brique.');
+    indiceUtilise = false; $indice.disabled = false;
+    majSel();
+  }
+  function majSel() { briques.forEach(function (b, i) { b.el.classList.toggle('choisie', i === sel); }); }
+
+  function viser(i) {
+    var b = briques[i];
+    if (b.cassee || tour >= DONNEES.familles.length) return;
+    if (b.famille === tour) {
+      b.cassee = true; b.el.classList.add('cassee'); b.el.tabIndex = -1;
+      message('Bien vu.');
+      if (restantes(tour).length === 0) { tour++; consigne(); }
+    } else {
+      b.erreurs++;
+      if (b.erreurs >= MAX_ERREURS) {
+        message('Cette brique « ' + b.texte + ' » va dans la famille « ' + DONNEES.familles[b.famille].nom + ' ». On continue.');
+        b.erreurs = 0;
+      } else {
+        message('Pas tout à fait. Regarde l\'indice.', true);
+      }
+    }
+  }
+
+  function terminer() {
+    $consigne.textContent = '';
+    $fin.hidden = false; $indice.disabled = true;
+    message('Bien joué.');
+    arreter();
+  }
+
+  $indice.addEventListener('click', function () {
+    var r = restantes(tour)[0];
+    if (!r || indiceUtilise) return;
+    r.el.classList.add('indice'); indiceUtilise = true; $indice.disabled = true;
+    message('Indice : une brique de cette famille est entourée de points.');
+  });
+
+  // Mode pas à pas : flèches et Entrée, sans balle.
+  document.addEventListener('keydown', function (ev) {
+    if (!$fin.hidden) return;
+    if (modeBalle()) {
+      if (ev.key === 'ArrowLeft') { raquetteX = Math.max(60, raquetteX - 30); placerRaquette(); ev.preventDefault(); }
+      else if (ev.key === 'ArrowRight') { raquetteX = Math.min($terrain.clientWidth - 60, raquetteX + 30); placerRaquette(); ev.preventDefault(); }
+      else if (ev.key === ' ' && !balle.enJeu) { lancer(); ev.preventDefault(); }
+      return;
+    }
+    var vivantes = briques.map(function (b, i) { return i; }).filter(function (i) { return !briques[i].cassee; });
+    if (!vivantes.length) return;
+    var pos = vivantes.indexOf(sel); if (pos < 0) pos = 0;
+    if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') { sel = vivantes[(pos + 1) % vivantes.length]; briques[sel].el.focus(); ev.preventDefault(); }
+    else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') { sel = vivantes[(pos + vivantes.length - 1) % vivantes.length]; briques[sel].el.focus(); ev.preventDefault(); }
+  });
+
+  // Mode balle : la balle n'est jamais perdue, elle revient sur la raquette.
+  function placerRaquette() { $raq.style.left = raquetteX + 'px'; if (!balle.enJeu) { balle.x = raquetteX; balle.y = $terrain.clientHeight - 48; dessinerBalle(); } }
+  function dessinerBalle() { $balle.style.left = (balle.x - 10) + 'px'; $balle.style.top = (balle.y - 10) + 'px'; }
+  function lancer() { balle.enJeu = true; balle.vx = 3; balle.vy = -4; boucle(); }
+  function boucle() {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(function () {
+      if (!balle.enJeu || !modeBalle()) return;
+      balle.x += balle.vx; balle.y += balle.vy;
+      var W = $terrain.clientWidth, H = $terrain.clientHeight;
+      if (balle.x < 10 || balle.x > W - 10) balle.vx = -balle.vx;
+      if (balle.y < 10) balle.vy = Math.abs(balle.vy);
+      if (balle.y > H - 40 && Math.abs(balle.x - raquetteX) < 70 && balle.vy > 0) balle.vy = -Math.abs(balle.vy);
+      if (balle.y > H) { balle.enJeu = false; placerRaquette(); message('La balle revient sur la raquette. Rien n\'est perdu. Appuyer sur Espace.'); return; }
+      var tr = $terrain.getBoundingClientRect();
+      for (var i = 0; i < briques.length; i++) {
+        var b = briques[i]; if (b.cassee) continue;
+        var r = b.el.getBoundingClientRect();
+        var bx = tr.left + balle.x, by = tr.top + balle.y;
+        if (bx > r.left && bx < r.right && by > r.top && by < r.bottom) { balle.vy = -balle.vy; viser(i); break; }
+      }
+      dessinerBalle(); boucle();
+    });
+  }
+  function arreter() { balle.enJeu = false; cancelAnimationFrame(raf); $balle.hidden = true; $raq.hidden = true; }
+
+  function majMode() {
+    var b = modeBalle();
+    $balle.hidden = !b || !$fin.hidden; $raq.hidden = !b || !$fin.hidden;
+    $aide.textContent = b ? 'Flèches gauche et droite : déplacer la raquette. Espace : lancer la balle.' : 'Flèches : choisir une brique. Entrée : la casser.';
+    if (b) { raquetteX = $terrain.clientWidth / 2; balle.enJeu = false; placerRaquette(); } else { cancelAnimationFrame(raf); balle.enJeu = false; }
+  }
+
+  document.getElementById('calme').addEventListener('click', function () { basculerCalme(!calme()); });
+  function basculerCalme(actif) {
+    document.body.classList.toggle('calme', actif);
+    var b = document.getElementById('calme'); b.setAttribute('aria-pressed', String(actif));
+    b.textContent = 'Mode calme : ' + (actif ? 'activé' : 'désactivé');
+    majMode();
+  }
+  document.getElementById('pas').addEventListener('click', function () {
+    var b = document.getElementById('pas'); var actif = b.getAttribute('aria-pressed') !== 'true';
+    b.setAttribute('aria-pressed', String(actif)); b.textContent = 'Mode pas à pas : ' + (actif ? 'activé' : 'désactivé'); majMode();
+  });
+  document.getElementById('ecouter').addEventListener('click', function () {
+    if (!('speechSynthesis' in window)) { message('La lecture à voix haute n\'est pas disponible ici.', true); return; }
+    var u = new SpeechSynthesisUtterance(briques[sel].texte);
+    var voix = window.speechSynthesis.getVoices();
+    var v = voix.filter(function (x) { return x.lang === 'fr-BE'; })[0] || voix.filter(function (x) { return x.lang && x.lang.indexOf('fr') === 0; })[0];
+    if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'fr-FR'; }
+    window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
+  });
+  document.getElementById('rejouer').addEventListener('click', demarrer);
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { document.body.classList.add('calme'); document.getElementById('calme').setAttribute('aria-pressed', 'true'); document.getElementById('calme').textContent = 'Mode calme : activé'; }
+  demarrer();
+})();
+</script>
+</body>
+</html>
