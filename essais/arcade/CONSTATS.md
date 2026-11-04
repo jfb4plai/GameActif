@@ -29,3 +29,5 @@ Fichiers : `bulles.html`, `briques.html` (ouverts en http local, pas en `file://
 ## Mise à jour 2026-11-04 : refonte du Tir aux bulles
 
 Sur demande de JF (jeu de tir de bulles d'arcade, charte GameActif), la consigne du mode et un bloc « STYLE VISUEL » ont été réécrits. `bulles.html` a été regénéré par Claude à partir du nouveau prompt : mur de bulles par famille, canon avec visée pointillée, bulle chargée qui porte le mot. Constaté en navigateur : rendu (capture), tir au clavier réel (Entrée) correct puis erroné, retour doux « Pas tout à fait. Regarde l'indice. ». Les garde-fous mesurables (réseau, taille de police, mode calme, indice, révélation après 3 erreurs) n'ont pas été remesurés sur cette version. Un essai ne prouve pas la fiabilité moyenne.
+
+Casse-briques regénéré dans le même style (mur de briques, raquette, balle ; couleur des briques décorative, sans lien avec la famille). Constaté : rendu (capture), balle qui rebondit sur une mauvaise brique avec le message doux, balle revenue sur la raquette, pas à pas jusqu'à l'écran de fin. Non remesuré : réseau, polices, indice, trois erreurs, voix, tablette. Un essai ne prouve pas la fiabilité moyenne.

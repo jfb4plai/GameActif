@@ -240,3 +240,13 @@ describe('style visuel', () => {
     expect(t).toContain('ligne pointillée de visée');
   });
 });
+
+describe('Casse-briques d\'arcade', () => {
+  it('décrit un mur de briques, une raquette et une balle, et interdit que la couleur trahisse la famille', () => {
+    const t = construirePrompt(activitePilote(), 'briques', 'standard', 1).texte;
+    expect(t).toContain('mur de grandes briques');
+    expect(t).toContain('raquette');
+    expect(t).toContain('ne doit jamais indiquer la famille');
+    expect(t).toContain('pas à pas');
+  });
+});
