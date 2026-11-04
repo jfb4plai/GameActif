@@ -22,6 +22,14 @@ const LABEL: Record<MechanicId, string> = {
 const A_COMPLETER = 'À compléter par l’enseignant : en quoi ce jeu travaille cet attendu.';
 const DEFAULT_PUPILS = 24;
 
+/** Effectif cité dans le contexte de classe (« 18 élèves »), de 1 à 40 ; null si le texte n'en cite pas de crédible. */
+export function effectifDuContexte(contexte: string): number | null {
+  const m = contexte.match(/(?:^|[^\d])(\d{1,3})\s*(?:élèves?|eleves?|enfants?)/i);
+  if (!m) return null;
+  const n = Number.parseInt(m[1], 10);
+  return n >= 1 && n <= 40 ? n : null;
+}
+
 /** Graine stable tirée de l'identifiant de l'activité : une fiche imprimée plus tard reste identique. */
 function seedOf(id: string): number {
   let h = 7;
@@ -45,7 +53,8 @@ function LinksView({ links }: { links: ProgrammeLink[] }) {
 
 export function ActivityScreen({ activity }: { activity: Activity }) {
   const [profile, setProfile] = useState<ProfileId>('standard');
-  const [pupilsText, setPupilsText] = useState(String(DEFAULT_PUPILS));
+  const effectif = effectifDuContexte(activity.context);
+  const [pupilsText, setPupilsText] = useState(String(effectif ?? DEFAULT_PUPILS));
   const [playing, setPlaying] = useState<{ mechanic: MechanicId; seed: number } | null>(null);
   const [plays, setPlays] = useState(0);
   const [finished, setFinished] = useState<number | null>(null);
@@ -129,7 +138,7 @@ export function ActivityScreen({ activity }: { activity: Activity }) {
               aria-describedby="eleves-aide"
               onChange={(e) => setPupilsText(e.target.value)}
             />
-            <p id="eleves-aide" className="aide">Ce nombre sert seulement à calculer le matériel : équipes et cartons. Il n’est pas enregistré.</p>
+            <p id="eleves-aide" className="aide">Ce nombre sert seulement à calculer le matériel : équipes et cartons. Il n’est pas enregistré.{effectif !== null && ' Prérempli d’après votre contexte de classe : modifiez-le si besoin.'}</p>
           </div>
         </div>
       </div>

@@ -36,7 +36,7 @@ But : donner du sens à un apprentissage en le faisant jouer. Le jeu produit ser
 
 ## Style visuel
 
-Style visuel de GameActif, à respecter pour tout le jeu. Page : fond crème #efe6d2, panneaux #fbf6e9 avec contour d'encre #161616 de 2 px et ombre dure décalée de 4 px (rgba(0,0,0,0.38)), sans coins arrondis. Couleurs : sarcelle #1f8a8c, jaune #f6be2c, vermillon #e8412a, vert pâle #cfe8d5 ; une famille = une couleur, et jamais la couleur seule : ajouter à chaque famille une marque différente (point, rayure, étoile, losange) sur ses bulles ou ses briques. Titres : police à empattements épais (Georgia en gras), ombre jaune décalée de 3 px. Boutons : fond jaune, contour d'encre, ombre dure, police Courier New ; bouton actif en encre sur fond crème. Le texte que l'élève doit lire (éléments, noms de familles, consignes, retours) reste en Arial. Rendu attendu : un vrai jeu d'arcade, vivant et lisible, pas un schéma : grandes formes pleines, contours d'encre épais, reflet blanc sur les bulles.
+Style visuel de GameActif, à respecter pour tout le jeu. Page : fond crème #efe6d2, panneaux #fbf6e9 avec contour d'encre #161616 de 2 px et ombre dure décalée de 4 px (rgba(0,0,0,0.38)), sans coins arrondis. Couleurs : sarcelle #1f8a8c, jaune #f6be2c, vermillon #e8412a, vert pâle #cfe8d5 ; une famille = une couleur, et jamais la couleur seule : ajouter à chaque famille une marque différente (point, rayure, étoile, losange) sur ses bulles ou ses briques. Titres : police à empattements épais (Georgia en gras), ombre jaune décalée de 3 px. Boutons : fond jaune, contour d'encre, ombre dure, police Courier New ; bouton actif en encre sur fond crème. Le texte que l'élève doit lire (éléments, noms de familles, consignes, retours) reste en Arial. Rendu attendu : un vrai jeu d'arcade, vivant et lisible, pas un schéma : grandes formes pleines, contours d'encre épais, reflet blanc sur les bulles. Aucun signe « - », « + », « x » ou « : » en décor ou en marque, pour ne pas les confondre avec des opérations. Si un élément contient le nom de sa famille (par exemple une unité), cacher ce nom à l'écran par « ___ » jusqu'à la bonne réponse, puis afficher l'élément complet ; sinon l'élève recopierait la réponse. Une bonne réponse déclenche un petit feu d'artifice silencieux (boules colorées), supprimé en mode calme.
 
 ## Tir aux bulles
 
@@ -86,7 +86,7 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
 <main>
   <h1>Tir aux bulles</h1>
   <div class="panneau consignes">
-    <p>Lire le mot dans le canon.</p>
+    <p>Lire l'élément dans le canon.</p>
     <p>Viser le bon groupe de bulles.</p>
     <p>Tirer.</p>
   </div>
@@ -98,7 +98,7 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
   <canvas id="terrain" width="720" height="680" tabindex="0" aria-label="Terrain de tir. Flèches gauche et droite : changer de groupe. Entrée : tirer."></canvas>
   <div id="retour" role="status" aria-live="polite"></div>
   <div class="panneau fin" id="fin" hidden>
-    <h2>Tous les mots sont classés.</h2>
+    <h2>Tous les éléments sont classés.</h2>
     <div id="recap"></div>
     <button type="button" id="rejouer">Rejouer</button>
   </div>
@@ -108,9 +108,9 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
   'use strict';
   var DONNEES = {
     familles: [
-      { nom: 'Famille A', elements: ['mot 1', 'mot 2'] },
-      { nom: 'Famille B', elements: ['mot 3', 'mot 4'] },
-      { nom: 'Famille C', elements: ['mot 5', 'mot 6'] }
+      { nom: 'Famille A', elements: ['élément 1', 'élément 2'] },
+      { nom: 'Famille B', elements: ['élément 3', 'élément 4'] },
+      { nom: 'Famille C', elements: ['élément 5', 'élément 6'] }
     ]
   };
   var COULEURS = ['#1f8a8c', '#f6be2c', '#e8412a', '#cfe8d5'];
@@ -122,6 +122,30 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
   var file, pos, erreurs, indiceUtilise, ecartee, place, angle, cible, vol, calme = false;
 
   function melange(a) { var b = a.slice(); for (var i = b.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = b[i]; b[i] = b[j]; b[j] = t; } return b; }
+  function echapper(s) { return s.replace(/[.*+?^(){}|[\]\\$]/g, '\\$&'); }
+  // Si le nom de la famille figure dans l'élément, il est caché à l'écran (« ___ ») : il donnerait la réponse.
+  function cacher(texte, nomFamille) {
+    var motif = new RegExp('(^|[^\\p{L}\\p{N}])(' + echapper(nomFamille.trim()) + ')(?=$|[^\\p{L}\\p{N}])', 'iu');
+    return texte.replace(motif, '$1___');
+  }
+  // Petit feu d'artifice sans son quand la réponse est juste ; supprimé en mode calme.
+  var feux = [], rafFeux = 0;
+  function exploser(x, y) {
+    if (calme) return;
+    var teintes = ['#f6be2c', '#e8412a', '#1f8a8c', '#ffffff'];
+    for (var k = 0; k < 44; k++) { var a = Math.random() * 6.2832, v = 3 + Math.random() * 6; feux.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, vie: 45 + Math.floor(Math.random() * 35), r: 5 + Math.random() * 5, c: teintes[k % 4] }); }
+    animerFeux();
+  }
+  function animerFeux() {
+    cancelAnimationFrame(rafFeux);
+    feux.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.vy += 0.12; p.vie--; });
+    feux = feux.filter(function (p) { return p.vie > 0; });
+    dessiner();
+    if (feux.length) rafFeux = requestAnimationFrame(animerFeux);
+  }
+  function dessinerFeux() {
+    feux.forEach(function (p) { ctx.fillStyle = p.c; ctx.strokeStyle = '#161616'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832); ctx.fill(); ctx.stroke(); });
+  }
   function message(t, doux) { $retour.textContent = t; $retour.className = doux ? 'doux' : ''; }
 
   // Position de chaque amas : centres répartis en largeur.
@@ -134,7 +158,7 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
     ctx.save(); ctx.translate(x, y); ctx.fillStyle = '#161616'; ctx.strokeStyle = '#161616'; ctx.lineWidth = 3;
     var m = i % 4;
     if (m === 0) { ctx.beginPath(); ctx.arc(0, 0, r * 0.28, 0, 6.2832); ctx.fill(); }
-    else if (m === 1) { ctx.fillRect(-r * 0.5, -r * 0.12, r, r * 0.24); }
+    else if (m === 1) { ctx.fillRect(-r * 0.32, -r * 0.32, r * 0.64, r * 0.64); }
     else if (m === 2) { ctx.beginPath(); for (var k = 0; k < 10; k++) { var a = k * Math.PI / 5 - Math.PI / 2, rr = k % 2 ? r * 0.2 : r * 0.5; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } ctx.closePath(); ctx.fill(); }
     else { ctx.beginPath(); ctx.moveTo(0, -r * 0.5); ctx.lineTo(r * 0.4, 0); ctx.lineTo(0, r * 0.5); ctx.lineTo(-r * 0.4, 0); ctx.closePath(); ctx.fill(); }
     ctx.restore();
@@ -187,6 +211,7 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
       ctx.save(); ctx.strokeStyle = '#161616'; ctx.lineWidth = 4; ctx.setLineDash([2, 12]); ctx.lineCap = 'round';
       ctx.beginPath(); ctx.moveTo(CX, CY); ctx.lineTo(CX + Math.sin(angle) * 430, CY - Math.cos(angle) * 430); ctx.stroke(); ctx.restore();
     }
+    dessinerFeux();
     // canon
     ctx.save(); ctx.translate(CX, CY); ctx.rotate(angle);
     ctx.fillStyle = '#161616'; ctx.strokeStyle = '#161616'; ctx.fillRect(-26, -90, 52, 90);
@@ -196,11 +221,11 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
     ctx.fillStyle = '#f6be2c'; ctx.fillRect(CX - 70, CY + 20, 140, 36); ctx.strokeStyle = '#161616'; ctx.lineWidth = 3; ctx.strokeRect(CX - 70, CY + 20, 140, 36);
     // bulle chargée ou en vol
     if (pos < file.length) {
-      var L = file[pos].texte.length, br0 = L <= 12 ? 52 : (L <= 30 ? 70 : 88), bx = CX, by = CY, br = br0;
+      var L = file[pos].aff.length, br0 = L <= 12 ? 52 : (L <= 30 ? 70 : 88), bx = CX, by = CY, br = br0;
       if (vol) { bx = vol.x; by = vol.y; br = br0 - 20 * vol.t; }
       ctx.save(); ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#161616'; ctx.lineWidth = 4;
       ctx.beginPath(); ctx.arc(bx, by, br, 0, 6.2832); ctx.fill(); ctx.stroke(); ctx.restore();
-      texteCentre(file[pos].texte, bx, by, br * 1.7, 20);
+      texteCentre(file[pos].aff, bx, by, br * 1.7, 20);
     }
   }
 
@@ -234,7 +259,7 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
   }
 
   function resultat(ok, e) {
-    if (ok) { place[e.famille].push(e.texte); message('Bien vu.'); suivant(); return; }
+    if (ok) { place[e.famille].push(e.texte); message(e.aff !== e.texte ? 'Bien vu. ' + e.texte : 'Bien vu.'); exploser(centre(e.famille).x, 175); suivant(); return; }
     erreurs++;
     if (erreurs >= 3) { place[e.famille].push(e.texte); message('Voici la bonne réponse : « ' + e.texte + ' » va dans « ' + fam[e.famille].nom + ' ». On continue.'); suivant(); return; }
     message('Pas tout à fait. Regarde l\'indice.', true); dessiner();
@@ -266,7 +291,7 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
   });
 
   function basculerCalme(actif) {
-    calme = actif; document.body.classList.toggle('calme', actif);
+    calme = actif; if (actif) feux = []; document.body.classList.toggle('calme', actif);
     var b = document.getElementById('calme'); b.setAttribute('aria-pressed', String(actif)); b.textContent = 'Mode calme : ' + (actif ? 'activé' : 'désactivé');
     if (file) dessiner();
   }
@@ -275,14 +300,14 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
 
   document.getElementById('ecouter').addEventListener('click', function () {
     if (!('speechSynthesis' in window) || pos >= file.length) { message('La lecture à voix haute n\'est pas disponible ici.', true); return; }
-    var u = new SpeechSynthesisUtterance(file[pos].texte), voix = window.speechSynthesis.getVoices();
+    var u = new SpeechSynthesisUtterance(file[pos].aff.split('___').join(' blanc ')), voix = window.speechSynthesis.getVoices();
     var v = voix.filter(function (x) { return x.lang === 'fr-BE'; })[0] || voix.filter(function (x) { return x.lang && x.lang.indexOf('fr') === 0; })[0];
     if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'fr-FR'; }
     window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
   });
 
   function demarrer() {
-    file = []; fam.forEach(function (f, i) { f.elements.forEach(function (t) { file.push({ texte: t, famille: i }); }); });
+    file = []; fam.forEach(function (f, i) { f.elements.forEach(function (t) { file.push({ texte: t, famille: i, aff: cacher(t, f.nom) }); }); });
     file = melange(file); pos = 0; erreurs = 0; indiceUtilise = false; ecartee = -1; vol = null;
     place = fam.map(function () { return []; }); $fin.hidden = true; document.getElementById('indice').disabled = false;
     viserVers(Math.floor(n / 2)); message('Viser un groupe avec la souris, le doigt ou les flèches, puis tirer.');
@@ -353,9 +378,9 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
   'use strict';
   var DONNEES = {
     familles: [
-      { nom: 'Famille A', elements: ['mot 1', 'mot 2'] },
-      { nom: 'Famille B', elements: ['mot 3', 'mot 4'] },
-      { nom: 'Famille C', elements: ['mot 5', 'mot 6'] }
+      { nom: 'Famille A', elements: ['élément 1', 'élément 2'] },
+      { nom: 'Famille B', elements: ['élément 3', 'élément 4'] },
+      { nom: 'Famille C', elements: ['élément 5', 'élément 6'] }
     ]
   };
   var DECO = ['#1f8a8c', '#f6be2c', '#cfe8d5', '#e8412a'];
@@ -367,6 +392,30 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
   var calme = false, pas = false;
 
   function melange(a) { var b = a.slice(); for (var i = b.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = b[i]; b[i] = b[j]; b[j] = t; } return b; }
+  function echapper(s) { return s.replace(/[.*+?^(){}|[\]\\$]/g, '\\$&'); }
+  // Si le nom de la famille figure dans l'élément, il est caché à l'écran (« ___ ») : il donnerait la réponse.
+  function cacher(texte, nomFamille) {
+    var motif = new RegExp('(^|[^\\p{L}\\p{N}])(' + echapper(nomFamille.trim()) + ')(?=$|[^\\p{L}\\p{N}])', 'iu');
+    return texte.replace(motif, '$1___');
+  }
+  // Petit feu d'artifice sans son quand la réponse est juste ; supprimé en mode calme.
+  var feux = [], rafFeux = 0;
+  function exploser(x, y) {
+    if (calme) return;
+    var teintes = ['#f6be2c', '#e8412a', '#1f8a8c', '#ffffff'];
+    for (var k = 0; k < 44; k++) { var a = Math.random() * 6.2832, v = 3 + Math.random() * 6; feux.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, vie: 45 + Math.floor(Math.random() * 35), r: 5 + Math.random() * 5, c: teintes[k % 4] }); }
+    animerFeux();
+  }
+  function animerFeux() {
+    cancelAnimationFrame(rafFeux);
+    feux.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.vy += 0.12; p.vie--; });
+    feux = feux.filter(function (p) { return p.vie > 0; });
+    dessiner();
+    if (feux.length) rafFeux = requestAnimationFrame(animerFeux);
+  }
+  function dessinerFeux() {
+    feux.forEach(function (p) { ctx.fillStyle = p.c; ctx.strokeStyle = '#161616'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832); ctx.fill(); ctx.stroke(); });
+  }
   function message(t, doux) { $retour.textContent = t; $retour.className = doux ? 'doux' : ''; }
   function modeBalle() { return !calme && !pas; }
 
@@ -391,7 +440,7 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
       ctx.fillStyle = 'rgba(0,0,0,0.38)'; ctx.fillRect(b.x + 4, b.y + 4, BW, BH);
       ctx.fillStyle = b.deco; ctx.strokeStyle = '#161616'; ctx.lineWidth = 4; ctx.fillRect(b.x, b.y, BW, BH); ctx.strokeRect(b.x, b.y, BW, BH);
       ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(b.x + 8, b.y + 8, BW - 16, 10);
-      texte(b.texte, b.x + BW / 2, b.y + BH / 2 + 6, BW - 20, b.texte.length > 24 ? 18 : 22, b.deco === '#e8412a' ? '#ffffff' : '#161616');
+      texte(b.aff, b.x + BW / 2, b.y + BH / 2 + 6, BW - 20, b.texte.length > 24 ? 18 : 22, b.deco === '#e8412a' ? '#ffffff' : '#161616');
       if (!modeBalle() && i === sel) { ctx.save(); ctx.strokeStyle = '#161616'; ctx.lineWidth = 6; ctx.setLineDash([3, 8]); ctx.lineCap = 'round'; ctx.strokeRect(b.x - 8, b.y - 8, BW + 16, BH + 16); ctx.restore(); }
       if (i === indiceBrique) { ctx.save(); ctx.strokeStyle = '#1f8a8c'; ctx.lineWidth = 6; ctx.setLineDash([14, 8]); ctx.strokeRect(b.x - 6, b.y - 6, BW + 12, BH + 12); ctx.restore(); }
     });
@@ -404,12 +453,13 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
       ctx.fillStyle = '#ffffff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(bx, by, R, 0, 6.2832); ctx.fill(); ctx.stroke();
       ctx.fillStyle = '#e8412a'; ctx.beginPath(); ctx.arc(bx + 3, by + 3, R * 0.45, 0, 6.2832); ctx.fill();
     }
+    dessinerFeux();
   }
 
   function viser(i) {
     var b = briques[i]; if (b.cassee || tour >= DONNEES.familles.length) return;
     if (b.famille === tour) {
-      b.cassee = true; message('Bien vu.');
+      b.cassee = true; message(b.aff !== b.texte ? 'Bien vu. ' + b.texte : 'Bien vu.'); exploser(b.x + BW / 2, b.y + BH / 2);
       if (!briques.some(function (x) { return x.famille === tour && !x.cassee; })) { tour++; indiceBrique = -1; $indice.disabled = false; if (tour >= DONNEES.familles.length) { terminer(); return; } }
     } else {
       b.erreurs++;
@@ -478,7 +528,7 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
 
   function majMode() { balle.enJeu = false; cancelAnimationFrame(raf); dessiner(); }
   function basculerCalme(actif) {
-    calme = actif; document.body.classList.toggle('calme', actif);
+    calme = actif; if (actif) feux = []; document.body.classList.toggle('calme', actif);
     var b = document.getElementById('calme'); b.setAttribute('aria-pressed', String(actif)); b.textContent = 'Mode calme : ' + (actif ? 'activé' : 'désactivé'); if (briques) majMode();
   }
   document.getElementById('calme').addEventListener('click', function () { basculerCalme(!calme); });
@@ -489,7 +539,7 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
 
   document.getElementById('ecouter').addEventListener('click', function () {
     if (!('speechSynthesis' in window)) { message('La lecture à voix haute n\'est pas disponible ici.', true); return; }
-    var t = briques[Math.max(0, sel)].texte, u = new SpeechSynthesisUtterance(t), voix = window.speechSynthesis.getVoices();
+    var t = briques[Math.max(0, sel)].aff.split('___').join(' blanc '), u = new SpeechSynthesisUtterance(t), voix = window.speechSynthesis.getVoices();
     var v = voix.filter(function (x) { return x.lang === 'fr-BE'; })[0] || voix.filter(function (x) { return x.lang && x.lang.indexOf('fr') === 0; })[0];
     if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'fr-FR'; }
     window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
@@ -497,7 +547,7 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
 
   function demarrer() {
     var liste = [];
-    DONNEES.familles.forEach(function (f, i) { f.elements.forEach(function (t) { liste.push({ texte: t, famille: i, cassee: false, erreurs: 0 }); }); });
+    DONNEES.familles.forEach(function (f, i) { f.elements.forEach(function (t) { liste.push({ texte: t, famille: i, cassee: false, erreurs: 0, aff: cacher(t, f.nom) }); }); });
     briques = melange(liste);
     var longueur = Math.max.apply(null, briques.map(function (b) { return b.texte.length; }));
     COLS = longueur > 24 ? 2 : 3; // textes longs : briques plus larges et plus hautes

@@ -129,3 +129,20 @@ describe('ActivityScreen', () => {
     expect(within(cadre).getAllByRole('button', { name: /^Copier le prompt/ })).toHaveLength(2);
   });
 });
+
+describe('nombre d’élèves', () => {
+  it('est prérempli avec l’effectif cité dans le contexte de classe, et le dit', () => {
+    const a = { ...activitePilote(), context: 'Classe de 18 élèves de 4e primaire, vocabulaire vu la semaine dernière.' };
+    mount(a);
+    expect((screen.getByLabelText('Nombre d’élèves') as HTMLInputElement).value).toBe('18');
+    expect(screen.getByText(/Prérempli d’après votre contexte de classe/)).toBeTruthy();
+  });
+
+  it('garde 24 quand le contexte ne cite aucun effectif crédible', () => {
+    for (const context of ['Exemple non relu', 'Classe de 120 élèves', 'Classe de 0 élève', 'Né en 2015 : 4e primaire']) {
+      cleanup();
+      mount({ ...activitePilote(), context });
+      expect((screen.getByLabelText('Nombre d’élèves') as HTMLInputElement).value).toBe('24');
+    }
+  });
+});

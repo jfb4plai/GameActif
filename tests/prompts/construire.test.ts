@@ -282,3 +282,19 @@ describe('fichier de référence', () => {
     }
   });
 });
+
+describe('retours de JF du 2026-11-04 (essai réel)', () => {
+  it('la référence cache le nom de la famille, lance un feu d\'artifice sauf en mode calme, sans marque en forme de signe moins', () => {
+    for (const mode of ['bulles', 'briques'] as const) {
+      const t = construirePrompt(activitePilote(), mode, 'standard', 1).texte;
+      expect(t).toContain('function cacher(');
+      expect(t).toContain('function exploser(');
+      expect(t).toMatch(/function exploser\(x, y\) \{\s*if \(calme\) return;/);
+      expect(t).toContain('feu d\'artifice');
+      expect(t).toContain('cacher ce nom à l\'écran');
+    }
+    const bulles = construirePrompt(activitePilote(), 'bulles', 'standard', 1).texte;
+    expect(bulles).not.toContain('fillRect(-r * 0.5, -r * 0.12');
+    expect(bulles).toContain('Lire l\'élément dans le canon.');
+  });
+});

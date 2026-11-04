@@ -31,7 +31,7 @@
 <main>
   <h1>Tir aux bulles</h1>
   <div class="panneau consignes">
-    <p>Lire le mot dans le canon.</p>
+    <p>Lire l'élément dans le canon.</p>
     <p>Viser le bon groupe de bulles.</p>
     <p>Tirer.</p>
   </div>
@@ -43,7 +43,7 @@
   <canvas id="terrain" width="720" height="680" tabindex="0" aria-label="Terrain de tir. Flèches gauche et droite : changer de groupe. Entrée : tirer."></canvas>
   <div id="retour" role="status" aria-live="polite"></div>
   <div class="panneau fin" id="fin" hidden>
-    <h2>Tous les mots sont classés.</h2>
+    <h2>Tous les éléments sont classés.</h2>
     <div id="recap"></div>
     <button type="button" id="rejouer">Rejouer</button>
   </div>
@@ -53,9 +53,9 @@
   'use strict';
   var DONNEES = {
     familles: [
-      { nom: 'Famille A', elements: ['mot 1', 'mot 2'] },
-      { nom: 'Famille B', elements: ['mot 3', 'mot 4'] },
-      { nom: 'Famille C', elements: ['mot 5', 'mot 6'] }
+      { nom: 'Famille A', elements: ['élément 1', 'élément 2'] },
+      { nom: 'Famille B', elements: ['élément 3', 'élément 4'] },
+      { nom: 'Famille C', elements: ['élément 5', 'élément 6'] }
     ]
   };
   var COULEURS = ['#1f8a8c', '#f6be2c', '#e8412a', '#cfe8d5'];
@@ -67,6 +67,30 @@
   var file, pos, erreurs, indiceUtilise, ecartee, place, angle, cible, vol, calme = false;
 
   function melange(a) { var b = a.slice(); for (var i = b.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = b[i]; b[i] = b[j]; b[j] = t; } return b; }
+  function echapper(s) { return s.replace(/[.*+?^(){}|[\]\\$]/g, '\\$&'); }
+  // Si le nom de la famille figure dans l'élément, il est caché à l'écran (« ___ ») : il donnerait la réponse.
+  function cacher(texte, nomFamille) {
+    var motif = new RegExp('(^|[^\\p{L}\\p{N}])(' + echapper(nomFamille.trim()) + ')(?=$|[^\\p{L}\\p{N}])', 'iu');
+    return texte.replace(motif, '$1___');
+  }
+  // Petit feu d'artifice sans son quand la réponse est juste ; supprimé en mode calme.
+  var feux = [], rafFeux = 0;
+  function exploser(x, y) {
+    if (calme) return;
+    var teintes = ['#f6be2c', '#e8412a', '#1f8a8c', '#ffffff'];
+    for (var k = 0; k < 44; k++) { var a = Math.random() * 6.2832, v = 3 + Math.random() * 6; feux.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, vie: 45 + Math.floor(Math.random() * 35), r: 5 + Math.random() * 5, c: teintes[k % 4] }); }
+    animerFeux();
+  }
+  function animerFeux() {
+    cancelAnimationFrame(rafFeux);
+    feux.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.vy += 0.12; p.vie--; });
+    feux = feux.filter(function (p) { return p.vie > 0; });
+    dessiner();
+    if (feux.length) rafFeux = requestAnimationFrame(animerFeux);
+  }
+  function dessinerFeux() {
+    feux.forEach(function (p) { ctx.fillStyle = p.c; ctx.strokeStyle = '#161616'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832); ctx.fill(); ctx.stroke(); });
+  }
   function message(t, doux) { $retour.textContent = t; $retour.className = doux ? 'doux' : ''; }
 
   // Position de chaque amas : centres répartis en largeur.
@@ -79,7 +103,7 @@
     ctx.save(); ctx.translate(x, y); ctx.fillStyle = '#161616'; ctx.strokeStyle = '#161616'; ctx.lineWidth = 3;
     var m = i % 4;
     if (m === 0) { ctx.beginPath(); ctx.arc(0, 0, r * 0.28, 0, 6.2832); ctx.fill(); }
-    else if (m === 1) { ctx.fillRect(-r * 0.5, -r * 0.12, r, r * 0.24); }
+    else if (m === 1) { ctx.fillRect(-r * 0.32, -r * 0.32, r * 0.64, r * 0.64); }
     else if (m === 2) { ctx.beginPath(); for (var k = 0; k < 10; k++) { var a = k * Math.PI / 5 - Math.PI / 2, rr = k % 2 ? r * 0.2 : r * 0.5; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } ctx.closePath(); ctx.fill(); }
     else { ctx.beginPath(); ctx.moveTo(0, -r * 0.5); ctx.lineTo(r * 0.4, 0); ctx.lineTo(0, r * 0.5); ctx.lineTo(-r * 0.4, 0); ctx.closePath(); ctx.fill(); }
     ctx.restore();
@@ -132,6 +156,7 @@
       ctx.save(); ctx.strokeStyle = '#161616'; ctx.lineWidth = 4; ctx.setLineDash([2, 12]); ctx.lineCap = 'round';
       ctx.beginPath(); ctx.moveTo(CX, CY); ctx.lineTo(CX + Math.sin(angle) * 430, CY - Math.cos(angle) * 430); ctx.stroke(); ctx.restore();
     }
+    dessinerFeux();
     // canon
     ctx.save(); ctx.translate(CX, CY); ctx.rotate(angle);
     ctx.fillStyle = '#161616'; ctx.strokeStyle = '#161616'; ctx.fillRect(-26, -90, 52, 90);
@@ -141,11 +166,11 @@
     ctx.fillStyle = '#f6be2c'; ctx.fillRect(CX - 70, CY + 20, 140, 36); ctx.strokeStyle = '#161616'; ctx.lineWidth = 3; ctx.strokeRect(CX - 70, CY + 20, 140, 36);
     // bulle chargée ou en vol
     if (pos < file.length) {
-      var L = file[pos].texte.length, br0 = L <= 12 ? 52 : (L <= 30 ? 70 : 88), bx = CX, by = CY, br = br0;
+      var L = file[pos].aff.length, br0 = L <= 12 ? 52 : (L <= 30 ? 70 : 88), bx = CX, by = CY, br = br0;
       if (vol) { bx = vol.x; by = vol.y; br = br0 - 20 * vol.t; }
       ctx.save(); ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#161616'; ctx.lineWidth = 4;
       ctx.beginPath(); ctx.arc(bx, by, br, 0, 6.2832); ctx.fill(); ctx.stroke(); ctx.restore();
-      texteCentre(file[pos].texte, bx, by, br * 1.7, 20);
+      texteCentre(file[pos].aff, bx, by, br * 1.7, 20);
     }
   }
 
@@ -179,7 +204,7 @@
   }
 
   function resultat(ok, e) {
-    if (ok) { place[e.famille].push(e.texte); message('Bien vu.'); suivant(); return; }
+    if (ok) { place[e.famille].push(e.texte); message(e.aff !== e.texte ? 'Bien vu. ' + e.texte : 'Bien vu.'); exploser(centre(e.famille).x, 175); suivant(); return; }
     erreurs++;
     if (erreurs >= 3) { place[e.famille].push(e.texte); message('Voici la bonne réponse : « ' + e.texte + ' » va dans « ' + fam[e.famille].nom + ' ». On continue.'); suivant(); return; }
     message('Pas tout à fait. Regarde l\'indice.', true); dessiner();
@@ -211,7 +236,7 @@
   });
 
   function basculerCalme(actif) {
-    calme = actif; document.body.classList.toggle('calme', actif);
+    calme = actif; if (actif) feux = []; document.body.classList.toggle('calme', actif);
     var b = document.getElementById('calme'); b.setAttribute('aria-pressed', String(actif)); b.textContent = 'Mode calme : ' + (actif ? 'activé' : 'désactivé');
     if (file) dessiner();
   }
@@ -220,14 +245,14 @@
 
   document.getElementById('ecouter').addEventListener('click', function () {
     if (!('speechSynthesis' in window) || pos >= file.length) { message('La lecture à voix haute n\'est pas disponible ici.', true); return; }
-    var u = new SpeechSynthesisUtterance(file[pos].texte), voix = window.speechSynthesis.getVoices();
+    var u = new SpeechSynthesisUtterance(file[pos].aff.split('___').join(' blanc ')), voix = window.speechSynthesis.getVoices();
     var v = voix.filter(function (x) { return x.lang === 'fr-BE'; })[0] || voix.filter(function (x) { return x.lang && x.lang.indexOf('fr') === 0; })[0];
     if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'fr-FR'; }
     window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
   });
 
   function demarrer() {
-    file = []; fam.forEach(function (f, i) { f.elements.forEach(function (t) { file.push({ texte: t, famille: i }); }); });
+    file = []; fam.forEach(function (f, i) { f.elements.forEach(function (t) { file.push({ texte: t, famille: i, aff: cacher(t, f.nom) }); }); });
     file = melange(file); pos = 0; erreurs = 0; indiceUtilise = false; ecartee = -1; vol = null;
     place = fam.map(function () { return []; }); $fin.hidden = true; document.getElementById('indice').disabled = false;
     viserVers(Math.floor(n / 2)); message('Viser un groupe avec la souris, le doigt ou les flèches, puis tirer.');
