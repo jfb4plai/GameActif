@@ -29,7 +29,7 @@ const lignes = [
   '3. Lire les données. Si l\'enseignant colle un fichier d\'export GameActif, lire seulement le brouillon : niveau, matière, cibles (codes d\'attendus), familles (nom et éléments, un par ligne) ou paires (une par ligne, « gauche | droite »). Le texte officiel des attendus n\'est pas dans le fichier : le demander à l\'enseignant, ou écrire « texte non fourni ». Ne jamais l\'inventer.',
   '4. Choisir les éléments dans la limite du profil, chaque famille représentée, et les prendre mot pour mot.',
   '5. Ne jamais inclure le contexte de classe ni aucun nom d\'élève dans le jeu ni dans la réponse : ignorer ces champs du fichier.',
-  '6. Produire le jeu en un seul fichier HTML, dans un seul bloc de code, puis donner la liste de vérification ci-dessous.',
+  '6. Produire le jeu en un seul fichier HTML, présenté pour y jouer directement dans la conversation (aperçu ou artefact) ; sinon dans un seul bloc de code. Puis donner la liste de vérification ci-dessous.',
   '',
   '## Règles à respecter',
   '',

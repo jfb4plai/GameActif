@@ -93,11 +93,21 @@ describe('AutresJeux', () => {
     expect(screen.getByText('Vous avez besoin de votre propre compte Claude. Rien n\'est envoyé par GameActif.')).toBeTruthy();
   });
 
+  it('ajoute le contexte facultatif au prompt copié, sans l’enregistrer', async () => {
+    const copier = vi.fn().mockResolvedValue(undefined);
+    const a = activitePilote();
+    render(<AutresJeux activity={a} profile="standard" graine={GRAINE} copier={copier} />);
+    await userEvent.type(screen.getByLabelText('Votre contexte (facultatif)'), 'Classe de 4e, élèves aimant les animaux');
+    await userEvent.click(screen.getAllByRole('button', { name: /^Copier le prompt/ })[0]);
+    expect(copier).toHaveBeenCalledWith(construirePrompt(a, 'bulles', 'standard', GRAINE, 'Classe de 4e, élèves aimant les animaux').texte);
+    expect(copier.mock.calls[0][0]).toContain('Classe de 4e, élèves aimant les animaux');
+  });
+
   it('montre les étapes numérotées', () => {
     render(<AutresJeux activity={activitePilote()} profile="standard" graine={GRAINE} />);
     const liste = screen.getAllByRole('list', { name: /Étapes/ })[0];
-    expect(within(liste).getAllByRole('listitem')).toHaveLength(5);
-    expect(within(liste).getByText('Enregistrer la réponse sous le nom jeu.html.')).toBeTruthy();
+    expect(within(liste).getAllByRole('listitem')).toHaveLength(4);
+    expect(within(liste).getByText(/Mets ce jeu dans un fichier HTML à télécharger/)).toBeTruthy();
   });
 
   it('montre un élément piégé comme du texte et ne crée aucune balise script, sans réseau', () => {

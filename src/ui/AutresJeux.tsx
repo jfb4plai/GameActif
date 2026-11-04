@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Activity, ProfileId } from '../engine/types.js';
-import { construirePrompt, modesDisponibles, VERIFICATION } from '../prompts/construire.js';
+import { construirePrompt, CONTEXTE_MAX, modesDisponibles, VERIFICATION } from '../prompts/construire.js';
 import { MODES, type ModeArcade } from '../prompts/types.js';
 
 type Copier = (texte: string) => Promise<void>;
@@ -45,6 +45,7 @@ function CarteMode({
   graine,
   copier,
   telecharger,
+  contexte,
 }: {
   activity: Activity;
   mode: ModeArcade;
@@ -52,8 +53,9 @@ function CarteMode({
   graine: number;
   copier: Copier;
   telecharger: Telecharger;
+  contexte: string;
 }) {
-  const prompt = useMemo(() => construirePrompt(activity, mode, profile, graine), [activity, mode, profile, graine]);
+  const prompt = useMemo(() => construirePrompt(activity, mode, profile, graine, contexte), [activity, mode, profile, graine, contexte]);
   const [etat, setEtat] = useState<'rien' | 'copie' | 'echec'>('rien');
   const [ouvert, setOuvert] = useState(false);
   const zone = useRef<HTMLTextAreaElement>(null);
@@ -96,11 +98,10 @@ function CarteMode({
         <textarea ref={zone} readOnly rows={12} aria-label={`Prompt : ${nom}`} value={prompt.texte} />
       </details>
       <ol aria-label={`Étapes : ${nom}`} className="etapes-prompt">
-        <li>Copier le prompt (bouton ci-dessus) ou le télécharger.</li>
-        <li>Ouvrir votre Claude.</li>
-        <li>Coller le prompt et envoyer.</li>
-        <li>Enregistrer la réponse sous le nom jeu.html.</li>
-        <li>Ouvrir le fichier jeu.html par double-clic et vérifier la liste ci-dessous.</li>
+        <li>Copier le prompt (bouton ci-dessus).</li>
+        <li>Ouvrir votre Claude et coller le prompt.</li>
+        <li>Si le jeu s'affiche dans la conversation, y jouer.</li>
+        <li>Sinon, écrire à Claude : « Mets ce jeu dans un fichier HTML à télécharger. » Ouvrir ensuite le fichier par double-clic.</li>
       </ol>
     </section>
   );
@@ -121,13 +122,27 @@ export function AutresJeux({
   telecharger?: Telecharger;
 }) {
   const modes = modesDisponibles(activity);
+  const [contexte, setContexte] = useState('');
   return (
     <div className="autres-jeux">
       <p className="aide">Vous avez besoin de votre propre compte Claude. Rien n'est envoyé par GameActif.</p>
       <p className="avertissement" role="note">Ce jeu est fabriqué par votre IA, pas par GameActif : vérifiez-le avant de le donner aux élèves.</p>
+      <div className="champ">
+        <label htmlFor="contexte-prompt">Votre contexte (facultatif)</label>
+        <textarea
+          id="contexte-prompt"
+          rows={3}
+          maxLength={CONTEXTE_MAX}
+          placeholder="Ex. : Classe de 4e primaire, beaucoup d'élèves aiment les animaux ; phrases très courtes."
+          value={contexte}
+          aria-describedby="contexte-prompt-aide"
+          onChange={(e) => setContexte(e.target.value)}
+        />
+        <p id="contexte-prompt-aide" className="aide">Ce texte est ajouté au prompt pour le ton et les exemples. N'y mettre aucun nom d'élève. Il n'est pas enregistré.</p>
+      </div>
       {modes.map((m) =>
         m.disponible ? (
-          <CarteMode key={m.mode} activity={activity} mode={m.mode} profile={profile} graine={graine} copier={copier} telecharger={telecharger} />
+          <CarteMode key={m.mode} activity={activity} mode={m.mode} profile={profile} graine={graine} copier={copier} telecharger={telecharger} contexte={contexte} />
         ) : (
           <section key={m.mode} className="carte mode-arcade" aria-labelledby={`mode-${m.mode}`}>
             <h3 id={`mode-${m.mode}`}>{MODES[m.mode].nom}</h3>

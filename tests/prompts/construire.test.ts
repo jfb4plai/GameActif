@@ -8,6 +8,7 @@ import garde from '../../src/prompts/garde-fous.json';
 import { construirePrompt, GARDE_FOUS, modesDisponibles } from '../../src/prompts/construire.js';
 import { eauActivity } from '../fixtures.js';
 
+const SECTION_CONTEXTE = "CONTEXTE DE L'ENSEIGNANT";
 const MARQUES = ['Atari', 'Bubble', 'Meowdoku', 'Breakout', 'Arkanoid'];
 
 function bloc(texte: string): string {
@@ -199,6 +200,20 @@ describe('construirePrompt', () => {
     const p = construirePrompt(seulementPaires(), 'briques', 'standard', 1);
     expect(bloc(p.texte)).toContain('"paires"');
     expect(bloc(p.texte)).toContain(JSON.stringify('évaporation'));
+  });
+
+  it('ajoute le contexte facultatif, coupé à 500 caractères, et rien sans lui', () => {
+    const a = activitePilote();
+    expect(construirePrompt(a, 'bulles', 'standard', 1).texte).not.toContain(SECTION_CONTEXTE);
+    expect(construirePrompt(a, 'bulles', 'standard', 1, '   ').texte).not.toContain(SECTION_CONTEXTE);
+    const t = construirePrompt(a, 'bulles', 'standard', 1, `  Classe calme ${'x'.repeat(600)}`).texte;
+    expect(t).toContain(SECTION_CONTEXTE);
+    expect(t).toContain('Classe calme');
+    expect(t).not.toContain('x'.repeat(501));
+  });
+
+  it('demande un jeu jouable directement dans la conversation', () => {
+    expect(construirePrompt(activitePilote(), 'bulles', 'standard', 1).texte).toContain('y jouer directement dans la conversation');
   });
 
   it('lève une erreur quand le mode n\'est pas disponible', () => {
