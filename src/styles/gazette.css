@@ -163,3 +163,14 @@ body.calme *, body.calme *::before, body.calme *::after { animation: none !impor
   .entete .rayons { animation: none; }
   * { animation: none !important; transition: none !important; }
 }
+
+/* Fil de la création : étapes, choix déjà faits, retour en un clic */
+.fil-parcours ol { list-style: none; padding: 0; margin: 0 0 16px; display: flex; flex-wrap: wrap; gap: 10px; }
+.fil-parcours button { display: flex; flex-direction: column; align-items: flex-start; text-align: left; min-width: 150px; font-size: 16px; padding: 6px 12px; box-shadow: 3px 3px 0 var(--ombre); background: var(--papier); }
+.fil-parcours button[aria-current='step'] { background: var(--jaune); border-width: 4px; }
+.fil-parcours button:disabled { opacity: 0.55; box-shadow: none; }
+.fil-valeur { font-family: var(--lecture); font-weight: bold; font-size: 16px; }
+.rappel-choix { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 6px 0 12px; padding: 8px 12px; border: 2px solid var(--encre); border-left: 12px solid var(--sarcelle); background: #fff; }
+.rappel-choix p { margin: 0; font-weight: bold; }
+.rappel-choix button { font-size: 16px; min-height: 44px; }
+@media print { .fil-parcours, .rappel-choix { display: none !important; } }

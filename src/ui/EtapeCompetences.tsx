@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { chercher, competences } from '../data/catalogue.js';
 import type { EtatParcours, Evenement } from '../parcours/etapes.js';
+import { Rappel } from './FilParcours.js';
 
 interface Props {
   etat: EtatParcours;
@@ -24,6 +25,7 @@ export function EtapeCompetences({ etat, envoyer }: Props) {
   return (
     <section aria-labelledby="titre-etape">
       <h2 id="titre-etape" tabIndex={-1}>Compétences visées</h2>
+      <Rappel etat={etat} envoyer={envoyer} />
       <p className="aide">
         Choisissez de 1 à 3 attendus du programme que votre activité travaille. Les jeux de GameActif savent faire
         classer, relier et ordonner. Ils ne savent pas faire tracer, mesurer ou construire.

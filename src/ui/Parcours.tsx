@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { construireActivite } from '../atelier/brouillon.js';
 import { activitePilote } from '../data/pilote.js';
-import { ETAPES, problemesEtape, reduire, type Etape } from '../parcours/etapes.js';
+import { ETAPES, problemesEtape, reduire } from '../parcours/etapes.js';
+import { FilParcours, NOM_ETAPE } from './FilParcours.js';
 import { magasinSupabase, type ActivitesStore, type ClientActivites } from '../compte/activites.js';
 import { useAuthOptionnel } from '../compte/auth.js';
 import { codeConserve, lireCodeDansAdresse, type StockageLocal } from '../compte/invitation.js';
@@ -16,13 +17,6 @@ import { EtapeElements } from './EtapeElements.js';
 import { EtapeMatiere } from './EtapeMatiere.js';
 import { EtapeNiveau } from './EtapeNiveau.js';
 
-const NOM_ETAPE: Record<Etape, string> = {
-  niveau: 'Niveau',
-  matiere: 'Matière',
-  competences: 'Compétences visées',
-  elements: 'Vos éléments',
-  jeux: 'Vos jeux',
-};
 
 type Rpc = (nom: string, args?: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }>;
 
@@ -107,6 +101,7 @@ export function Parcours({
   return (
     <div className="parcours">
       <p className="progression">{`Étape ${index + 1} sur ${ETAPES.length} : ${NOM_ETAPE[etat.etape]}`}</p>
+      <FilParcours etat={etat} envoyer={envoyer} />
 
       {etat.etape === 'niveau' && (
         <p>
