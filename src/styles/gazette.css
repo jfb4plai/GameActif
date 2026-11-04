@@ -83,9 +83,18 @@ svg.scene { display: block; width: 100%; height: auto; touch-action: none; }
 .jeu-en-cours:focus { outline: none; }
 .fiche-pliee > summary { cursor: pointer; list-style: none; min-height: 44px; display: flex; align-items: center; font-family: var(--machine); font-size: 17px; border: 2px solid var(--encre); background: var(--jaune); padding: 6px 12px; box-shadow: 4px 4px 0 var(--ombre); }
 .fiche-pliee > summary::-webkit-details-marker { display: none; }
-.fiche-pliee > summary::before { content: 'B6'; margin-right: 10px; font-size: 14px; }
-.fiche-pliee[open] > summary::before { content: 'BC'; }
+.fiche-pliee > summary::before { content: '\25B6'; margin-right: 10px; font-size: 14px; }
+.fiche-pliee[open] > summary::before { content: '\25BC'; }
 .fiche-pliee > summary:focus-visible { outline: 4px solid var(--vermillon); outline-offset: 2px; }
+.autres-jeux-pliee > summary { cursor: pointer; list-style: none; min-height: 44px; display: flex; align-items: center; font-family: var(--machine); font-size: 17px; border: 2px solid var(--encre); background: var(--jaune); padding: 6px 12px; box-shadow: 4px 4px 0 var(--ombre); margin-bottom: 14px; }
+.autres-jeux-pliee > summary::-webkit-details-marker { display: none; }
+.autres-jeux-pliee > summary::before { content: '\25B6'; margin-right: 10px; font-size: 14px; }
+.autres-jeux-pliee[open] > summary::before { content: '\25BC'; }
+.autres-jeux-pliee > summary:focus-visible { outline: 4px solid var(--vermillon); outline-offset: 2px; }
+.avertissement { border: 2px solid var(--encre); border-left: 12px solid var(--vermillon); background: #fff; padding: 10px 14px; font-size: 18px; margin: 10px 0; }
+.actions-prompt { display: flex; flex-wrap: wrap; gap: 14px; margin: 10px 0; }
+.mode-arcade textarea { max-width: 100%; font-family: var(--lecture); font-size: 16px; }
+.etapes-prompt li, .verification-prompt li { margin-bottom: 6px; }
 .liens-programme { padding-left: 18px; }
 .liens-programme li { margin-bottom: 10px; }
 .fiche h3 { font-family: var(--machine); font-weight: 400; font-size: 20px; margin: 18px 0 6px; border-bottom: 2px solid var(--encre); }
@@ -139,8 +148,8 @@ input[type='search'], textarea, input[type='text'] { font-family: var(--lecture)
 .espace-pliee { margin-top: 18px; }
 .espace-pliee > summary { cursor: pointer; list-style: none; min-height: 44px; display: flex; align-items: center; font-family: var(--machine); font-size: 17px; border: 2px solid var(--encre); background: var(--papier); padding: 6px 12px; box-shadow: 4px 4px 0 var(--ombre); }
 .espace-pliee > summary::-webkit-details-marker { display: none; }
-.espace-pliee > summary::before { content: 'B6'; margin-right: 10px; font-size: 14px; }
-.espace-pliee[open] > summary::before { content: 'BC'; }
+.espace-pliee > summary::before { content: '\25B6'; margin-right: 10px; font-size: 14px; }
+.espace-pliee[open] > summary::before { content: '\25BC'; }
 .espace-pliee > summary:focus-visible { outline: 4px solid var(--vermillon); outline-offset: 2px; }
 .espace-enseignant { border: 2px solid var(--encre); border-top: 0; background: var(--papier); padding: 14px 16px; }
 .espace-enseignant input[type='email'], .espace-enseignant input[type='password'] { font-family: var(--lecture); font-size: 18px; min-height: 44px; padding: 6px 10px; border: 2px solid var(--encre); background: #fff; border-radius: 0; width: 100%; max-width: 420px; }

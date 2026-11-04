@@ -7,6 +7,7 @@ import { setupRound } from '../engine/setup.js';
 import type { ElementResult } from '../engine/round.js';
 import { buildPhysicalKit } from '../physical/kit.js';
 import { programmeLinks, type ProgrammeLink } from '../physical/programme.js';
+import { AutresJeux } from './AutresJeux.js';
 import { PhysicalKitView } from './PhysicalKitView.js';
 import { RoundBoard } from './RoundBoard.js';
 import { SceneBoard } from './SceneBoard.js';
@@ -163,6 +164,10 @@ export function ActivityScreen({ activity }: { activity: Activity }) {
         </article>
       ))}
 
+      <details className="autres-jeux-pliee hors-impression">
+        <summary>Autres jeux, avec votre IA</summary>
+        <AutresJeux activity={activity} profile={profile} graine={seed} />
+      </details>
     </div>
   );
 }

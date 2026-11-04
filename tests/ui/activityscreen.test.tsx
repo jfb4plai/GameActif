@@ -120,4 +120,12 @@ describe('ActivityScreen', () => {
     window.dispatchEvent(new Event('afterprint'));
     expect(fiches.map((d) => d.open)).toEqual([false, true, false, false]);
   });
+
+  it('range « Autres jeux, avec votre IA » dans un cadre replié, masqué à l’impression', () => {
+    mount();
+    const cadre = screen.getByText('Autres jeux, avec votre IA').closest('details') as HTMLDetailsElement;
+    expect(cadre.open).toBe(false);
+    expect(cadre.classList.contains('hors-impression')).toBe(true);
+    expect(within(cadre).getAllByRole('button', { name: /^Copier le prompt/ })).toHaveLength(2);
+  });
 });
