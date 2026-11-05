@@ -174,3 +174,13 @@ body.calme *, body.calme *::before, body.calme *::after { animation: none !impor
 .rappel-choix p { margin: 0; font-weight: bold; }
 .rappel-choix button { font-size: 16px; min-height: 44px; }
 @media print { .fil-parcours, .rappel-choix { display: none !important; } }
+
+/* Jeux Comparer et QCM libre */
+.comparaison { display: flex; align-items: center; justify-content: center; gap: 22px; font-family: var(--lecture); font-weight: bold; font-size: 44px; margin: 14px 0; flex-wrap: wrap; }
+.comparaison .ecart { display: inline-block; min-width: 64px; text-align: center; border: 3px dashed var(--encre); padding: 0 10px; }
+.symboles { display: flex; gap: 16px; flex-wrap: wrap; }
+.symbole { font-family: var(--lecture); font-weight: bold; font-size: 36px; min-width: 84px; min-height: 64px; background: var(--papier); }
+.question { font-family: var(--lecture); font-size: 24px; margin: 8px 0 12px; }
+.reponses { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.reponse { font-family: var(--lecture); font-weight: bold; font-size: 20px; text-align: left; padding: 14px 18px; background: var(--papier); min-height: 56px; }
+.symbole:disabled, .reponse:disabled { opacity: 0.45; text-decoration: line-through; }
