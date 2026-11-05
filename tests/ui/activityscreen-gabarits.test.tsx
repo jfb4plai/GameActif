@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { ActivityScreen } from '../../src/ui/ActivityScreen';
 import { CalmProvider } from '../../src/ui/CalmContext';
 import { PHYSICAL_TEMPLATES } from '../../src/physical/templates.js';
-import { toutesActivity } from '../fixtures.js';
+import { eauActivity, toutesActivity } from '../fixtures.js';
 
 afterEach(() => cleanup());
 
@@ -54,5 +54,24 @@ describe('ActivityScreen, nouveaux gabarits', () => {
     mount();
     await userEvent.click(screen.getByRole('button', { name: 'Jouer : QCM libre' }));
     expect(screen.getByRole('group', { name: 'Réponses' })).toBeTruthy();
+  });
+});
+
+describe('ActivityScreen, activité sans jeu intégré (Review Focus 3)', () => {
+  const sansJeu = () => ({ ...eauActivity(), pairs: [], memberships: [], ranks: [] });
+  const cadre = () => screen.getByText('Autres jeux, avec votre IA').closest('details') as HTMLDetailsElement;
+
+  it('explique qu’aucun jeu intégré n’existe et ouvre le cadre Autres jeux, sans planter', () => {
+    window.matchMedia = (() => ({ matches: false, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+    render(<CalmProvider><ActivityScreen activity={sansJeu()} /></CalmProvider>);
+    expect(screen.queryAllByRole('heading', { name: /^Jeu sur écran/ })).toHaveLength(0);
+    expect(screen.getByText('Aucun jeu intégré : remplissez des éléments pour en avoir, ou utilisez les jeux avec votre IA ci-dessous.')).toBeTruthy();
+    expect(cadre().open).toBe(true);
+  });
+
+  it('avec des jeux intégrés, le cadre reste replié et le message est absent', () => {
+    mount();
+    expect(screen.queryByText(/Aucun jeu intégré/)).toBeNull();
+    expect(cadre().open).toBe(false);
   });
 });

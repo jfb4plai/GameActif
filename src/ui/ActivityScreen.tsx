@@ -165,7 +165,10 @@ export function ActivityScreen({ activity }: { activity: Activity }) {
         </article>
       ))}
 
-      <details className="autres-jeux-pliee hors-impression">
+      {mechanics.length === 0 && (
+        <p className="aide">Aucun jeu intégré : remplissez des éléments pour en avoir, ou utilisez les jeux avec votre IA ci-dessous.</p>
+      )}
+      <details className="autres-jeux-pliee hors-impression" open={mechanics.length === 0 ? true : undefined}>
         <summary>Autres jeux, avec votre IA</summary>
         <AutresJeux activity={activity} profile={profile} graine={seed} />
       </details>

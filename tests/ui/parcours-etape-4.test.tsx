@@ -141,3 +141,12 @@ describe('EtapeElements, Comparer, Mémo et QCM', () => {
     expect(zoneStatut).not.toContain('À corriger');
   });
 });
+
+describe('EtapeElements, introduction', () => {
+  it('permet de ne remplir aucun jeu et de passer par le mode Libre', () => {
+    render(<Harnais />);
+    const intro = document.querySelector('section > p.aide') as HTMLElement;
+    expect(intro.textContent).not.toContain('au moins un');
+    expect(intro.textContent).toContain('mode Libre');
+  });
+});

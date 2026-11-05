@@ -84,15 +84,14 @@ describe('parcours, étapes', () => {
     expect(a(e, { type: 'choisirNiveau', niveau: 'P4' })).toBe(e);
   });
 
-  it('à l’étape éléments, exige titre, contexte et au moins un jeu disponible', () => {
+  it('à l’étape éléments, exige titre et contexte, pas de jeu rempli (le mode Libre part des compétences)', () => {
     let e = pretPourElements();
     expect(e.etape).toBe('elements');
     expect(problemesEtape(e)).toContain('Le titre est obligatoire.');
     expect(a(e, { type: 'suivant' }).etape).toBe('elements');
     e = a(e, { type: 'modifier', champ: { titre: valide.titre, contexte: valide.contexte } });
-    expect(problemesEtape(e)).toContain('Il faut remplir au moins un jeu : des familles, des paires, des étapes, des comparaisons ou des questions.');
-    e = a(e, { type: 'modifier', champ: { familles: valide.familles } });
     expect(problemesEtape(e)).toEqual([]);
+    expect(problemesEtape(e).join(' ')).not.toContain('au moins un jeu');
     expect(a(e, { type: 'suivant' }).etape).toBe('jeux');
   });
 

@@ -1,6 +1,5 @@
 import type { Brouillon } from '../atelier/types.js';
-import { brouillonVide, construireActivite, problemesBrouillon } from '../atelier/brouillon.js';
-import { availableMechanics } from '../engine/availability.js';
+import { brouillonVide, problemesBrouillon } from '../atelier/brouillon.js';
 import { niveaux, matieres } from '../data/catalogue.js';
 import { REFERENTIEL } from '../data/referentiel.js';
 
@@ -39,12 +38,9 @@ export function problemesEtape(etat: EtatParcours): string[] {
       return b.matiere === '' ? ['Choisissez une matière.'] : [];
     case 'competences':
       return b.cibles.length >= 1 && b.cibles.length <= MAX_CIBLES ? [] : ['Choisissez de 1 à 3 compétences.'];
-    case 'elements': {
-      const problemes = problemesBrouillon(b);
-      if (problemes.length > 0) return problemes;
-      const jeux = Object.values(availableMechanics(construireActivite(b)));
-      return jeux.some((m) => m.available) ? [] : ['Il faut remplir au moins un jeu : des familles, des paires, des étapes, des comparaisons ou des questions.'];
-    }
+    case 'elements':
+      // Aucun jeu rempli n'est exigé : le mode Libre part des seules compétences et du contexte de classe.
+      return problemesBrouillon(b);
     case 'jeux':
       return [];
   }
