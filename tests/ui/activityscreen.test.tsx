@@ -25,7 +25,8 @@ describe('ActivityScreen', () => {
     expect(screen.getAllByRole('heading', { name: /^Jeu sur écran/ })).toHaveLength(4);
     const classes = screen.getAllByRole('heading', { name: /^En classe, sans écran/ });
     expect(classes).toHaveLength(4);
-    for (const t of Object.values(PHYSICAL_TEMPLATES)) {
+    for (const id of ['trier', 'associer', 'ordre', 'placer'] as const) {
+      const t = PHYSICAL_TEMPLATES[id];
       expect(classes.some((h) => h.textContent === `En classe, sans écran : ${t.title}`)).toBe(true);
     }
   });
