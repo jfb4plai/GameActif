@@ -12,4 +12,5 @@ export * from './ordre.js';
 export * from './placer.js';
 export * from './comparer.js';
 export * from './qcm.js';
+export * from './memo.js';
 export * from './signals.js';

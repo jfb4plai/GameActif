@@ -88,6 +88,10 @@ export function availableMechanics(activity: Activity): Record<MechanicId, Mecha
         ? { available: true, missing: null }
         : { available: false, missing: 'Il faut au moins 2 paires.' },
     trier,
+    memo:
+      validPairs(activity).length >= 2
+        ? { available: true, missing: null }
+        : { available: false, missing: 'Il faut au moins 2 paires.' },
     comparer:
       validComparisons(activity).length >= 3
         ? { available: true, missing: null }
