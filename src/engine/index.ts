@@ -13,4 +13,5 @@ export * from './placer.js';
 export * from './comparer.js';
 export * from './qcm.js';
 export * from './memo.js';
+export * from './mecaniques.js';
 export * from './signals.js';
