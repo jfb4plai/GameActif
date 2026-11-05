@@ -19,3 +19,8 @@ export interface PromptArcade {
   texte: string;
   nbElements: number;
 }
+
+export interface PromptLibre {
+  titre: string;
+  texte: string;
+}
