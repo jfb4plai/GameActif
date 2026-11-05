@@ -1,4 +1,4 @@
-import { formeBrouillonValide } from '../atelier/brouillon.js';
+import { completerBrouillon, formeBrouillonValide } from '../atelier/brouillon.js';
 import { ETAPES, etatInitial, type EtatParcours } from './etapes.js';
 
 export interface Stockage {
@@ -18,7 +18,7 @@ export function chargerBrouillon(s: Stockage | null): EtatParcours {
     if (!x || typeof x !== 'object' || x.v !== 1 || !ETAPES.includes(x.etape as never) || !formeBrouillonValide(x.brouillon)) {
       return etatInitial();
     }
-    return { etape: x.etape as EtatParcours['etape'], brouillon: x.brouillon as EtatParcours['brouillon'] };
+    return { etape: x.etape as EtatParcours['etape'], brouillon: completerBrouillon(x.brouillon) };
   } catch {
     return etatInitial();
   }

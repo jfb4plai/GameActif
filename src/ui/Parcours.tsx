@@ -95,7 +95,7 @@ export function Parcours({
   const index = ETAPES.indexOf(etat.etape);
   const raisons = problemesEtape(etat);
   const b = etat.brouillon;
-  const enCours = b.niveau !== '' || [b.titre, b.contexte, b.paires, b.etapes].some((t) => t.trim() !== '') || b.familles.some((f) => f.label.trim() !== '' || f.elements.trim() !== '');
+  const enCours = b.niveau !== '' || [b.titre, b.contexte, b.paires, b.etapes, b.comparaisons, b.qcm].some((t) => t.trim() !== '') || b.familles.some((f) => f.label.trim() !== '' || f.elements.trim() !== '');
   const barreVisible = etat.etape === 'niveau' || etat.etape === 'elements' || etat.etape === 'jeux';
 
   return (

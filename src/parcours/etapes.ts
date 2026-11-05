@@ -43,7 +43,7 @@ export function problemesEtape(etat: EtatParcours): string[] {
       const problemes = problemesBrouillon(b);
       if (problemes.length > 0) return problemes;
       const jeux = Object.values(availableMechanics(construireActivite(b)));
-      return jeux.some((m) => m.available) ? [] : ['Il faut remplir au moins un jeu : des familles, des paires ou des étapes.'];
+      return jeux.some((m) => m.available) ? [] : ['Il faut remplir au moins un jeu : des familles, des paires, des étapes, des comparaisons ou des questions.'];
     }
     case 'jeux':
       return [];

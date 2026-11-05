@@ -1,10 +1,11 @@
 import type { Brouillon } from './types.js';
-import { formeBrouillonValide } from './brouillon.js';
+import { completerBrouillon, formeBrouillonValide } from './brouillon.js';
 import { matieres, niveaux } from '../data/catalogue.js';
 import { REFERENTIEL } from '../data/referentiel.js';
 
 export const FORMAT = 'gameactif-activite';
-export const VERSION_FICHIER = 1;
+/** Version 2 : ajoute comparaisons et qcm. Les fichiers de version 1 restent lisibles (champs vides). */
+export const VERSION_FICHIER = 2;
 export const TAILLE_MAX_OCTETS = 200_000;
 const CHAMP_MAX = 20_000;
 
@@ -66,14 +67,14 @@ export function lireActivite(texte: string): Lecture {
   if (!niveaux().includes(b.niveau) || !matieres(b.niveau).some((m) => m.id === b.matiere)) {
     return refus('Ce niveau ou cette matière n’existe pas encore dans GameActif.');
   }
-  const textes = [b.titre, b.contexte, b.paires, b.etapes, ...b.familles.flatMap((f) => [f.label, f.elements])];
+  const textes = [b.titre, b.contexte, b.paires, b.etapes, b.comparaisons ?? '', b.qcm ?? '', ...b.familles.flatMap((f) => [f.label, f.elements])];
   if (textes.some((t) => t.length > CHAMP_MAX)) return refus('Ce fichier est trop gros pour être une activité GameActif.');
 
   const cibles = [...new Set(b.cibles)].filter((c) => dejaConnu(b.niveau, b.matiere, c));
   const retirees = b.cibles.length - cibles.length;
   return {
     ok: true,
-    brouillon: {
+    brouillon: completerBrouillon({
       niveau: b.niveau,
       matiere: b.matiere,
       cibles,
@@ -82,7 +83,9 @@ export function lireActivite(texte: string): Lecture {
       familles: b.familles.map((f) => ({ label: f.label, elements: f.elements })),
       paires: b.paires,
       etapes: b.etapes,
-    },
+      comparaisons: b.comparaisons,
+      qcm: b.qcm,
+    }),
     avertissements: retirees > 0 ? [`${retirees} compétence(s) du fichier n’existent plus dans le programme chargé et ont été retirées.`] : [],
   };
 }

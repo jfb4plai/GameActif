@@ -90,8 +90,15 @@ describe('parcours, étapes', () => {
     expect(problemesEtape(e)).toContain('Le titre est obligatoire.');
     expect(a(e, { type: 'suivant' }).etape).toBe('elements');
     e = a(e, { type: 'modifier', champ: { titre: valide.titre, contexte: valide.contexte } });
-    expect(problemesEtape(e)).toContain('Il faut remplir au moins un jeu : des familles, des paires ou des étapes.');
+    expect(problemesEtape(e)).toContain('Il faut remplir au moins un jeu : des familles, des paires, des étapes, des comparaisons ou des questions.');
     e = a(e, { type: 'modifier', champ: { familles: valide.familles } });
+    expect(problemesEtape(e)).toEqual([]);
+    expect(a(e, { type: 'suivant' }).etape).toBe('jeux');
+  });
+
+  it('trois lignes de QCM suffisent pour passer aux jeux', () => {
+    let e = pretPourElements();
+    e = a(e, { type: 'modifier', champ: { titre: valide.titre, contexte: valide.contexte, qcm: 'A ? | a | b\nB ? | a | b\nC ? | a | b' } });
     expect(problemesEtape(e)).toEqual([]);
     expect(a(e, { type: 'suivant' }).etape).toBe('jeux');
   });

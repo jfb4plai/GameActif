@@ -45,7 +45,7 @@ describe('exporterActivite', () => {
     const o = JSON.parse(exporterActivite(complet(), MAINTENANT).contenu);
     expect(Object.keys(o)).toEqual(['format', 'version', 'exporteLe', 'brouillon']);
     expect(o.format).toBe('gameactif-activite');
-    expect(o.version).toBe(1);
+    expect(o.version).toBe(2);
     const texte = JSON.stringify(o).toLowerCase();
     for (const mot of ['email', 'e-mail', 'userid', 'user_id', 'password']) expect(texte).not.toContain(mot);
   });
@@ -95,7 +95,7 @@ describe('lireActivite, refus', () => {
   });
 
   it('refuse un fichier d’une version plus récente (Review Focus 3)', () => {
-    expect(lireActivite(enveloppe(complet(), { version: 2 }))).toEqual({
+    expect(lireActivite(enveloppe(complet(), { version: 3 }))).toEqual({
       ok: false,
       message: 'Ce fichier vient d’une version plus récente de GameActif. Mettez l’application à jour ou demandez un nouvel envoi.',
     });

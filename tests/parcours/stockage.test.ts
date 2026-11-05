@@ -22,6 +22,8 @@ const etat = (): EtatParcours => ({
     ],
     paires: 'devant | derrière',
     etapes: 'premier\ndeuxième',
+    comparaisons: '12 | 8',
+    qcm: 'Q ? | a | b',
   },
 });
 

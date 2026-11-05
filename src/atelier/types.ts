@@ -18,7 +18,14 @@ export interface Brouillon {
   paires: string;
   /** Une étape par ligne, dans l'ordre. */
   etapes: string;
+  /** Une comparaison par ligne : « gauche | droite » (deux nombres) ; le symbole juste est calculé. */
+  comparaisons: string;
+  /** Une question par ligne : « question | bonne réponse | fausse 1 | fausse 2 | fausse 3 ». */
+  qcm: string;
 }
+
+/** Brouillon tel qu'il peut être relu d'un ancien stockage ou fichier : sans les champs ajoutés plus tard. */
+export type BrouillonLu = Omit<Brouillon, 'comparaisons' | 'qcm'> & Partial<Pick<Brouillon, 'comparaisons' | 'qcm'>>;
 
 export interface Ligne {
   numero: number;

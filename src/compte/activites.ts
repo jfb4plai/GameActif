@@ -1,5 +1,5 @@
 import { formeBrouillonValide } from '../atelier/brouillon.js';
-import type { Brouillon } from '../atelier/types.js';
+import type { Brouillon, BrouillonLu } from '../atelier/types.js';
 
 export interface ActiviteEnregistree {
   id: string;
@@ -45,7 +45,7 @@ function classer(e: unknown): ErreurStockage {
 }
 
 /** Copie explicite des seuls champs d'un brouillon : rien d'autre (identité, e-mail) ne peut être enregistré. */
-function copie(b: Brouillon): Brouillon {
+function copie(b: BrouillonLu): Brouillon {
   return {
     niveau: b.niveau,
     matiere: b.matiere,
@@ -55,6 +55,8 @@ function copie(b: Brouillon): Brouillon {
     familles: b.familles.map((f) => ({ label: f.label, elements: f.elements })),
     paires: b.paires,
     etapes: b.etapes,
+    comparaisons: b.comparaisons ?? '',
+    qcm: b.qcm ?? '',
   };
 }
 

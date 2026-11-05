@@ -186,6 +186,26 @@ describe('magasin Supabase, identité et formes', () => {
   });
 });
 
+describe('magasin Supabase, anciennes lignes (Review Focus 1)', () => {
+  it('enregistre comparaisons et qcm', async () => {
+    const { client, appels } = fauxClient();
+    await magasinSupabase(client, 'u1').enregistrer(brouillon({ comparaisons: '12 | 8', qcm: 'Q ? | a | b' }));
+    const b = appels.insert[0].brouillon as Brouillon;
+    expect(b.comparaisons).toBe('12 | 8');
+    expect(b.qcm).toBe('Q ? | a | b');
+  });
+
+  it('relit une ligne enregistrée avant ces champs avec des champs vides', async () => {
+    const { client, table } = fauxClient();
+    const { comparaisons: _c, qcm: _q, ...ancien } = brouillon({ titre: 'Ancienne' });
+    table.push({ id: 'vieille', user_id: 'u1', titre: 'Ancienne', niveau: 'P4', matiere: 'mathematiques', brouillon: ancien, format_version: 1, updated_at: new Date().toISOString() });
+    const liste = await magasinSupabase(client, 'u1').lister();
+    expect(liste).toHaveLength(1);
+    expect(liste[0].brouillon.comparaisons).toBe('');
+    expect(liste[0].brouillon.qcm).toBe('');
+  });
+});
+
 describe('magasin Supabase, pannes (Review Focus 4)', () => {
   const cas: [string, 'reseau-leve' | 'reseau-erreur' | 'acces-42501' | 'acces-jwt' | 'inconnue', 'reseau' | 'acces' | 'inconnue'][] = [
     ['appel qui lève (réseau coupé)', 'reseau-leve', 'reseau'],
