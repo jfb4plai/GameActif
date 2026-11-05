@@ -52,7 +52,7 @@ export function EtapeElements({ etat, envoyer }: Props) {
       <h2 id="titre-etape" tabIndex={-1}>Vos éléments</h2>
       <p className="aide">
         Tapez vos propres éléments : ils servent aux jeux sur écran et aux cartes des jeux en classe. Remplissez au
-        moins un des trois jeux ci-dessous ; les autres peuvent rester vides.
+        moins un des jeux ci-dessous ; les autres peuvent rester vides.
       </p>
 
       <Champ
