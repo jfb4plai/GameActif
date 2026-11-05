@@ -1,4 +1,5 @@
-import type { Activity, MechanicId, Membership, Pair } from './types.js';
+import type { Activity, Comparison, MechanicId, Membership, Pair } from './types.js';
+import { parseNombre } from './nombres.js';
 
 export interface MechanicAvailability {
   available: boolean;
@@ -10,6 +11,11 @@ export interface MechanicAvailability {
 export function validPairs(activity: Activity): Pair[] {
   const ids = new Set(activity.items.map((i) => i.id));
   return activity.pairs.filter((p) => ids.has(p.leftId) && ids.has(p.rightId) && p.leftId !== p.rightId);
+}
+
+/** Comparaisons dont les deux nombres sont lisibles. */
+export function validComparisons(activity: Activity): Comparison[] {
+  return (activity.comparisons ?? []).filter((c) => parseNombre(c.left) !== null && parseNombre(c.right) !== null);
 }
 
 /**
@@ -69,6 +75,10 @@ export function availableMechanics(activity: Activity): Record<MechanicId, Mecha
         ? { available: true, missing: null }
         : { available: false, missing: 'Il faut au moins 2 paires.' },
     trier,
+    comparer:
+      validComparisons(activity).length >= 3
+        ? { available: true, missing: null }
+        : { available: false, missing: 'Il faut au moins 3 comparaisons valides.' },
     ordre:
       rankedItemIds(activity) !== null
         ? { available: true, missing: null }
