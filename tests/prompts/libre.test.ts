@@ -128,6 +128,19 @@ describe('construirePromptLibre', () => {
   });
 
   it('les vérifications propres au mode Libre sont exposées', () => {
-    expect(VERIFICATION_LIBRE).toEqual(['La fiche de contrôle correspond au jeu.', 'Chaque réponse du corrigé est juste.']);
+    expect(VERIFICATION_LIBRE).toEqual([
+      'La fiche de contrôle correspond au jeu.',
+      'Chaque réponse du corrigé est juste.',
+      'Chaque proposition fausse est fausse sans équivoque pour un élève du niveau, et chaque dessin respecte ce que le texte en dit.',
+    ]);
+  });
+
+  it('impose des règles strictes pour discriminer les propositions (cas du losange presque carré)', () => {
+    const t = prompt();
+    expect(t).toContain('aussi juste');
+    expect(t).toContain('angle droit mesure exactement 90');
+    expect(t).toContain('au moins 30 degrés');
+    expect(t).toContain('mêmes marques de codage');
+    expect(t).toContain('la raison pour laquelle elle est fausse');
   });
 });

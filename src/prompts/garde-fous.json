@@ -62,13 +62,18 @@
       "Si un doute existe sur un élément, ne pas l'utiliser.",
       "Mélanger les positions pour que la forme ne trahisse pas la réponse.",
       "Aucun nom d'élève ni détail qui identifie un élève.",
-      "Un seul jeu qui sert toutes les compétences visées ; si une compétence ne s'y prête pas, le dire dans la fiche de contrôle."
+      "Un seul jeu qui sert toutes les compétences visées ; si une compétence ne s'y prête pas, le dire dans la fiche de contrôle.",
+      "Propositions fausses : chacune doit être fausse sans équivoque pour un élève du niveau. Aucune ne peut être aussi juste que la bonne réponse (un carré est aussi un rectangle et un losange : ne pas les opposer) ni si proche d'elle qu'on puisse la confondre. Elle reste plausible : elle correspond à une erreur fréquente ou à une propriété voisine que le programme permet d'écarter.",
+      "Dessins et schémas (figures, droites graduées, tableaux) : fidèles à ce que le texte affirme. Un angle droit mesure exactement 90 degrés ; les côtés dits égaux ont la même longueur. Une figure qui doit être reconnue comme différente (un losange face à un carré, un rectangle face à un carré) s'en écarte nettement : angles à au moins 30 degrés de 90, ou côtés dans un rapport d'au moins 3 pour 2. Si un dessin fidèle est impossible, décrire la figure par des mots plutôt que la dessiner approximativement.",
+      "Indices visuels : toutes les propositions portent les mêmes marques de codage (traits d'égalité, angles droits) ou aucune, sauf quand c'est l'objet de la question. Une marque présente seulement sur la bonne réponse la désigne sans réfléchir.",
+      "Chaque question n'a qu'une propriété qui départage les propositions, et elle est connue de l'élève au niveau indiqué."
     ],
-    "livrable": "(a) Le jeu, en un seul fichier HTML, présenté de façon à pouvoir y jouer directement dans la conversation (aperçu ou artefact) ; si ce n'est pas possible, dans un seul bloc de code. Le jeu ne contient ni fiche ni corrigé. (b) En dessous, dans le texte de la conversation, une « FICHE DE CONTRÔLE POUR L'ENSEIGNANT » : la mécanique choisie et pourquoi en deux phrases, la liste complète du contenu du jeu, le corrigé, et une phrase sur ce qui n'a pas pu être respecté.",
+    "livrable": "(a) Le jeu, en un seul fichier HTML, présenté de façon à pouvoir y jouer directement dans la conversation (aperçu ou artefact) ; si ce n'est pas possible, dans un seul bloc de code. Le jeu ne contient ni fiche ni corrigé. (b) En dessous, dans le texte de la conversation, une « FICHE DE CONTRÔLE POUR L'ENSEIGNANT » : la mécanique choisie et pourquoi en deux phrases, la liste complète du contenu du jeu, le corrigé avec, pour chaque proposition fausse, la raison pour laquelle elle est fausse, et une phrase sur ce qui n'a pas pu être respecté.",
     "style": "Style visuel de GameActif, à respecter pour tout le jeu. Page : fond crème #efe6d2, panneaux #fbf6e9 avec contour d'encre #161616 de 2 px et ombre dure décalée de 4 px (rgba(0,0,0,0.38)), sans coins arrondis. Couleurs : sarcelle #1f8a8c, jaune #f6be2c, vermillon #e8412a, vert pâle #cfe8d5 ; jamais la couleur seule pour porter une information : ajouter une marque (forme, motif ou texte). Titres : police à empattements épais (Georgia en gras), ombre jaune décalée de 3 px. Boutons : fond jaune, contour d'encre, ombre dure, police Courier New ; bouton actif en encre sur fond crème. Le texte que l'élève doit lire (éléments, consignes, retours) reste en Arial. Rendu attendu : un vrai petit jeu, vivant et lisible, pas un schéma : grandes formes pleines et contours d'encre épais. Aucun signe « - », « + », « x » ou « : » en décor ou en marque, pour ne pas les confondre avec des opérations. Une bonne réponse déclenche un petit feu d'artifice silencieux (boules colorées), supprimé en mode calme.",
     "verification": [
       "La fiche de contrôle correspond au jeu.",
-      "Chaque réponse du corrigé est juste."
+      "Chaque réponse du corrigé est juste.",
+      "Chaque proposition fausse est fausse sans équivoque pour un élève du niveau, et chaque dessin respecte ce que le texte en dit."
     ]
   }
 }
