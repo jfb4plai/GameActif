@@ -12,6 +12,8 @@ export interface ElementState {
   eliminated: string[];
   hintUsed: boolean;
   revealed: boolean;
+  /** Options proposées à cet élément seulement (QCM) ; absent = toutes les options du tour. */
+  choices?: string[];
 }
 
 /** Résultat d'un élément résolu : une ligne de `game_attempts` au plan 4. */
@@ -43,16 +45,19 @@ export interface RoundState {
   maxTries: number | null;
   results: ElementResult[];
   done: boolean;
+  /** Ordre des cartes du Mémo (ids d'éléments et d'options mélangés) ; absent pour les autres jeux. */
+  deck?: string[];
 }
 
 export interface RoundSpec {
   mechanic: MechanicId;
   exclusive: boolean;
-  elements: { id: string; correct: string }[];
+  elements: { id: string; correct: string; choices?: string[] }[];
   options: string[];
   labels: Record<string, string>;
   hintsLeft: number;
   maxTries: number | null;
+  deck?: string[];
 }
 
 export type Action =
@@ -80,6 +85,11 @@ const FEEDBACK: Record<FeedbackKind, Feedback> = {
   ignored: { kind: 'ignored', message: '' },
 };
 
+/** Texte de retour d'un type de réponse ; sert aux mécaniques qui écrivent leur propre état (Mémo). */
+export function feedbackFor(kind: FeedbackKind): Feedback {
+  return FEEDBACK[kind];
+}
+
 export function createRound(spec: RoundSpec): RoundState {
   return {
     mechanic: spec.mechanic,
@@ -92,6 +102,7 @@ export function createRound(spec: RoundSpec): RoundState {
       eliminated: [],
       hintUsed: false,
       revealed: false,
+      ...(e.choices ? { choices: e.choices.slice() } : {}),
     })),
     options: spec.options.slice(),
     labels: { ...spec.labels },
@@ -99,6 +110,7 @@ export function createRound(spec: RoundSpec): RoundState {
     maxTries: spec.maxTries,
     results: [],
     done: false,
+    ...(spec.deck ? { deck: spec.deck.slice() } : {}),
   };
 }
 
@@ -142,6 +154,7 @@ function choose(state: RoundState, index: number, optionId: string): StepResult 
   const element = state.elements[index];
   if (
     !state.options.includes(optionId) ||
+    (element.choices !== undefined && !element.choices.includes(optionId)) ||
     element.eliminated.includes(optionId) ||
     consumedOptions(state).has(optionId)
   ) {
@@ -163,7 +176,7 @@ function choose(state: RoundState, index: number, optionId: string): StepResult 
 function useHint(state: RoundState, index: number): StepResult {
   const element = state.elements[index];
   const consumed = consumedOptions(state);
-  const candidate = state.options.find(
+  const candidate = (element.choices ?? state.options).find(
     (o) => o !== element.correct && !element.eliminated.includes(o) && !consumed.has(o),
   );
   if (state.hintsLeft <= 0 || candidate === undefined) {

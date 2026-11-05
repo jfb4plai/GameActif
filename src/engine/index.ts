@@ -1,5 +1,6 @@
 export * from './types.js';
 export * from './rng.js';
+export * from './nombres.js';
 export * from './profiles.js';
 export * from './round.js';
 export * from './availability.js';

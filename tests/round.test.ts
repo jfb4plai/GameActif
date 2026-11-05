@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createRound, step, progress, type RoundSpec, type RoundState } from '../src/engine/round.js';
+import { createRound, step, progress, feedbackFor, type RoundSpec, type RoundState } from '../src/engine/round.js';
 
 function spec(over: Partial<RoundSpec> = {}): RoundSpec {
   return {
@@ -136,5 +136,44 @@ describe('actions invalides', () => {
   it('ignore une option qui n’existe pas dans le tour', () => {
     const s = createRound(spec());
     expect(step(s, { type: 'choose', elementId: 'e1', optionId: 'Z' }).feedback.kind).toBe('ignored');
+  });
+});
+
+describe('choices, deck et feedbackFor', () => {
+  const qcm = () =>
+    createRound({
+      mechanic: 'qcm',
+      exclusive: false,
+      elements: [{ id: 'q1', correct: 'a', choices: ['a', 'b'] }],
+      options: ['a', 'c', 'b'],
+      labels: {},
+      hintsLeft: 1,
+      maxTries: null,
+    });
+
+  it('refuse une option hors des choix de l’élément', () => {
+    const s = qcm();
+    const r = step(s, { type: 'choose', elementId: 'q1', optionId: 'c' });
+    expect(r.feedback.kind).toBe('ignored');
+    expect(r.state).toBe(s);
+  });
+
+  it('l’indice n’écarte qu’une option des choix', () => {
+    const r = step(qcm(), { type: 'hint', elementId: 'q1' });
+    expect(r.state.elements[0].eliminated).toEqual(['b']);
+  });
+
+  it('un élément sans choices accepte toutes les options', () => {
+    const s = createRound(spec());
+    expect(step(s, { type: 'choose', elementId: 'e1', optionId: 'C' }).feedback.kind).toBe('retry');
+  });
+
+  it('feedbackFor retrouve le texte de retour', () => {
+    expect(feedbackFor('retry').message).toBe('Pas tout à fait. Essaie encore.');
+  });
+
+  it('createRound recopie deck quand il est fourni et le laisse absent sinon', () => {
+    expect(createRound({ ...spec(), deck: ['x', 'y'] }).deck).toEqual(['x', 'y']);
+    expect(createRound(spec()).deck).toBeUndefined();
   });
 });

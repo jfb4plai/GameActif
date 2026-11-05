@@ -1,6 +1,6 @@
 export type Difficulty = 'facile' | 'moyen' | 'difficile';
 export type ProfileId = 'soutien' | 'standard' | 'defi';
-export type MechanicId = 'associer' | 'trier' | 'ordre' | 'placer';
+export type MechanicId = 'associer' | 'trier' | 'ordre' | 'placer' | 'comparer' | 'memo' | 'qcm';
 
 export interface Item {
   id: string;
@@ -39,6 +39,20 @@ export interface Rank {
   position: number;
 }
 
+/** Comparaison de deux nombres tapés par l'enseignant (mécanique Comparer) ; le symbole juste est calculé. */
+export interface Comparison {
+  id: string;
+  left: string;
+  right: string;
+}
+
+/** Question à choix (mécanique QCM) : l'item question, sa bonne réponse et ses fausses réponses (1 à 3). */
+export interface Question {
+  itemId: string;
+  correctId: string;
+  distractorIds: string[];
+}
+
 export interface Activity {
   id: string;
   title: string;
@@ -58,4 +72,8 @@ export interface Activity {
   pairs: Pair[];
   memberships: Membership[];
   ranks: Rank[];
+  /** Mécanique Comparer ; absent = aucune. */
+  comparisons?: Comparison[];
+  /** Mécanique QCM ; absent = aucune. */
+  questions?: Question[];
 }

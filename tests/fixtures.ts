@@ -124,3 +124,77 @@ export function solveAll(state: RoundState): RoundState {
   }
   return s;
 }
+
+/** Activité de comparaisons de nombres (entiers, décimaux, fractions). */
+export function comparerActivity(): Activity {
+  return {
+    id: 'act-comparer',
+    title: 'Plus grand, plus petit',
+    discipline: 'Mathématiques',
+    year: '4e primaire',
+    context: 'Classe de 18 élèves, comparaison de nombres travaillée cette semaine.',
+    cibles: ['TEST.comparer.1'],
+    items: [],
+    categories: [],
+    pairs: [],
+    memberships: [],
+    ranks: [],
+    comparisons: [
+      { id: 'c1', left: '12', right: '8' },
+      { id: 'c2', left: '3,5', right: '3,50' },
+      { id: 'c3', left: '1/2', right: '3/4' },
+      { id: 'c4', left: '7', right: '9' },
+      { id: 'c5', left: '10', right: '2' },
+    ],
+  };
+}
+
+const SYMB = ['>', '<', '=', '≠'];
+
+/** Activité de QCM : q1 à q4 ont 3 fausses réponses, q5 une seule. */
+export function qcmActivity(): Activity {
+  const items: Item[] = [];
+  const questions: NonNullable<Activity['questions']> = [];
+  for (let k = 1; k <= 5; k++) {
+    items.push(item(`q${k}`, `Question ${k} sur les symboles ?`));
+    const fausses = k === 5 ? 1 : 3;
+    items.push(item(`q${k}r0`, `Bonne réponse ${k}`));
+    const distractorIds: string[] = [];
+    for (let j = 1; j <= fausses; j++) {
+      items.push(item(`q${k}r${j}`, `${SYMB[j]} fausse ${k}.${j}`));
+      distractorIds.push(`q${k}r${j}`);
+    }
+    questions.push({ itemId: `q${k}`, correctId: `q${k}r0`, distractorIds });
+  }
+  return {
+    id: 'act-qcm',
+    title: 'Les symboles',
+    discipline: 'Mathématiques',
+    year: '4e primaire',
+    context: 'Classe de 18 élèves, symboles de comparaison.',
+    cibles: ['TEST.qcm.1'],
+    items,
+    categories: [],
+    pairs: [],
+    memberships: [],
+    ranks: [],
+    questions,
+  };
+}
+
+/** Toutes les relations réunies : eau (trier, associer, ordre), scène (placer), comparaisons, QCM. */
+export function toutesActivity(): Activity {
+  const e = eauActivity();
+  const s = sceneActivity();
+  const c = comparerActivity();
+  const q = qcmActivity();
+  return {
+    ...e,
+    sceneId: s.sceneId,
+    items: [...e.items, ...s.items, ...q.items],
+    categories: [...e.categories, ...s.categories],
+    memberships: [...e.memberships, ...s.memberships],
+    comparisons: c.comparisons,
+    questions: q.questions,
+  };
+}

@@ -11,6 +11,8 @@ export interface ProfileParams {
   hintsPerRound: number;
   /** Essais ratés avant révélation de la bonne réponse ; null = illimité. */
   maxTries: number | null;
+  /** Nombre de réponses affichées par question (QCM), bonne réponse comprise. */
+  choices: number;
   readAloud: boolean;
   visualAids: boolean;
 }
@@ -23,6 +25,7 @@ export const PROFILES: Record<ProfileId, ProfileParams> = {
     maxCategories: 2,
     hintsPerRound: 8,
     maxTries: null,
+    choices: 2,
     readAloud: true,
     visualAids: true,
   },
@@ -32,6 +35,7 @@ export const PROFILES: Record<ProfileId, ProfileParams> = {
     maxCategories: 3,
     hintsPerRound: 3,
     maxTries: null,
+    choices: 3,
     readAloud: false,
     visualAids: false,
   },
@@ -41,6 +45,7 @@ export const PROFILES: Record<ProfileId, ProfileParams> = {
     maxCategories: 4,
     hintsPerRound: 0,
     maxTries: 3,
+    choices: 4,
     readAloud: false,
     visualAids: false,
   },
