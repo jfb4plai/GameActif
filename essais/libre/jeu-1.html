@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les signes des opérations</title>
+<style>
+:root{--creme:#efe6d2;--panneau:#fbf6e9;--encre:#161616;--sarcelle:#1f8a8c;--jaune:#f6be2c;--vermillon:#e8412a;--vert:#cfe8d5;--ombre:rgba(0,0,0,.38)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--creme);color:var(--encre);font-family:Arial,Helvetica,sans-serif;font-size:20px;line-height:1.4}
+main{max-width:900px;margin:0 auto;padding:16px}
+h1{font-family:Georgia,serif;font-weight:bold;font-size:30px;text-shadow:3px 3px 0 var(--jaune);margin:8px 0 12px}
+.panneau{background:var(--panneau);border:2px solid var(--encre);box-shadow:4px 4px 0 var(--ombre);padding:14px;margin:12px 0}
+button{font-family:'Courier New',monospace;font-weight:bold;font-size:20px;min-height:48px;min-width:48px;padding:8px 16px;background:var(--jaune);border:2px solid var(--encre);box-shadow:4px 4px 0 var(--ombre);cursor:pointer;color:var(--encre)}
+button[aria-pressed="true"]{background:var(--encre);color:var(--creme)}
+button:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
+button:focus-visible{outline:4px solid var(--sarcelle);outline-offset:3px}
+.barre{display:flex;gap:12px;flex-wrap:wrap}
+.colonnes{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.colonne{display:flex;flex-direction:column;gap:14px}
+.colonne h2{font-family:Georgia,serif;font-size:22px;margin:0}
+.carte{font-family:Arial,Helvetica,sans-serif;font-size:24px;text-align:left;min-height:64px;background:var(--panneau)}
+.carte.signe{font-size:36px;text-align:center}
+.carte.fait{background:var(--vert);box-shadow:none}
+.carte.fait::after{content:" (trouvé)";font-size:18px;font-weight:normal}
+.carte.ecarte{text-decoration:line-through}
+.retour{border:2px solid var(--encre);border-left:12px solid var(--sarcelle);background:var(--panneau);padding:10px 14px;min-height:60px;font-size:20px}
+.etape{margin:0 0 8px}
+#feu{position:relative;height:0}
+.pt{position:absolute;left:50%;top:0;width:14px;height:14px;border:2px solid var(--encre);animation:eclat .9s ease-out forwards}
+.pt:nth-child(3n){background:var(--jaune)}.pt:nth-child(3n+1){background:var(--sarcelle)}.pt:nth-child(3n+2){background:var(--vermillon)}
+@keyframes eclat{from{transform:translate(0,0)}to{transform:translate(var(--dx),var(--dy));opacity:0}}
+body.calme{background:#fff}
+body.calme *{animation:none!important;transition:none!important}
+@media (max-width:560px){.colonnes{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<h1>Les signes des opérations</h1>
+<div class="barre panneau">
+  <button type="button" id="calme" aria-pressed="false">Mode calme</button>
+  <button type="button" id="ecouter">Écouter</button>
+  <button type="button" id="indice">Indice</button>
+</div>
+<p class="etape" id="consigne">Choisir une opération.</p>
+<div class="panneau colonnes" id="jeu">
+  <div class="colonne"><h2>Opérations</h2><div class="colonne" id="gauche"></div></div>
+  <div class="colonne"><h2>Signes</h2><div class="colonne" id="droite"></div></div>
+</div>
+<div id="feu" aria-hidden="true"></div>
+<div class="retour" id="retour" role="status" aria-live="polite">Choisir une opération pour commencer.</div>
+</main>
+<script>
+(function () {
+  var PAIRES = [
+    { id: 'add', nom: 'addition', signe: '+' },
+    { id: 'sou', nom: 'soustraction', signe: '-' },
+    { id: 'mul', nom: 'multiplication', signe: 'x' },
+    { id: 'div', nom: 'division', signe: ':' }
+  ];
+  var ORDRE_SIGNES = ['mul', 'div', 'add', 'sou'];
+  var etat = {};
+  PAIRES.forEach(function (p) { etat[p.id] = { fait: false, erreurs: 0, ecartes: [] }; });
+  var choisi = null;
+  var gauche = document.getElementById('gauche');
+  var droite = document.getElementById('droite');
+  var retour = document.getElementById('retour');
+  var boutons = {};
+
+  function dire(t) { retour.textContent = t; }
+  function par(id) { return PAIRES.filter(function (p) { return p.id === id; })[0]; }
+
+  function creer(parent, id, texte, classe, clic) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'carte ' + classe;
+    b.textContent = texte;
+    b.addEventListener('click', clic);
+    parent.appendChild(b);
+    return b;
+  }
+
+  PAIRES.forEach(function (p) {
+    boutons['g' + p.id] = creer(gauche, p.id, p.nom, '', function () { choisir(p.id); });
+    boutons['g' + p.id].setAttribute('aria-pressed', 'false');
+  });
+  ORDRE_SIGNES.forEach(function (id) {
+    var p = par(id);
+    boutons['d' + id] = creer(droite, id, p.signe, 'signe', function () { essayer(id); });
+    boutons['d' + id].setAttribute('aria-label', { add: 'signe plus', sou: 'signe moins', mul: 'signe fois', div: 'signe deux-points' }[id]);
+  });
+
+  function choisir(id) {
+    if (etat[id].fait) return;
+    choisi = id;
+    PAIRES.forEach(function (p) { boutons['g' + p.id].setAttribute('aria-pressed', String(p.id === id)); });
+    document.getElementById('consigne').textContent = 'Choisir son signe.';
+    dire('Opération choisie : ' + par(id).nom + '. Choisir son signe.');
+    majSignes();
+  }
+
+  function majSignes() {
+    ORDRE_SIGNES.forEach(function (id) {
+      var b = boutons['d' + id];
+      var utilise = etat[id].fait;
+      var ecarte = choisi && etat[choisi].ecartes.indexOf(id) >= 0;
+      b.disabled = utilise || !!ecarte;
+      b.classList.toggle('fait', utilise);
+      b.classList.toggle('ecarte', !!ecarte);
+    });
+  }
+
+  function suivant() {
+    var reste = PAIRES.filter(function (p) { return !etat[p.id].fait; })[0];
+    choisi = null;
+    PAIRES.forEach(function (p) { boutons['g' + p.id].setAttribute('aria-pressed', 'false'); });
+    majSignes();
+    if (reste) {
+      boutons['g' + reste.id].focus();
+      document.getElementById('consigne').textContent = 'Choisir une opération.';
+    } else {
+      document.getElementById('consigne').textContent = 'Tout est trouvé.';
+      dire('Bravo, tout est trouvé. Les quatre opérations ont chacune leur signe.');
+    }
+  }
+
+  function boom() {
+    if (document.body.classList.contains('calme')) return;
+    var feu = document.getElementById('feu');
+    for (var i = 0; i < 9; i++) {
+      var s = document.createElement('span');
+      s.className = 'pt';
+      var a = (i / 9) * Math.PI * 2;
+      s.style.setProperty('--dx', Math.round(Math.cos(a) * 70) + 'px');
+      s.style.setProperty('--dy', Math.round(Math.sin(a) * 70 + 30) + 'px');
+      s.addEventListener('animationend', function (e) { e.target.remove(); });
+      feu.appendChild(s);
+    }
+  }
+
+  function valider(op, signe, revele) {
+    etat[op].fait = true;
+    var g = boutons['g' + op];
+    g.classList.add('fait');
+    g.disabled = true;
+    boutons['d' + signe].classList.add('fait');
+    boutons['d' + signe].disabled = true;
+    if (revele) { dire('Voici la bonne réponse : ' + par(op).nom + ' va avec ' + par(op).signe + '. On continue.'); }
+    else { dire('Bien vu. ' + par(op).nom + ' : ' + par(op).signe + '.'); boom(); }
+    suivant();
+  }
+
+  function essayer(signeId) {
+    if (!choisi) { dire('Choisir d’abord une opération.'); return; }
+    var op = choisi;
+    if (signeId === op) { valider(op, signeId, false); return; }
+    etat[op].erreurs += 1;
+    if (etat[op].ecartes.indexOf(signeId) < 0) etat[op].ecartes.push(signeId);
+    if (etat[op].erreurs >= 3) { valider(op, op, true); return; }
+    dire('Pas tout à fait. Regarde l’indice.');
+    majSignes();
+    // Le bouton cliqué devient inactif : le focus clavier passe au premier signe encore utilisable.
+    var suivantSigne = ORDRE_SIGNES.map(function (id) { return boutons['d' + id]; }).filter(function (b) { return !b.disabled; })[0];
+    if (suivantSigne) suivantSigne.focus();
+  }
+
+  document.getElementById('indice').addEventListener('click', function () {
+    if (!choisi) { dire('Choisir d’abord une opération.'); return; }
+    var e = etat[choisi];
+    var autre = ORDRE_SIGNES.filter(function (id) { return id !== choisi && !etat[id].fait && e.ecartes.indexOf(id) < 0; })[0];
+    if (!autre) { dire('Plus de signe à écarter pour cette opération.'); return; }
+    e.ecartes.push(autre);
+    dire('Un signe est écarté. Choisir parmi ceux qui restent.');
+    majSignes();
+  });
+
+  document.getElementById('ecouter').addEventListener('click', function () {
+    if (!('speechSynthesis' in window)) { dire('La lecture à voix haute n’est pas disponible ici.'); return; }
+    var texte = choisi ? par(choisi).nom : document.getElementById('consigne').textContent;
+    var u = new SpeechSynthesisUtterance(texte);
+    var voix = window.speechSynthesis.getVoices();
+    var v = voix.filter(function (x) { return x.lang === 'fr-BE'; })[0] || voix.filter(function (x) { return x.lang.indexOf('fr') === 0; })[0];
+    if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'fr-BE'; }
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  });
+
+  var calme = document.getElementById('calme');
+  function appliquerCalme(actif) {
+    document.body.classList.toggle('calme', actif);
+    calme.setAttribute('aria-pressed', String(actif));
+    calme.textContent = actif ? 'Mode calme : activé' : 'Mode calme';
+  }
+  calme.addEventListener('click', function () { appliquerCalme(calme.getAttribute('aria-pressed') !== 'true'); });
+  appliquerCalme(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  majSignes();
+})();
+</script>
+</body>
+</html>

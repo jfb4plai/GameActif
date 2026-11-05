@@ -76,6 +76,10 @@ describe('construirePromptLibre', () => {
     expect(t).toContain(libre.regle_15_ajout);
   });
 
+  it('demande de ne jamais perdre le focus clavier après une réponse (défaut constaté aux trois essais)', () => {
+    expect(prompt()).toContain('focus clavier');
+  });
+
   it('exige la fiche de contrôle dans la conversation, pas dans le jeu', () => {
     const t = prompt();
     expect(t).toContain("FICHE DE CONTRÔLE POUR L'ENSEIGNANT");
