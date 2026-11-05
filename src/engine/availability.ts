@@ -1,4 +1,4 @@
-import type { Activity, Comparison, MechanicId, Membership, Pair } from './types.js';
+import type { Activity, Comparison, MechanicId, Membership, Pair, Question } from './types.js';
 import { parseNombre } from './nombres.js';
 
 export interface MechanicAvailability {
@@ -11,6 +11,19 @@ export interface MechanicAvailability {
 export function validPairs(activity: Activity): Pair[] {
   const ids = new Set(activity.items.map((i) => i.id));
   return activity.pairs.filter((p) => ids.has(p.leftId) && ids.has(p.rightId) && p.leftId !== p.rightId);
+}
+
+/** Questions dont l'item, la bonne réponse et 1 à 3 fausses réponses distinctes existent. */
+export function validQuestions(activity: Activity): Question[] {
+  const ids = new Set(activity.items.map((i) => i.id));
+  return (activity.questions ?? []).filter(
+    (q) =>
+      ids.has(q.itemId) &&
+      ids.has(q.correctId) &&
+      q.distractorIds.length >= 1 &&
+      q.distractorIds.length <= 3 &&
+      q.distractorIds.every((d) => ids.has(d) && d !== q.correctId),
+  );
 }
 
 /** Comparaisons dont les deux nombres sont lisibles. */
@@ -79,6 +92,10 @@ export function availableMechanics(activity: Activity): Record<MechanicId, Mecha
       validComparisons(activity).length >= 3
         ? { available: true, missing: null }
         : { available: false, missing: 'Il faut au moins 3 comparaisons valides.' },
+    qcm:
+      validQuestions(activity).length >= 3
+        ? { available: true, missing: null }
+        : { available: false, missing: 'Il faut au moins 3 questions avec une bonne réponse et une fausse réponse.' },
     ordre:
       rankedItemIds(activity) !== null
         ? { available: true, missing: null }
