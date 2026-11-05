@@ -184,3 +184,11 @@ body.calme *, body.calme *::before, body.calme *::after { animation: none !impor
 .reponses { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
 .reponse { font-family: var(--lecture); font-weight: bold; font-size: 20px; text-align: left; padding: 14px 18px; background: var(--papier); min-height: 56px; }
 .symbole:disabled, .reponse:disabled { opacity: 0.45; text-decoration: line-through; }
+
+/* Jeu Mémo */
+.grille-memo { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 12px 0; }
+.carte-memo { font-family: var(--lecture); font-weight: bold; font-size: 20px; min-height: 90px; padding: 8px 10px; background: var(--papier); }
+.carte-memo.face-cachee { background: var(--sarcelle); color: var(--papier); font-size: 32px; }
+.carte-memo.visible { background: var(--jaune); }
+.carte-memo.trouvee { background: var(--vert); }
+.carte-memo.indice { outline: 5px solid var(--vermillon); outline-offset: 2px; }
