@@ -90,3 +90,16 @@ describe('formulation', () => {
     }
   });
 });
+
+describe('programmeLinks, nouveaux gabarits', () => {
+  it('Comparer, Mémo et QCM : aucune phrase écrite d’avance, à compléter par l’enseignant', () => {
+    for (const m of ['comparer', 'memo', 'qcm'] as const) {
+      for (const support of ['numerique', 'physique'] as const) {
+        const links = programmeLinks(m, support, [A1]);
+        expect(links).toHaveLength(1);
+        expect(links[0].phrase).toBeNull();
+        expect(links[0].extraEnClasse).toBe(false);
+      }
+    }
+  });
+});

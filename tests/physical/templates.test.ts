@@ -11,10 +11,10 @@ const base = (): PhysicalTemplate => ({
 
 describe('PHYSICAL_TEMPLATES', () => {
   it('chaque mécanique numérique a un jeu physique en regard', () => {
-    expect(Object.keys(PHYSICAL_TEMPLATES).sort()).toEqual(['associer', 'ordre', 'placer', 'trier']);
+    expect(Object.keys(PHYSICAL_TEMPLATES).sort()).toEqual(['associer', 'comparer', 'memo', 'ordre', 'placer', 'qcm', 'trier']);
   });
 
-  it('les quatre modèles respectent les contraintes de JF', () => {
+  it('les sept modèles respectent les contraintes de JF', () => {
     for (const t of Object.values(PHYSICAL_TEMPLATES)) expect(templateProblems(t)).toEqual([]);
   });
 
@@ -23,6 +23,16 @@ describe('PHYSICAL_TEMPLATES', () => {
     expect(PHYSICAL_TEMPLATES.associer.title).toBe('Les paires à pincer');
     expect(PHYSICAL_TEMPLATES.ordre.title).toBe('La chaîne silencieuse');
     expect(PHYSICAL_TEMPLATES.placer.title).toBe('Place-le dans la classe');
+  });
+
+  it('titres et déplacements des trois nouveaux modèles', () => {
+    expect(PHYSICAL_TEMPLATES.comparer.title).toBe('Les cartons-symboles');
+    expect(PHYSICAL_TEMPLATES.memo.title).toBe('Les cartes qui se retrouvent');
+    expect(PHYSICAL_TEMPLATES.qcm.title).toBe('Les cartons A, B, C');
+    for (const id of ['comparer', 'memo', 'qcm'] as const) {
+      expect(PHYSICAL_TEMPLATES[id].moves).toEqual(['manipulation']);
+      expect(PHYSICAL_TEMPLATES[id].calm.voice).toBe('chuchote');
+    }
   });
 
   it('la chaîne silencieuse se joue en silence', () => {

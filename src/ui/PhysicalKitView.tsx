@@ -136,6 +136,17 @@ export function PhysicalKitView({ kit, links }: Props) {
         </>
       )}
 
+      {kit.mechanic === 'qcm' && (
+        <>
+          <h3>Lettres des cartons</h3>
+          <ol className="cartes-imprimer" aria-label="Lettres des cartons">
+            {kit.stations.map((s) => (
+              <li key={s.id} className="carte-imprimer">{s.label}</li>
+            ))}
+          </ol>
+        </>
+      )}
+
       <p className="hors-impression">
         <button type="button" onClick={imprimer}>Imprimer la fiche</button>
       </p>

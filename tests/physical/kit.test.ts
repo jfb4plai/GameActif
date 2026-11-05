@@ -4,7 +4,7 @@ import { PHYSICAL_TEMPLATES } from '../../src/physical/templates.js';
 import { setupRound } from '../../src/engine/setup.js';
 import { makeRng } from '../../src/engine/rng.js';
 import type { MechanicId } from '../../src/engine/types.js';
-import { eauActivity, sceneActivity } from '../fixtures.js';
+import { eauActivity, sceneActivity, toutesActivity } from '../fixtures.js';
 
 const count = (kit: ReturnType<typeof buildPhysicalKit>, start: string) =>
   kit.material.find((m) => m.name.startsWith(start))?.count;
@@ -71,5 +71,41 @@ describe('buildPhysicalKit', () => {
     expect(kit.title).toBe(PHYSICAL_TEMPLATES.trier.title);
     expect(kit.calm).toEqual(PHYSICAL_TEMPLATES.trier.calm);
     expect(kit.differentiation).toBe(PHYSICAL_TEMPLATES.trier.differentiation.soutien);
+  });
+});
+
+describe('buildPhysicalKit, nouveaux gabarits', () => {
+  it('Comparer : une carte par comparaison, trois stations, corrigé du moteur', () => {
+    const kit = buildPhysicalKit(toutesActivity(), 'comparer', 'standard', 1, 24);
+    const tour = setupRound(toutesActivity(), 'comparer', 'standard', makeRng(1));
+    expect(kit.cards).toHaveLength(5);
+    expect(kit.stations.map((s) => s.label)).toEqual(['>', '<', '=']);
+    expect(kit.answerKey).toEqual(tour.elements.map((e) => ({ cardId: e.id, stationId: e.correct })));
+    expect(count(kit, 'Cartes-nombres')).toBe(10);
+    expect(count(kit, 'Cartons-symboles')).toBe(kit.material.find((m) => m.name.startsWith('Cartons verts'))!.count * 3);
+  });
+
+  it('Mémo : toutes les cartes du deck, corrigé d’une ligne par paire', () => {
+    const kit = buildPhysicalKit(eauActivity(), 'memo', 'standard', 1, 24);
+    const tour = setupRound(eauActivity(), 'memo', 'standard', makeRng(1));
+    expect(kit.cards.map((c) => c.id)).toEqual(tour.deck);
+    expect(kit.cards).toHaveLength(2 * kit.answerKey.length);
+    expect(kit.answerKey).toHaveLength(tour.elements.length);
+    expect(count(kit, 'Cartes')).toBe(kit.cards.length);
+  });
+
+  it('QCM : stations en lettres, carte = question et réponses lettrées, corrigé = lettre juste', () => {
+    const kit = buildPhysicalKit(toutesActivity(), 'qcm', 'standard', 1, 24);
+    const tour = setupRound(toutesActivity(), 'qcm', 'standard', makeRng(1));
+    expect(kit.stations.map((s) => s.id)).toEqual(['A', 'B', 'C']);
+    expect(kit.cards).toHaveLength(tour.elements.length);
+    for (const e of tour.elements) {
+      const choices = e.choices as string[];
+      const lettre = 'ABCD'[choices.indexOf(e.correct)];
+      expect(kit.answerKey.find((k) => k.cardId === e.id)?.stationId).toBe(lettre);
+      const texte = kit.cards.find((c) => c.id === e.id)!.text;
+      expect(texte.startsWith(tour.labels[e.id])).toBe(true);
+      choices.forEach((c, i) => expect(texte).toContain(`${'ABCD'[i]} : ${tour.labels[c]}`));
+    }
   });
 });

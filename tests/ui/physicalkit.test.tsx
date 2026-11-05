@@ -6,7 +6,7 @@ import { PhysicalKitView } from '../../src/ui/PhysicalKitView';
 import { buildPhysicalKit } from '../../src/physical/kit.js';
 import { programmeLinks } from '../../src/physical/programme.js';
 import { activitePilote } from '../../src/data/pilote.js';
-import { eauActivity } from '../fixtures.js';
+import { eauActivity, toutesActivity } from '../fixtures.js';
 
 afterEach(() => cleanup());
 
@@ -112,5 +112,22 @@ describe('PhysicalKitView', () => {
       expect(screen.queryByRole('list', { name: 'Cartes de droite à imprimer' })).toBeNull();
       expect(screen.queryByRole('list', { name: 'Étiquettes à imprimer' })).toBeNull();
     }
+  });
+});
+
+describe('PhysicalKitView, nouveaux gabarits', () => {
+  it('Mémo : « Cartes à imprimer » liste 2n cartes et le corrigé existe', () => {
+    const kit = buildPhysicalKit(eauActivity(), 'memo', 'standard', 1, 24);
+    render(<PhysicalKitView kit={kit} links={programmeLinks('memo', 'physique', [A1])} />);
+    expect(within(screen.getByRole('list', { name: 'Cartes à imprimer' })).getAllByRole('listitem')).toHaveLength(kit.cards.length);
+    expect(screen.getByRole('table', { name: 'Corrigé' })).toBeTruthy();
+    expect(screen.queryByText('Cartes de droite à imprimer')).toBeNull();
+  });
+
+  it('QCM : affiche les lettres des cartons', () => {
+    const kit = buildPhysicalKit(toutesActivity(), 'qcm', 'standard', 1, 24);
+    render(<PhysicalKitView kit={kit} links={programmeLinks('qcm', 'physique', [A1])} />);
+    expect(screen.getByText('Lettres des cartons')).toBeTruthy();
+    expect(within(screen.getByRole('list', { name: 'Lettres des cartons' })).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['A', 'B', 'C']);
   });
 });
