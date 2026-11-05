@@ -13,12 +13,12 @@ afterEach(() => cleanup());
 const GRAINE = 11;
 
 describe('AutresJeux', () => {
-  it('propose deux cartes de mode avec leurs boutons', () => {
+  it('propose deux cartes arcade et la carte Libre avec leurs boutons', () => {
     render(<AutresJeux activity={activitePilote()} profile="standard" graine={GRAINE} />);
     expect(screen.getByRole('heading', { name: 'Tir aux bulles' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Casse-briques' })).toBeTruthy();
-    expect(screen.getAllByRole('button', { name: /^Copier le prompt/ })).toHaveLength(2);
-    expect(screen.getAllByRole('button', { name: /^Télécharger le prompt/ })).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: /^Copier le prompt/ })).toHaveLength(3);
+    expect(screen.getAllByRole('button', { name: /^Télécharger le prompt/ })).toHaveLength(3);
   });
 
   it('copie exactement le texte du constructeur pour le profil courant et le confirme', async () => {
@@ -81,7 +81,8 @@ describe('AutresJeux', () => {
     const e = eauActivity();
     const a: Activity = { ...e, pairs: [], memberships: [] };
     render(<AutresJeux activity={a} profile="standard" graine={GRAINE} />);
-    expect(screen.queryAllByRole('button', { name: /prompt/i })).toHaveLength(0);
+    // Seule la carte Libre reste : elle ne dépend d'aucun élément saisi.
+    expect(screen.getAllByRole('button', { name: /prompt/i }).map((b) => b.textContent)).toEqual(['Copier le prompt : Libre', 'Télécharger le prompt (.txt) : Libre']);
     expect(screen.getByText('Il faut au moins deux familles et trois éléments (jeu Trier).')).toBeTruthy();
     expect(screen.getByText('Il faut des familles (Trier) ou des paires (Associer).')).toBeTruthy();
   });

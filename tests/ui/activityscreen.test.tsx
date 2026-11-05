@@ -127,7 +127,7 @@ describe('ActivityScreen', () => {
     const cadre = screen.getByText('Autres jeux, avec votre IA').closest('details') as HTMLDetailsElement;
     expect(cadre.open).toBe(false);
     expect(cadre.classList.contains('hors-impression')).toBe(true);
-    expect(within(cadre).getAllByRole('button', { name: /^Copier le prompt/ })).toHaveLength(2);
+    expect(within(cadre).getAllByRole('button', { name: /^Copier le prompt/ })).toHaveLength(3);
   });
 });
 

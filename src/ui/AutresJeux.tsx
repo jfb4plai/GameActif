@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Activity, ProfileId } from '../engine/types.js';
-import { construirePrompt, CONTEXTE_MAX, modesDisponibles, VERIFICATION } from '../prompts/construire.js';
+import {
+  construirePrompt,
+  construirePromptLibre,
+  contexteLibreValide,
+  CONTEXTE_MAX,
+  CONTEXTE_MIN,
+  modesDisponibles,
+  VERIFICATION,
+  VERIFICATION_LIBRE,
+} from '../prompts/construire.js';
 import { MODES, type ModeArcade } from '../prompts/types.js';
 
 type Copier = (texte: string) => Promise<void>;
@@ -107,6 +116,114 @@ function CarteMode({
   );
 }
 
+/**
+ * Mode Libre : l'IA choisit la mécanique et invente le contenu. L'apport de l'enseignant est visible et obligatoire :
+ * un contexte de classe d'au moins 20 caractères (prérempli depuis l'activité, modifiable) et la relecture cochée.
+ */
+function CarteLibre({
+  activity,
+  profile,
+  graine,
+  copier,
+  telecharger,
+}: {
+  activity: Activity;
+  profile: ProfileId;
+  graine: number;
+  copier: Copier;
+  telecharger: Telecharger;
+}) {
+  const [contexte, setContexte] = useState(() => activity.context.slice(0, CONTEXTE_MAX));
+  const coupe = activity.context.length > CONTEXTE_MAX;
+  const [relu, setRelu] = useState(false);
+  const [etat, setEtat] = useState<'rien' | 'copie' | 'echec'>('rien');
+  const [ouvert, setOuvert] = useState(false);
+  const zone = useRef<HTMLTextAreaElement>(null);
+  const valide = contexteLibreValide(contexte);
+  const pret = valide && relu;
+  const prompt = useMemo(
+    () => (valide ? construirePromptLibre(activity, profile, graine, contexte) : null),
+    [activity, profile, graine, contexte, valide],
+  );
+
+  useEffect(() => setEtat('rien'), [prompt?.texte]);
+
+  useEffect(() => {
+    if (etat !== 'echec') return;
+    zone.current?.focus();
+    zone.current?.select();
+  }, [etat, ouvert]);
+
+  async function copierLeTexte() {
+    if (!pret || !prompt) return;
+    try {
+      await copier(prompt.texte);
+      setEtat('copie');
+    } catch {
+      setOuvert(true);
+      setEtat('echec');
+    }
+  }
+
+  function telechargerLeTexte() {
+    if (!pret || !prompt) return;
+    telecharger(`prompt-libre-${simplifier(activity.title)}.txt`, prompt.texte);
+  }
+
+  return (
+    <section className="carte mode-arcade" aria-labelledby="mode-libre">
+      <h3 id="mode-libre">Libre : l'IA choisit le jeu</h3>
+      <p>L'IA choisit la forme de jeu qui convient à la compétence visée et invente le contenu à partir de votre contexte de classe.</p>
+      <div className="champ">
+        <label htmlFor="contexte-libre">Votre contexte de classe</label>
+        <textarea
+          id="contexte-libre"
+          rows={4}
+          maxLength={CONTEXTE_MAX}
+          placeholder="Exemple : 18 élèves de 4e primaire, plusieurs élèves dyslexiques, vocabulaire de position vu la semaine dernière"
+          value={contexte}
+          aria-describedby="contexte-libre-aide"
+          onChange={(e) => setContexte(e.target.value)}
+        />
+        <p id="contexte-libre-aide" className="aide">
+          Ce texte sert à adapter le jeu et son contenu à votre classe. N’y mettre aucun nom d’élève. Il n’est pas enregistré. Minimum {CONTEXTE_MIN} caractères.
+        </p>
+        {coupe && <p className="aide">{`Votre contexte a été raccourci à ${CONTEXTE_MAX} caractères.`}</p>}
+      </div>
+      <label className="case-relecture">
+        <input type="checkbox" checked={relu} onChange={(e) => setRelu(e.target.checked)} /> Je relirai le contenu et le corrigé avant de le donner aux élèves.
+      </label>
+      <div className="actions-prompt">
+        <button type="button" disabled={!pret} aria-describedby={pret ? undefined : 'libre-raison'} onClick={copierLeTexte}>
+          Copier le prompt : Libre
+        </button>
+        <button type="button" disabled={!pret} aria-describedby={pret ? undefined : 'libre-raison'} onClick={telechargerLeTexte}>
+          Télécharger le prompt (.txt) : Libre
+        </button>
+      </div>
+      {!pret && (
+        <p id="libre-raison" className="aide">
+          Pour copier le prompt : écrire un contexte d’au moins {CONTEXTE_MIN} caractères et cocher la case de relecture.
+        </p>
+      )}
+      <p className="retour-court" role="status">
+        {etat === 'copie' ? 'Prompt copié.' : etat === 'echec' ? MESSAGE_ECHEC : ''}
+      </p>
+      <details open={ouvert} onToggle={(e) => setOuvert((e.currentTarget as HTMLDetailsElement).open)}>
+        <summary>Lire le prompt</summary>
+        <textarea ref={zone} readOnly rows={12} aria-label="Prompt : Libre" value={prompt?.texte ?? ''} />
+      </details>
+      <ol aria-label="Étapes : Libre" className="etapes-prompt">
+        <li>Écrire votre contexte et cocher la case de relecture.</li>
+        <li>Copier le prompt (bouton ci-dessus).</li>
+        <li>Ouvrir votre Claude et coller le prompt.</li>
+        <li>Jouer au jeu qui s'affiche, puis lire la fiche de contrôle sous le jeu.</li>
+        <li>Corriger ou refaire le jeu si le contenu ne convient pas.</li>
+      </ol>
+    </section>
+  );
+}
+
 /** Jeux arcade fabriqués par l'IA de l'enseignant à partir d'un prompt : GameActif n'envoie rien et ne vérifie rien. */
 export function AutresJeux({
   activity,
@@ -150,9 +267,14 @@ export function AutresJeux({
           </section>
         ),
       )}
+      <CarteLibre activity={activity} profile={profile} graine={graine} copier={copier} telecharger={telecharger} />
       <h3>À vérifier avant de donner le jeu aux élèves</h3>
       <ul className="verification-prompt">
         {VERIFICATION.map((v) => <li key={v}>{v}</li>)}
+      </ul>
+      <h4>En plus pour le mode Libre</h4>
+      <ul className="verification-prompt">
+        {VERIFICATION_LIBRE.map((v) => <li key={v}>{v}</li>)}
       </ul>
       <p className="aide">GameActif n'a aucun moyen de vérifier ce que l'IA produit : c'est votre part.</p>
     </div>
