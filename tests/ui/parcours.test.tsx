@@ -147,10 +147,10 @@ describe('Parcours', () => {
     expect((screen.getByRole('textbox', { name: 'Titre de l’activité' }) as HTMLInputElement).value).toBe('Les positions');
   });
 
-  it('l’exemple des positions affiche les quatre jeux et permet de revenir', async () => {
+  it('l’exemple des positions affiche les cinq jeux et permet de revenir', async () => {
     monter();
     await clic('Voir l’exemple des positions (P4)');
-    expect(screen.getAllByRole('heading', { name: /^Jeu sur écran/ })).toHaveLength(4);
+    expect(screen.getAllByRole('heading', { name: /^Jeu sur écran/ })).toHaveLength(5);
     await clic('Retour au parcours');
     expect(screen.getByText('Étape 1 sur 5 : Niveau')).toBeTruthy();
   });

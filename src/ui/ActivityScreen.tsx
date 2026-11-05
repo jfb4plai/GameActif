@@ -9,16 +9,9 @@ import { buildPhysicalKit } from '../physical/kit.js';
 import { programmeLinks, type ProgrammeLink } from '../physical/programme.js';
 import { AutresJeux } from './AutresJeux.js';
 import { PhysicalKitView } from './PhysicalKitView.js';
-import { RoundBoard } from './RoundBoard.js';
-import { SceneBoard } from './SceneBoard.js';
+import { MECANIQUES, mecanique } from '../engine/mecaniques.js';
+import { PLATEAUX } from './plateaux.js';
 
-const ORDER: MechanicId[] = ['trier', 'associer', 'ordre', 'placer'];
-const LABEL: Record<MechanicId, string> = {
-  trier: 'Trier',
-  associer: 'Associer',
-  ordre: 'Remettre en ordre',
-  placer: 'Placer dans une scène',
-};
 const A_COMPLETER = 'À compléter par l’enseignant : en quoi ce jeu travaille cet attendu.';
 const DEFAULT_PUPILS = 24;
 
@@ -90,7 +83,7 @@ export function ActivityScreen({ activity }: { activity: Activity }) {
   }, []);
 
   const available = availableMechanics(activity);
-  const mechanics = ORDER.filter((m) => available[m].available);
+  const mechanics = MECANIQUES.map((m) => m.id).filter((m) => available[m].available);
   const pupils = Number.parseInt(pupilsText, 10);
   const pupilsUsed = Number.isFinite(pupils) && pupils > 0 ? pupils : DEFAULT_PUPILS;
   const seed = seedOf(activity.id);
@@ -146,9 +139,9 @@ export function ActivityScreen({ activity }: { activity: Activity }) {
       {mechanics.map((m) => (
         <article key={m} className="deux-cartes">
           <div className="carte carte-ecran">
-            <h2>{`Jeu sur écran : ${LABEL[m]}`}</h2>
+            <h2>{`Jeu sur écran : ${mecanique(m).label}`}</h2>
             <LinksView links={programmeLinks(m, 'numerique', activity.cibles)} />
-            <button type="button" onClick={() => jouer(m)} aria-label={`Jouer : ${LABEL[m]}`}>Jouer</button>
+            <button type="button" onClick={() => jouer(m)} aria-label={`Jouer : ${mecanique(m).label}`}>Jouer</button>
           </div>
           <div className="carte carte-classe">
             <h2>{`En classe, sans écran : ${kits[m].title}`}</h2>
@@ -162,11 +155,10 @@ export function ActivityScreen({ activity }: { activity: Activity }) {
               <p>
                 <button type="button" onClick={() => { setPlaying(null); setFinished(null); }}>Fermer le jeu</button>
               </p>
-              {m === 'placer' ? (
-                <SceneBoard key={playing.seed} round={round} profile={profile} onDone={onDone} />
-              ) : (
-                <RoundBoard key={playing.seed} round={round} onDone={onDone} />
-              )}
+              {(() => {
+                const Plateau = PLATEAUX[m];
+                return <Plateau key={playing.seed} round={round} profile={profile} onDone={onDone} />;
+              })()}
               {finished !== null && <p className="aide">{`Tour terminé : ${finished} éléments joués.`}</p>}
             </div>
           )}

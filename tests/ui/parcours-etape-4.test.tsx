@@ -32,7 +32,7 @@ describe('EtapeElements, guidage des champs', () => {
   it('chaque champ a un label, un placeholder et un texte d’aide non vide', () => {
     render(<Harnais />);
     const champs = screen.getAllByRole('textbox') as (HTMLInputElement | HTMLTextAreaElement)[];
-    expect(champs).toHaveLength(10);
+    expect(champs).toHaveLength(12);
     for (const c of champs) {
       expect(c.placeholder.trim().length).toBeGreaterThan(3);
       const aide = document.getElementById(c.getAttribute('aria-describedby') as string);
@@ -93,5 +93,51 @@ describe('EtapeElements, saisie et statuts', () => {
     const long = 'x'.repeat(30) + ' ' + 'y'.repeat(30) + ' ' + 'z'.repeat(28);
     await userEvent.type(zone('Étapes dans l’ordre'), `à l’intérieur{enter}${long}`);
     expect(zone('Étapes dans l’ordre').value).toBe(`à l’intérieur\n${long}`);
+  });
+});
+
+describe('EtapeElements, Comparer, Mémo et QCM', () => {
+  const statut = (nom: string) => screen.getByText(new RegExp(`^${nom} :`)).textContent;
+
+  it('les champs Comparer et QCM ont un exemple réel et une aide qui explique la portée', () => {
+    render(<Harnais />);
+    const c = zone('Nombres à comparer');
+    expect(c.placeholder).toBe('Exemple : 12 | 8');
+    expect(document.getElementById(c.getAttribute('aria-describedby') as string)?.textContent).toContain('L’application calcule le symbole juste');
+    const q = zone('Questions et réponses');
+    expect(q.placeholder).toContain('Quel symbole veut dire');
+    expect(document.getElementById(q.getAttribute('aria-describedby') as string)?.textContent).toContain('bonne réponse en premier');
+  });
+
+  it('Comparer devient disponible à trois lignes, Mémo suit les paires', async () => {
+    render(<Harnais />);
+    expect(statut('Comparer')).toBe('Comparer : Il faut au moins 3 comparaisons valides.');
+    expect(statut('Mémo')).toBe('Mémo : Il faut au moins 2 paires.');
+    await userEvent.type(zone('Nombres à comparer'), '12 | 8{enter}7 | 9{enter}3 | 1');
+    expect(statut('Comparer')).toBe('Comparer : Disponible');
+    await userEvent.type(zone('Paires à relier'), 'plus grand que | >{enter}plus petit que | <');
+    expect(statut('Mémo')).toBe('Mémo : Disponible');
+  });
+
+  it('QCM devient disponible à trois questions', async () => {
+    render(<Harnais />);
+    expect(statut('QCM libre')).toBe('QCM libre : Il faut au moins 3 questions avec une bonne réponse et une fausse réponse.');
+    await userEvent.type(zone('Questions et réponses'), 'A ? | a | b{enter}B ? | a | b{enter}C ? | a | b');
+    expect(statut('QCM libre')).toBe('QCM libre : Disponible');
+  });
+
+  it('signale une comparaison illisible avec son numéro de ligne', async () => {
+    render(<Harnais />);
+    await userEvent.type(zone('Nombres à comparer'), '12');
+    expect(screen.getByRole('status').textContent).toContain('Comparaisons, ligne 1 : Il manque le séparateur « | » entre les deux nombres.');
+  });
+
+  it('avertit sans bloquer quand toutes les comparaisons donnent le même symbole', async () => {
+    render(<Harnais />);
+    await userEvent.type(zone('Nombres à comparer'), '5 | 3{enter}9 | 1{enter}8 | 2');
+    const zoneStatut = screen.getByRole('status').textContent as string;
+    expect(zoneStatut).toContain('À vérifier');
+    expect(zoneStatut).toContain('même symbole');
+    expect(zoneStatut).not.toContain('À corriger');
   });
 });

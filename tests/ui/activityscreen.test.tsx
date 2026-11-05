@@ -20,12 +20,12 @@ const nombre = (title: string, matiere: string) => {
 };
 
 describe('ActivityScreen', () => {
-  it('propose pour chaque jeu sur écran un jeu physique en regard (quatre et quatre)', () => {
+  it('propose pour chaque jeu sur écran un jeu physique en regard (cinq et cinq : le Mémo suit les paires)', () => {
     mount();
-    expect(screen.getAllByRole('heading', { name: /^Jeu sur écran/ })).toHaveLength(4);
+    expect(screen.getAllByRole('heading', { name: /^Jeu sur écran/ })).toHaveLength(5);
     const classes = screen.getAllByRole('heading', { name: /^En classe, sans écran/ });
-    expect(classes).toHaveLength(4);
-    for (const id of ['trier', 'associer', 'ordre', 'placer'] as const) {
+    expect(classes).toHaveLength(5);
+    for (const id of ['trier', 'associer', 'memo', 'ordre', 'placer'] as const) {
       const t = PHYSICAL_TEMPLATES[id];
       expect(classes.some((h) => h.textContent === `En classe, sans écran : ${t.title}`)).toBe(true);
     }
@@ -35,7 +35,7 @@ describe('ActivityScreen', () => {
     const a = activitePilote();
     delete a.sceneId;
     mount(a);
-    expect(screen.getAllByRole('heading', { name: /^Jeu sur écran/ })).toHaveLength(3);
+    expect(screen.getAllByRole('heading', { name: /^Jeu sur écran/ })).toHaveLength(4);
     expect(screen.queryByRole('heading', { name: /Place-le dans la classe/ })).toBeNull();
   });
 
@@ -102,10 +102,10 @@ describe('ActivityScreen', () => {
     expect(within(article).getByRole('region', { name: 'Place le chat' })).toBeTruthy();
   });
 
-  it('les quatre fiches physiques sont repliées par défaut, avec un résumé clair', () => {
+  it('les cinq fiches physiques sont repliées par défaut, avec un résumé clair', () => {
     mount();
     const fiches = document.querySelectorAll<HTMLDetailsElement>('details.fiche-pliee');
-    expect(fiches).toHaveLength(4);
+    expect(fiches).toHaveLength(5);
     for (const d of fiches) {
       expect(d.open).toBe(false);
       expect(d.querySelector('summary')?.textContent).toBe('Voir la fiche : matériel, déroulement, cartes');
@@ -119,7 +119,7 @@ describe('ActivityScreen', () => {
     window.dispatchEvent(new Event('beforeprint'));
     expect(fiches.every((d) => d.open)).toBe(true);
     window.dispatchEvent(new Event('afterprint'));
-    expect(fiches.map((d) => d.open)).toEqual([false, true, false, false]);
+    expect(fiches.map((d) => d.open)).toEqual([false, true, false, false, false]);
   });
 
   it('range « Autres jeux, avec votre IA » dans un cadre replié, masqué à l’impression', () => {

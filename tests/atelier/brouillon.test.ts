@@ -28,6 +28,8 @@ function complet(over: Partial<Brouillon> = {}): Brouillon {
     ],
     paires: 'devant | derrière\nà droite | à gauche',
     etapes: 'premier\ndeuxième\ntroisième',
+    comparaisons: '',
+    qcm: '',
     ...over,
   };
 }
