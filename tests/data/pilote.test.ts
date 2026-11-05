@@ -12,7 +12,7 @@ const texteOf = (code: string) => REFERENTIEL.find((e) => e.code === code)!.text
 describe('activitePilote (maths P4, sous-point 1.1)', () => {
   it('propose les quatre mécaniques', () => {
     const m = availableMechanics(activitePilote());
-    expect(Object.values(m).every((x) => x.available)).toBe(true);
+    for (const id of ['trier', 'associer', 'ordre', 'placer'] as const) expect(m[id].available).toBe(true);
   });
 
   it('vise des attendus qui existent dans le jeu de données', () => {
