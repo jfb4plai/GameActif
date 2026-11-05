@@ -42,3 +42,13 @@ Aucun des trois n'est « classer dans des familles », alors que le catalogue co
 | fiche de contrôle présente, absente du jeu | présente (fiche-1.md), absente du fichier HTML | idem | idem |
 
 Une erreur de contenu a failli passer, à signaler comme exemple du risque : dans un premier plan du jeu 2, « Quelle figure est un parallélogramme ? » proposait un carré, un rectangle et un losange, qui sont tous des parallélogrammes (une réponse correcte multiple). Les propositions ont été choisies pour exclure ces cas. C'est exactement ce que la fiche de contrôle doit permettre à l'enseignant de rattraper.
+
+## Essai 2 refait avec les règles strictes de discrimination (2026-11-05, après la remarque de JF sur le losange)
+
+Défaut constaté sur le premier jeu 2 : le losange avait des angles de 98° et 82°, donc presque un carré tourné. Les règles ajoutées au prompt (propositions fausses sans équivoque, dessins fidèles avec écart d'au moins 30° et rapport de côtés d'au moins 3 pour 2, mêmes marques de codage ou aucune, raison de chaque fausse proposition dans la fiche) ont produit `prompt-v2-2.txt`, puis `jeu-v2-2.html` et `fiche-v2-2.md`.
+
+- Constaté (mesure sur les coordonnées des figures) : losange 122°/58°, parallélogramme 120°/60° côtés 70 et 40, rectangle 80 sur 38, carré 50 sur 50 ; 0 marque de codage dans le fichier.
+- Constaté (Chrome sans interface, `file://`) : les 6 questions se jouent, mauvaise réponse « Pas tout à fait. Regarde l'indice. », mode calme actif, 0 ressource externe.
+- Limite du biais : c'est le même modèle qui a écrit les règles et rejoué le rôle de l'IA ; un autre modèle peut ne pas les suivre. Une seule génération, pas de mesure de fiabilité.
+- Règle à reformuler peut-être : « une seule propriété départage les propositions » est trop stricte (la question « Quelle figure est un carré ? » oppose deux propriétés : côtés égaux et angles droits). Non modifiée.
+- Sans marques de codage, les questions 5 et 6 demandent de juger à l'œil ; non testé avec des élèves.
