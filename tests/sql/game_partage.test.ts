@@ -71,4 +71,19 @@ describe('migration game_partage et essais (Postgres en mémoire, sans toucher �
       expect(sql).toMatch(new RegExp(`revoke all on table public\\.${t} from[^;]*anon`, 'i'));
     }
   });
+
+  it('le fichier d’essai de la base partagée est à jour, annule tout et échoue vite plutôt que de bloquer auth.users', () => {
+    const fichier = lire('supabase/essai-rollback-game_partage.sql');
+    const attendu = `begin;
+set local lock_timeout = '3s';
+${lire(ACCES)}
+${lire(SUIVI)}
+${lire(PARTAGE)}
+${essais()}
+rollback;
+`;
+    expect(fichier.slice(fichier.indexOf('begin;'))).toBe(attendu);
+    expect(fichier).not.toMatch(/^\s*commit\s*;/im);
+    expect(fichier.match(/^\s*begin\s*;/gim)).toHaveLength(1);
+  });
 });
