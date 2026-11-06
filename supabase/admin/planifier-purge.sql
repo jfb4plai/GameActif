@@ -1,4 +1,4 @@
--- GameActif : planification de la suppression des résultats de classe (30 août). NON EXÉCUTÉ.
+-- GameActif : planification de la suppression des résultats de classe (30 août). EXÉCUTÉ le 2026-11-06 sur la base partagée, avec l'accord de JF (job actif dans cron.job).
 -- À lancer par l'administrateur, avec son accord explicite, SEULEMENT après l'application de la migration
 -- 20261107_game_suivi.sql (la fonction public.game_purge_expired() doit exister) : sinon le job échouerait chaque nuit.
 --
