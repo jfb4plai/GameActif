@@ -230,7 +230,7 @@ export function Parcours({
       {magasinSuivi !== null && (
         <details className="espace-pliee">
           <summary>Mes classes et résultats</summary>
-          <MesClasses store={magasinSuivi} stockage={stockageSuivi} telecharger={telecharger} peutCreer={acces === 'enseignant'} />
+          <MesClasses store={magasinSuivi} stockage={stockageSuivi} telecharger={telecharger} peutCreer={acces === 'enseignant'} partage={magasinPartage ?? undefined} />
         </details>
       )}
 

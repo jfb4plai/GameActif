@@ -4,6 +4,7 @@ import { render, screen, cleanup, fireEvent, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import { MesClasses } from '../../src/ui/MesClasses';
 import { magasinSuiviMemoire, type ClasseLue, type SuiviStore } from '../../src/suivi/lecture.js';
+import { magasinPartageMemoire } from '../../src/partage/magasin.js';
 import type { StockageLocal } from '../../src/compte/invitation.js';
 
 afterEach(() => cleanup());
@@ -170,5 +171,28 @@ describe('MesClasses, personne invitée', () => {
     expect(screen.queryByRole('button', { name: 'Enregistrer l’observation' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Enregistrer le résultat' })).toBeNull();
     expect(screen.queryByText(/Code de la classe :/)).toBeNull();
+  });
+});
+
+describe('MesClasses, niveaux par code', () => {
+  const avecPartage = (c: ClasseLue) => {
+    render(<MesClasses store={magasinSuiviMemoire({ classes: [c] }) as SuiviStore} stockage={stockage()} telecharger={vi.fn()} partage={magasinPartageMemoire()} />);
+  };
+
+  it('une classe dont on est propriétaire propose les niveaux par code', async () => {
+    avecPartage(classe);
+    expect(await screen.findByRole('region', { name: 'Niveaux par code' })).toBeTruthy();
+  });
+
+  it('une classe seulement lue ne les propose pas', async () => {
+    avecPartage({ ...classe, proprietaire: false });
+    await screen.findByText(/personne invitée/);
+    expect(screen.queryByRole('region', { name: 'Niveaux par code' })).toBeNull();
+  });
+
+  it('sans magasin de partage, rien n’apparaît', async () => {
+    monter();
+    await screen.findByText(/Les résultats de cette classe sont supprimés le/);
+    expect(screen.queryByRole('region', { name: 'Niveaux par code' })).toBeNull();
   });
 });

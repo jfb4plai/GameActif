@@ -5,6 +5,8 @@ import type { ClasseLue, SuiviStore } from '../suivi/lecture.js';
 import { codesDeClasse, dateFr } from './formats.js';
 import { InvitationClasse } from './InvitationClasse.js';
 import { ObservationLibre } from './ObservationLibre.js';
+import { NiveauxParCode } from './NiveauxParCode.js';
+import type { PartageStore } from '../partage/magasin.js';
 import { PrenomsClasse } from './PrenomsClasse.js';
 import { SaisieManuelle } from './SaisieManuelle.js';
 import { TableauDeBord } from './TableauDeBord.js';
@@ -29,10 +31,12 @@ interface Props {
   telecharger?: (nom: string, contenu: string) => void;
   /** Faux pour un compte sans accès enseignant : il ne peut que rejoindre une classe par code d'invitation. */
   peutCreer?: boolean;
+  /** Magasin des activités partagées et des niveaux par code : sans lui, pas de « Niveaux par code ». */
+  partage?: PartageStore;
 }
 
 /** « Mes classes » : créer une classe, suivre ses résultats, inviter une personne, ou lire la classe d'un collègue. */
-export function MesClasses({ store, stockage, telecharger = telechargerParLien, peutCreer = true }: Props) {
+export function MesClasses({ store, stockage, telecharger = telechargerParLien, peutCreer = true, partage }: Props) {
   const [classes, setClasses] = useState<ClasseLue[] | null>(null);
   const [choisie, setChoisie] = useState<string | null>(null);
   const [erreurListe, setErreurListe] = useState(false);
@@ -146,6 +150,7 @@ export function MesClasses({ store, stockage, telecharger = telechargerParLien, 
 
           <PrenomsClasse key={`prenoms-${classe.id}`} classe={classe} stockage={stockage} telecharger={telecharger} onChange={() => setPrenoms((v) => v + 1)} />
           <TableauDeBord key={`tdb-${classe.id}-${version}`} classe={classe} store={store} stockage={stockage} />
+          {partage && <NiveauxParCode key={`niveaux-${classe.id}`} classe={classe} partage={partage} stockage={stockage} />}
           <SaisieManuelle key={`manuel-${classe.id}`} classe={classe} store={store} onEnregistre={() => setVersion((v) => v + 1)} />
           <ObservationLibre key={`obs-${classe.id}`} classId={classe.id} purgeLe={classe.purgeLe} codes={codesDeClasse(classe.nbCodes)} store={store} stockage={stockage} />
           <InvitationClasse key={`inv-${classe.id}`} classe={classe} store={store} />
