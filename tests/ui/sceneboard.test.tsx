@@ -48,7 +48,7 @@ describe('SceneBoard', () => {
     const round = mount();
     expect(screen.getByText(round.labels[round.elements[0].id])).toBeTruthy();
     expect(screen.getByText(`Consigne 1 sur ${round.elements.length}`)).toBeTruthy();
-    expect(screen.getByRole('img', { name: scene.description })).toBeTruthy();
+    expect(screen.getByRole('group', { name: scene.description })).toBeTruthy();
   });
 
   it('poser le chat dans la bonne zone, au clavier, résout la consigne', () => {

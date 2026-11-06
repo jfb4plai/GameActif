@@ -116,7 +116,7 @@ function SceneGame({ round, profile, onDone, scene }: Props & { scene: Scene }) 
         </button>
       </p>
       <div className="scene-cadre">
-        <svg ref={svgRef} className="scene" viewBox={`0 0 ${scene.viewBox.w} ${scene.viewBox.h}`} role="img" aria-label={scene.description}>
+        <svg ref={svgRef} className="scene" viewBox={`0 0 ${scene.viewBox.w} ${scene.viewBox.h}`} role="group" aria-label={scene.description}>
           <rect x="0" y="0" width="600" height="340" fill="#ddeff0" />
           <rect x="0" y="292" width="600" height="48" fill="#b9d9a8" stroke="#161616" strokeWidth="3" />
           {showHint && hintZone && (

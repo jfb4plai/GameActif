@@ -26,6 +26,11 @@ body {
   line-height: 1.55;
 }
 
+/* Lien d'évitement : caché hors focus, visible au focus (y compris en mode calme). */
+.lien-evitement { position: absolute; left: -9999px; top: 8px; z-index: 100; padding: 10px 16px; font-size: 1rem; background: var(--papier); color: var(--encre); border: 3px solid var(--encre); text-decoration: underline; }
+.lien-evitement:focus { left: 8px; }
+main:focus { outline: 3px solid var(--sarcelle); outline-offset: 2px; }
+.pied-de-page { padding: 16px 20px 28px; font-size: 1rem; border-top: 3px solid var(--encre); }
 .entete { position: relative; overflow: hidden; border-bottom: 3px solid var(--encre); background: var(--papier); padding: 18px 20px 22px; }
 .entete .rayons { position: absolute; right: -160px; top: -260px; width: 560px; height: 560px; border-radius: 50%;
   background: repeating-conic-gradient(var(--jaune) 0 9deg, transparent 9deg 22deg); opacity: 0.85; animation: tourne 120s linear infinite; }

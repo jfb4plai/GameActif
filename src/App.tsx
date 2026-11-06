@@ -11,6 +11,17 @@ function Cadre() {
   const compteActif = useAuthOptionnel()?.disponible === true;
   return (
     <>
+      {/* Lien d'évitement : le focus va directement au contenu. Pas d'ancre native : « #contenu » changerait la vue (voir vue.ts). */}
+      <a
+        className="lien-evitement"
+        href="#contenu"
+        onClick={(e) => {
+          e.preventDefault();
+          document.getElementById('contenu')?.focus();
+        }}
+      >
+        Aller au contenu
+      </a>
       <header className="entete">
         <div className="rayons" aria-hidden="true" />
         <div className="soleil" aria-hidden="true" />
@@ -22,7 +33,7 @@ function Cadre() {
           <CalmToggle />
         </div>
       </header>
-      <main>{vue === 'parcours' ? <Parcours /> : <PageLegale page={vue} compteActif={compteActif} suiviActif={SUIVI_ACTIF_PAR_DEFAUT} />}</main>
+      <main id="contenu" tabIndex={-1}>{vue === 'parcours' ? <Parcours /> : <PageLegale page={vue} compteActif={compteActif} suiviActif={SUIVI_ACTIF_PAR_DEFAUT} />}</main>
       <PiedDePage />
     </>
   );
