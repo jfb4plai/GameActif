@@ -36,7 +36,7 @@ export class ErreurStockage extends Error {
   }
 }
 
-function classer(e: unknown): ErreurStockage {
+export function classer(e: unknown): ErreurStockage {
   const message = typeof e === 'object' && e !== null && 'message' in e ? String((e as { message: unknown }).message) : String(e);
   const code = typeof e === 'object' && e !== null && 'code' in e ? String((e as { code: unknown }).code) : '';
   if (code === '42501' || code === 'PGRST301' || /jwt/i.test(message)) return new ErreurStockage('acces');
