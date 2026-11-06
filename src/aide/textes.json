@@ -7,8 +7,8 @@
       "Votre saisie est gardée dans ce navigateur : rien n’est envoyé.",
       "Pour reprendre une activité exportée : « Ouvrir une activité (fichier) », en bas de page."
     ],
-    "limite": "Seules les mathématiques sont disponibles pour l’instant.",
-    "sources": ["src/ui/EtapeNiveau.tsx", "src/ui/Parcours.tsx", "src/data/catalogue.ts", "src/parcours/stockage.ts"]
+    "limite": "Rien n’est enregistré en ligne à cette étape : un autre navigateur ne retrouve pas votre saisie.",
+    "sources": ["src/ui/EtapeNiveau.tsx", "src/ui/Parcours.tsx", "src/parcours/stockage.ts"]
   },
   "parcours-matiere": {
     "public": "enseignant",
@@ -34,7 +34,7 @@
     "puces": [
       "Saisir vos éléments : mots, paires, étapes, comparaisons, questions.",
       "Un jeu devient disponible quand ses données sont suffisantes : son statut est affiché.",
-      "Le contexte de classe est obligatoire : n’y mettez aucun nom d’élève.",
+      "Le contexte de classe est obligatoire : n’y mettre aucun nom d’élève.",
       "Relire chaque élément : les élèves verront exactement ce que vous saisissez."
     ],
     "limite": "L’outil ne vérifie pas que vos contenus sont justes.",
@@ -43,13 +43,14 @@
   "parcours-jeux": {
     "public": "enseignant",
     "puces": [
-      "Jouer chaque jeu avant de le proposer.",
       "Chaque jeu sur écran a son jeu en classe, sans écran, avec une fiche à imprimer.",
       "Le profil règle le nombre d’éléments et les aides ; il ne décide rien pour un élève.",
-      "« Télécharger mon activité » donne un fichier à partager avec un collègue."
+      "« Autres jeux, avec votre IA » donne un texte à coller dans votre outil d’IA, à relire avant usage.",
+      "« Télécharger mon activité » donne un fichier à partager avec un collègue.",
+      "Le « Mode calme », en haut de page, coupe les animations."
     ],
     "limite": "Les phrases « lien programme » sont à compléter par vous.",
-    "sources": ["src/ui/ActivityScreen.tsx", "src/ui/BarreFichier.tsx", "src/physical/programme.ts"]
+    "sources": ["src/ui/ActivityScreen.tsx", "src/ui/BarreFichier.tsx", "src/ui/AutresJeux.tsx", "src/ui/CalmContext.tsx", "src/physical/programme.ts"]
   },
   "proposer": {
     "public": "enseignant",
@@ -66,7 +67,7 @@
     "public": "enseignant",
     "puces": [
       "Créer une classe, puis donner son code aux élèves.",
-      "Chaque élève joue sous un code (E01, E02…) : gardez chez vous la liste des prénoms, elle reste sur cet appareil.",
+      "Chaque élève joue sous un code (E01, E02…) : garder chez soi la liste des prénoms, elle reste sur cet appareil.",
       "Consulter le tableau de bord après chaque séance.",
       "Inviter une personne en lecture seule si besoin."
     ],
@@ -78,8 +79,8 @@
     "puces": [
       "Lire d’abord « Qui a joué ».",
       "Regarder les erreurs par type : elles disent quoi réenseigner.",
-      "Les états sont un indice, pas une preuve : décidez avec ce que vous observez.",
-      "Noter vos observations avec le code, jamais le prénom."
+      "Les états sont un indice, pas une preuve : décider avec ce qui est observé en classe.",
+      "Noter ses observations avec le code, jamais le prénom."
     ],
     "limite": "Quiconque connaît le code de classe peut enregistrer un résultat sous un code élève : ce tableau n’est pas une preuve.",
     "sources": ["src/ui/TableauDeBord.tsx", "src/ui/ObservationLibre.tsx", "src/suivi/agregats.ts", "docs/confidentialite/dossier-dpo-suivi.md"]
@@ -90,7 +91,7 @@
       "Le niveau de chaque code est votre décision, jamais automatique.",
       "Standard est le niveau par défaut.",
       "L’élève ne voit pas le nom de son niveau.",
-      "Il peut rejouer un niveau au-dessus ; vous le voyez dans le tableau de bord."
+      "L’élève peut rejouer un niveau au-dessus ; le tableau de bord l’indique."
     ],
     "limite": "Un camarade qui connaît le code de classe peut essayer d’autres codes et deviner un niveau.",
     "sources": ["src/ui/NiveauxParCode.tsx", "src/ui/ActivityScreen.tsx", "supabase/migrations/20261108_game_partage.sql"]
@@ -100,10 +101,10 @@
     "puces": [
       "Choisir son code dans la liste « Qui joue ? ».",
       "Appuyer sur « Jouer ».",
-      "Lire la consigne, puis choisir une réponse.",
-      "Appuyer sur « Écouter la consigne » quand ce bouton est proposé.",
-      "Rejouer un niveau au-dessus après un tour, si l’envie est là."
+      "Choisir une réponse.",
+      "Appuyer sur « Mode calme » pour des écrans sans mouvement.",
+      "Rejouer un niveau au-dessus après un tour, si le défi tente."
     ],
-    "sources": ["src/ui/VueEleve.tsx", "src/ui/QuiJoue.tsx", "src/ui/ActivityScreen.tsx"]
+    "sources": ["src/ui/VueEleve.tsx", "src/ui/QuiJoue.tsx", "src/ui/ActivityScreen.tsx", "src/ui/CalmContext.tsx"]
   }
 }

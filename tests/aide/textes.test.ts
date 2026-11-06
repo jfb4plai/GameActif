@@ -28,6 +28,13 @@ describe('textes d’aide', () => {
         if (a.limite !== undefined) expect(a.limite.length).toBeLessThanOrEqual(140);
       });
 
+      it('n’emploient pas l’impératif en « vous » : l’infinitif partout, comme pour l’élève', () => {
+        // Une consigne commence la puce ou suit « : » ou « ; » ; « ce que vous saisissez » (constat) n'est pas une consigne.
+        for (const p of a.puces) {
+          expect(p, p).not.toMatch(/(^|[:;]\s)(gardez|mettez|décidez|notez|choisissez|cochez|lisez|saisissez|relisez|jouez|appuyez|créez|donnez|consultez|regardez)\b/i);
+        }
+      });
+
       it('citent des sources qui existent dans le dépôt', () => {
         expect(a.sources.length).toBeGreaterThanOrEqual(1);
         for (const s of a.sources) expect(existsSync(racine(s)), s).toBe(true);
