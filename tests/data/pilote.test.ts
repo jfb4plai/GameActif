@@ -17,7 +17,9 @@ describe('activitePilote (maths P4, sous-point 1.1)', () => {
 
   it('vise des attendus qui existent dans le jeu de données', () => {
     const a = activitePilote();
-    expect(a.cibles).toEqual(['M.P4.1.1.i1.a1', 'M.P4.1.1.i1.a2', 'M.P4.1.1.i1.a3', 'M.P4.1.1.i2.a2']);
+    expect(a.cibles).toEqual(['M.P4.1.1.i1.a1', 'M.P4.1.1.i1.a2', 'M.P4.1.1.i1.a3']);
+    // Le suivi refuse toute séance de plus de 3 attendus (game_record_session) : constaté en recette le 2026-11-06 avec 4.
+    expect(a.cibles.length).toBeLessThanOrEqual(3);
     for (const c of a.cibles) expect(referentielCodes().has(c)).toBe(true);
   });
 

@@ -15,7 +15,7 @@ export function activitePilote(): Activity {
     discipline: 'Mathématiques',
     year: '4e primaire',
     context: 'Exemple non relu : à adapter à votre classe avant de le proposer aux élèves.',
-    cibles: ['M.P4.1.1.i1.a1', 'M.P4.1.1.i1.a2', 'M.P4.1.1.i1.a3', 'M.P4.1.1.i2.a2'],
+    cibles: ['M.P4.1.1.i1.a1', 'M.P4.1.1.i1.a2', 'M.P4.1.1.i1.a3'],
     sceneId: 'chat-table-boite-arbres',
     items: [
       mot('a-int', 'à l\'intérieur'),
