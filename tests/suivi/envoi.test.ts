@@ -60,6 +60,9 @@ describe('envoyerSession', () => {
       expect(MESSAGES_ENVOI[r]).not.toMatch(/fetch|supabase|postgres|rpc|http/i);
     }
     expect(MESSAGES_ENVOI.echec).toContain('Le jeu reste jouable');
+    // Un refus peut venir du contenu du tour, pas seulement des codes : le message ne doit pas accuser les seuls codes.
+    expect(MESSAGES_ENVOI.invalide).toMatch(/contenu du tour/);
+    expect(MESSAGES_ENVOI.invalide).toMatch(/enseignant/);
   });
 });
 

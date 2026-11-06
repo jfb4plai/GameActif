@@ -14,7 +14,7 @@ export type ResultatEnvoi = 'ok' | 'invalide' | 'limite' | 'echec';
 /** Messages affichés à l'élève ou à l'enseignant : en français, sans détail technique. */
 export const MESSAGES_ENVOI: Record<ResultatEnvoi, string> = {
   ok: 'Résultat enregistré.',
-  invalide: 'Le résultat de ce tour n’a pas été enregistré : le code de classe ou le code élève n’est pas reconnu.',
+  invalide: 'Le résultat de ce tour n’a pas été enregistré : le code de classe, le code élève ou le contenu du tour n’a pas été accepté. Prévenez votre enseignant.',
   limite: 'Trop de résultats arrivent en même temps. Le résultat de ce tour n’a pas été enregistré.',
   echec: 'Le résultat de ce tour n’a pas été enregistré. Le jeu reste jouable.',
 };

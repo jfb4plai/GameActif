@@ -265,7 +265,7 @@ export function ActivityScreen({ activity, suivi, stockage, eleve }: Props) {
             onAssocier={associer}
             onOublier={() => { oublierClasse(magasin); setClasse(null); setQuiJoue(''); }}
           />
-          <p role="status" aria-live="polite" className="retour-court">{retour}</p>
+          <p role="status" aria-live="polite" className="retour-court">{playing ? '' : retour}</p>
         </div>
       )}
 
@@ -295,6 +295,8 @@ export function ActivityScreen({ activity, suivi, stockage, eleve }: Props) {
                 return <Plateau key={playing.seed} round={round} profile={profile} onDone={onDone} />;
               })()}
               {finished !== null && <p className="aide">{`Tour terminé : ${finished} éléments joués.`}</p>}
+              {/* Le résultat de l'envoi s'affiche ici pendant qu'un jeu est ouvert (sinon dans la carte « Qui joue ? »). */}
+              <p role="status" aria-live="polite" className="retour-court">{retour}</p>
               {eleve && finished !== null && dernier !== null && niveauAuDessus(dernier.profil) !== null && (
                 <button
                   type="button"

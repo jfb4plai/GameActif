@@ -73,6 +73,16 @@ describe('ActivityScreen, suivi par code', () => {
     expect(await screen.findByText(MESSAGES_ENVOI.ok)).toBeTruthy();
   });
 
+  it('le résultat de l’envoi s’affiche sous le plateau, là où le tour se termine', async () => {
+    const { c } = client(async () => ({ data: 'ok', error: null }));
+    monter(c);
+    await userEvent.selectOptions(screen.getByLabelText('Qui joue ?'), 'E02');
+    await jouerUnTour();
+    const message = await screen.findByText(MESSAGES_ENVOI.ok);
+    expect(message.closest('.jeu-en-cours')).not.toBeNull();
+    expect(screen.getAllByText(MESSAGES_ENVOI.ok)).toHaveLength(1);
+  });
+
   it('n’envoie rien pour un tour joué sans enregistrer', async () => {
     const { c, appels } = client(async () => ({ data: 'ok', error: null }));
     monter(c);
