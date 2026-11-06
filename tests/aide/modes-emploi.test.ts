@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs';
 import { AIDES, type AideId } from '../../src/aide/aides.js';
 
 const sortie = (public_: 'enseignant' | 'eleve') => execFileSync('node', ['scripts/build-modes-emploi.mjs', '--stdout', public_], { encoding: 'utf8' });
-const fichier = (nom: string) => readFileSync(new URL(`../../docs/modes-emploi/${nom}`, import.meta.url), 'utf-8');
+// Fins de ligne normalisées : un checkout Windows (core.autocrlf) peut convertir le fichier versionné en CRLF.
+const fichier = (nom: string) => readFileSync(new URL(`../../docs/modes-emploi/${nom}`, import.meta.url), 'utf-8').replace(/\r\n/g, '\n');
 
 const ids = Object.keys(AIDES) as AideId[];
 const enseignant = ids.filter((i) => AIDES[i].public === 'enseignant');

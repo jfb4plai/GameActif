@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 import { pgcrypto } from '@electric-sql/pglite/contrib/pgcrypto';
 
-/** Lit un fichier du dépôt, chemin relatif à la racine de `gameactif/`. */
-export const lire = (chemin: string) => readFileSync(new URL(`../../${chemin}`, import.meta.url), 'utf-8');
+/** Lit un fichier du dépôt (chemin relatif à `gameactif/`), fins de ligne normalisées : un checkout Windows peut les convertir en CRLF. */
+export const lire = (chemin: string) => readFileSync(new URL(`../../${chemin}`, import.meta.url), 'utf-8').replace(/\r\n/g, '\n');
 
 /**
  * Simule ce que Supabase fournit : rôles, schéma auth, auth.uid() lu dans les claims, schéma public ouvert,
