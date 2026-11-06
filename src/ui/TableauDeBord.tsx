@@ -248,8 +248,8 @@ export function TableauDeBord({ classe, store, stockage }: { classe: ClasseLue; 
               <tr key={`${f.date}-${f.jeu}-${i}`}>
                 <th scope="row">{date(f.date)}</th>
                 <td>{nomJeu(f.jeu)}</td>
-                <td>{f.r1 === null ? '—' : pourcent(f.r1)}</td>
-                <td>{f.erreurs.length === 0 ? '—' : f.erreurs.join(' ; ')}</td>
+                <td>{f.r1 === null ? 'sans objet' : pourcent(f.r1)}</td>
+                <td>{f.erreurs.length === 0 ? 'aucune' : f.erreurs.join(' ; ')}</td>
                 <td>{f.origine === 'ecran' ? 'jeu sur écran' : `saisi par l’enseignant : ${f.note ? NOTES[f.note] : ''}`}</td>
               </tr>
             ))}
