@@ -71,7 +71,7 @@ export function BarreFichier({ brouillon, enCours, onCharger, telecharger = tele
         >
           Télécharger mon activité
         </button>
-        <p className="aide">Le fichier contient votre contexte de classe. Relisez-le avant de l’envoyer et n’y mettez aucun nom d’élève.</p>
+        <p className="aide">Le fichier contient votre contexte de classe. Relisez-le avant de l’envoyer et n’y mettez aucun prénom ni nom d’élève.</p>
       </div>
 
       <div className="champ">

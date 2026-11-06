@@ -26,7 +26,7 @@ describe('EtapeElements, guidage des champs', () => {
     const c = zone('Contexte de classe');
     expect(c.placeholder).toBe('Exemple : 18 élèves de 4e primaire, vocabulaire de position travaillé la semaine dernière');
     const aide = document.getElementById(c.getAttribute('aria-describedby') as string) as HTMLElement;
-    expect(aide.textContent).toContain('aucun nom d’élève');
+    expect(aide.textContent).toContain('aucun prénom ni nom d’élève');
   });
 
   it('chaque champ a un label, un placeholder et un texte d’aide non vide', () => {

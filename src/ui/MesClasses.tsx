@@ -184,7 +184,7 @@ export function MesClasses({ store, stockage, telecharger = telechargerParLien, 
         <div>
           <label htmlFor="classe-nom">Nom de la classe</label>
           <input id="classe-nom" type="text" maxLength={80} placeholder="P4 B, 2026-2027" autoComplete="off" value={nom} aria-describedby="classe-nom-aide" onChange={(e) => setNom(e.target.value)} />
-          <p id="classe-nom-aide" className="aide">Pas de prénom : ce nom est enregistré dans la base et vu par les personnes que vous invitez.</p>
+          <p id="classe-nom-aide" className="aide">Pas de prénom ni de nom : ce nom est enregistré dans la base et vu par les personnes que vous invitez.</p>
         </div>
         <div>
           <label htmlFor="classe-nb">Nombre de codes</label>

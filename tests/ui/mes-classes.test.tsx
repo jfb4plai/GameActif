@@ -38,7 +38,7 @@ describe('MesClasses, création', () => {
     monter({});
     const nom = (await screen.findByLabelText('Nom de la classe')) as HTMLInputElement;
     expect(nom.placeholder).toMatch(/P4 B, 2026-2027/);
-    expect(screen.getByText(/Pas de prénom/)).toBeTruthy();
+    expect(screen.getByText(/Pas de prénom ni de nom/)).toBeTruthy();
     expect(screen.getByText(/Un code par élève/)).toBeTruthy();
   });
 

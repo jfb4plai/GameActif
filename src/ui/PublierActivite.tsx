@@ -173,6 +173,7 @@ export function PublierActivite({ brouillon, suivi, partage, origine, copier = c
         )}
       </div>
       {erreur !== '' && <p role="alert" className="raisons">{erreur}</p>}
+      <p className="aide">Avant de proposer : l’activité sera lisible par quiconque a le lien. Vérifier qu’elle ne contient ni prénom ni nom d’élève.</p>
       <button type="button" onClick={proposer} disabled={occupe || classeId === ''}>{publie ? 'Mettre à jour le lien' : 'Proposer à la classe'}</button>
 
       {publie && (

@@ -68,7 +68,7 @@ export function EtapeElements({ etat, envoyer }: Props) {
         id="contexte"
         label="Contexte de classe"
         placeholder="Exemple : 18 élèves de 4e primaire, vocabulaire de position travaillé la semaine dernière"
-        aide="Décrivez votre classe en une phrase : elle s’affiche sur la fiche. N’écrivez aucun nom d’élève."
+        aide="Décrivez votre classe en une phrase : elle s’affiche sur la fiche. N’écrivez aucun prénom ni nom d’élève."
         valeur={b.contexte}
         onChange={(contexte) => modifier({ contexte })}
         multiligne

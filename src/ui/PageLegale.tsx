@@ -59,6 +59,12 @@ function Confidentialite({ compteActif, suiviActif }: Omit<Props, 'page'>) {
             Durée : tout ce qui concerne une classe est supprimé le 30 août suivant sa création (le 30 août de l’année suivante pour une classe créée en août), ou plus tôt si l’enseignant la supprime.
           </p>
           <p>
+            Responsables : l’administrateur de l’application (Jean-François Beguin) et l’enseignant qui l’utilise avec sa classe. L’enseignant est responsable des données qu’il détient sur ses élèves ; elles sont supprimées au plus tard le 30 août.
+          </p>
+          <p>
+            Rappel à chaque saisie : ne jamais écrire de prénom ni de nom d’élève (observations, nom de classe, contenu d’une activité partagée).
+          </p>
+          <p>
             Le tableau de bord est un indice, pas une preuve : quiconque connaît le code d’une classe peut enregistrer un résultat sous un code élève de cette classe.
           </p>
         </>

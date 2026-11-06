@@ -46,7 +46,7 @@ describe('BarreFichier, télécharger', () => {
 
   it('prévient que le contexte de classe est dans le fichier', () => {
     monter();
-    expect(screen.getByText('Le fichier contient votre contexte de classe. Relisez-le avant de l’envoyer et n’y mettez aucun nom d’élève.')).toBeTruthy();
+    expect(screen.getByText('Le fichier contient votre contexte de classe. Relisez-le avant de l’envoyer et n’y mettez aucun prénom ni nom d’élève.')).toBeTruthy();
   });
 
   it('le bouton est désactivé tant qu’aucun niveau et aucune matière ne sont choisis', () => {

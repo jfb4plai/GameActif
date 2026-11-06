@@ -3,6 +3,28 @@
 Date : 2026-11-06. Statut : brouillon de JF et Claude, à soumettre avant toute application de la migration `supabase/migrations/20261107_game_suivi.sql`. Rien n'est appliqué sur la base partagée ni déployé avec l'interrupteur ouvert.
 Statuts : constaté (code du dépôt, fichier cité), non vérifié (à confirmer par JF ou le DPO).
 
+## Avis du DPO du Pôle (2026-11-06)
+
+Avis rendu par JF, dans son rôle de DPO au sein du Pôle, après lecture du résumé des points sensibles. Les réponses ci-dessous sont les siennes, reprises sans les interpréter.
+
+| Point | Réponse du DPO | Traduction dans l'outil |
+|---|---|---|
+| Données de mineurs sous pseudonyme | Sous la responsabilité de l'enseignant, qui peut détenir ces données ; à effacer chaque 30 août. | Suppression au 30 août (`game_purge_expired`) ; la page Confidentialité le dit (`src/ui/PageLegale.tsx`). |
+| Responsable du traitement | L'administrateur de l'application (Jean-François Beguin) et l'enseignant qui l'utilise. | Nommés sur la page Confidentialité quand le suivi est ouvert. La qualification juridique (responsabilité conjointe ou non) n'est **pas établie** ici. |
+| Évaluation des élèves (états, niveaux) | « C'est aussi le cas pour toute tâche assignée à des élèves » : pas de traitement particulier. | Aucune AIPD n'est réalisée ; c'est une décision du DPO. |
+| Niveau par code | « Cela reste dans l'environnement classe. » | Le mode « niveau par code » est accepté. Le risque de déduction par un camarade qui connaît le code de classe reste documenté (§7, risque 10). |
+| Observations libres | À rappeler à l'enseignant : ne pas écrire de prénom ni de nom. | Rappel « ni prénom ni nom » sur chaque saisie libre (observations, nom de classe, contexte, activité partagée, fichier exporté), dans l'aide de chaque écran et sur la page Confidentialité. |
+
+**Conclusion du DPO :** « si tout cela est mis en place, c'est OK pour moi ». Avis favorable **sous ces conditions**.
+
+Où en sont les conditions :
+- **Rappel « ni prénom ni nom » partout :** fait dans le code (testé : `tests/ui/observation-libre.test.tsx`, `mes-classes.test.tsx`, `publier-activite.test.tsx`, `pages-legales.test.tsx`, `tests/aide/textes.test.ts`).
+- **Responsables nommés et effacement au 30 août annoncés :** fait sur la page Confidentialité.
+- **Effacement automatique au 30 août :** la fonction existe et est testée en mémoire ; **sa planification sur la base partagée (`pg_cron`) n'est pas vérifiée ni mise en place**. Tant qu'elle ne l'est pas, la condition « effacer chaque 30 août » repose sur l'enseignant seul. À faire par l'administrateur avant l'ouverture du suivi.
+- **Migrations `20261107` et `20261108` :** non appliquées ; leur application et l'ouverture du suivi (`VITE_SUIVI_ACTIF`) restent à décider par l'administrateur.
+
+Points non traités par l'avis, donc toujours des limites documentées : pas de suppression d'un seul code ni d'une observation depuis l'écran (risques 3 et 4), pas de contrôle automatique des noms propres dans les activités (risque 9), région d'hébergement et contrats des sous-traitants non vérifiés (risque 8), information des parents et des écoles non prévue.
+
 ## 1. Finalité
 
 Après une séance de jeu, l'enseignant voit quelle partie de sa classe a joué, quelles erreurs reviennent, ce qui a déjà été réussi sur le même attendu dans d'autres jeux, et un indice d'acquisition, pour décider lui-même d'une remédiation. Aucune décision n'est prise automatiquement sur un élève. Source : `docs/superpowers/specs/2026-11-06-suivi-par-code-design.md`, §1 et §3.

@@ -28,7 +28,7 @@ describe('ObservationLibre', () => {
   it('guide le champ : libellé, exemple concret et aide sur la portée et la suppression', () => {
     monter();
     expect(champ().placeholder).toMatch(/E04 a corrigé seul/);
-    expect(screen.getByText(/Écrivez le code, jamais le prénom/)).toBeTruthy();
+    expect(screen.getByText(/Écrivez le code, jamais le prénom ni le nom/)).toBeTruthy();
     expect(screen.getByText(/supprimé le .*2027/)).toBeTruthy();
   });
 

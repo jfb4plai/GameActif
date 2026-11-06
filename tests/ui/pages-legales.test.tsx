@@ -37,6 +37,19 @@ describe('PageLegale, confidentialité', () => {
     expect(texte()).not.toMatch(/aucune donnée d’élève n’est enregistrée/);
   });
 
+  it('avec le suivi ouvert : les responsables, l’effacement au plus tard le 30 août et le rappel « ni prénom ni nom »', () => {
+    render(<PageLegale page="confidentialite" compteActif suiviActif />);
+    expect(texte()).toMatch(/Responsables : l’administrateur de l’application \(Jean-François Beguin\) et l’enseignant qui l’utilise avec sa classe/);
+    expect(texte()).toMatch(/L’enseignant est responsable des données qu’il détient sur ses élèves/);
+    expect(texte()).toMatch(/au plus tard le 30 août/);
+    expect(texte()).toMatch(/ne jamais écrire de prénom ni de nom d’élève/);
+  });
+
+  it('sans le suivi, la page ne parle pas de responsables de données d’élèves', () => {
+    render(<PageLegale page="confidentialite" compteActif suiviActif={false} />);
+    expect(texte()).not.toMatch(/Responsables :/);
+  });
+
   it('le suivi seul (sans compte déclaré) ne promet pas l’absence de donnée d’élève', () => {
     render(<PageLegale page="confidentialite" compteActif={false} suiviActif />);
     expect(texte()).not.toMatch(/aucune donnée d’élève n’est enregistrée/);

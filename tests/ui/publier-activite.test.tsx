@@ -97,6 +97,17 @@ describe('PublierActivite', () => {
     expect((await screen.findByRole('alert')).textContent).toMatch(/Vingt activités/);
   });
 
+  it('rappelle, avant de publier, que le lien est lisible par quiconque et que l’activité ne doit contenir ni prénom ni nom d’élève', async () => {
+    monter();
+    await screen.findByRole('button', { name: 'Proposer à la classe' });
+    // La même idée est aussi une puce du bloc d'aide : on vérifie le rappel placé hors du bloc, juste avant le bouton.
+    const [rappel] = screen.getAllByText(/ne contient ni prénom ni nom d’élève/).filter((e) => !e.closest('details.aide-ecran'));
+    expect(rappel).toBeTruthy();
+    expect(rappel.textContent).toMatch(/lisible par quiconque a le lien/);
+    const bouton = screen.getByRole('button', { name: 'Proposer à la classe' });
+    expect(rappel.compareDocumentPosition(bouton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('ne montre jamais le contexte de classe du brouillon', async () => {
     monter();
     await proposer();

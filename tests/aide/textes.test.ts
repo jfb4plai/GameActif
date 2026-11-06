@@ -10,6 +10,12 @@ describe('textes d’aide', () => {
     expect(Object.keys(AIDES).sort()).toEqual([...IDS].sort());
   });
 
+  it('rappellent « ni prénom ni nom » aux trois écrans où l’enseignant écrit du texte libre ou publie du contenu', () => {
+    for (const id of ['parcours-elements', 'tableau', 'proposer'] as AideId[]) {
+      expect(AIDES[id].puces.join(' '), id).toMatch(/ni (le |de )?nom|prénom ni nom/);
+    }
+  });
+
   it('ont un titre commun', () => {
     expect(TITRE_AIDE).toBe('Comment utiliser cet écran');
   });

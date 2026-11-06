@@ -17,6 +17,8 @@ Statuts : constaté (code cité), à confirmer par JF, non vérifié.
 | Codes = pseudonymes ; prénoms ne quittent jamais l'appareil | `src/suivi/roster.ts`, `docs/confidentialite/dossier-dpo-suivi.md` §4 | constaté |
 | Observations libres, résultats saisis, personne invitée en lecture seule | `20261107_game_suivi.sql` (`game_observations`, `game_manual_results`, `game_class_guests`) | constaté |
 | Activité partagée : enregistrée sans contexte ; niveau par code ; dépassement enregistré | `20261108_game_partage.sql`, `src/partage/magasin.ts`, colonne `game_sessions.above` | constaté (migration non appliquée) |
+| Responsables : l'administrateur de l'application et l'enseignant ; l'enseignant est responsable des données qu'il détient, supprimées au plus tard le 30 août | avis du DPO du Pôle du 2026-11-06 (`dossier-dpo-suivi.md`, première section) | décision du DPO ; qualification juridique **non établie** |
+| Rappel : ne jamais écrire de prénom ni de nom d'élève | `src/ui/ObservationLibre.tsx`, `MesClasses.tsx`, `EtapeElements.tsx`, `PublierActivite.tsx`, `BarreFichier.tsx`, `src/aide/textes.json` | constaté (tests) |
 | Suppression au 30 août, ou à la suppression de la classe | `game_school_year_end`, `game_purge_expired` | constaté ; **la planification automatique n'est pas vérifiée** (`pg_cron`) |
 | Quiconque connaît le code de classe peut écrire un résultat sous un code élève | `game_record_session` (écriture ouverte à `anon`) | constaté |
 | Contact `jeanfrancois.beguin@ens.ecl.be` | règle PLAI : modes d'emploi et outils | à confirmer par JF |

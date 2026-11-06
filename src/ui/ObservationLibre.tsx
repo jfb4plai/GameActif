@@ -112,7 +112,7 @@ export function ObservationLibre({ classId, purgeLe, codes, store, stockage, lec
           onChange={(e) => setTexte(e.target.value)}
         />
         <p id="obs-aide" className="aide">
-          {`Écrivez le code, jamais le prénom. Ce texte est enregistré avec les résultats de la classe et supprimé le ${dateFr(purgeLe)}.`}
+          {`Écrivez le code, jamais le prénom ni le nom. Ce texte est enregistré avec les résultats de la classe et supprimé le ${dateFr(purgeLe)}.`}
         </p>
       </div>
       <div>
