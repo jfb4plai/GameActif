@@ -288,4 +288,7 @@ Pas de code.
 
 ## Décisions
 
-(vide : à remplir quand JF a relu les choix [Plan] et la spec)
+- 2026-11-06 : tâches 1 à 12 exécutées sur la branche `feat/activite-partagee` (coupée de `feat/suivi-par-code`, non poussée, migration `20261108_game_partage.sql` non appliquée, interrupteur `VITE_SUIVI_ACTIF` fermé par défaut). Suite complète : 85 fichiers, 877 tests ; `tsc` et `vite build` propres ; 49 tests SQL dont 17 mutations détectées. Revue finale : auto-revue de l'auteur, un correctif (le contexte de classe ne part plus vers la base) et deux textes d'aide corrigés.
+- Tâche 13 (jalon JF) : non commencée, chaque étape attend un accord explicite.
+- Écarts au plan assumés : l'adresse `?activite=` n'est PAS nettoyée (un rechargement de la tablette doit rouvrir l'activité, le code n'est pas un secret) ; `PublierActivite` reçoit `suivi` (magasin de classes) au lieu de `classes` et liste les activités déjà proposées ; garde `magasinPartageDuNavigateur()` ; `ErreurPartage` pour le plafond de 20 ; interface `RequetePartage` propre ; mouvement de la colonne `above` dans la migration du plan 8.
+- Noms neutres et couleurs : provisoires, à fixer par JF dans `src/partage/niveaux.ts`.
