@@ -101,7 +101,7 @@
       "Choisir son code dans la liste « Qui joue ? ».",
       "Appuyer sur « Jouer ».",
       "Lire la consigne, puis choisir une réponse.",
-      "Écouter la consigne avec le bouton prévu.",
+      "Appuyer sur « Écouter la consigne » quand ce bouton est proposé.",
       "Rejouer un niveau au-dessus après un tour, si l’envie est là."
     ],
     "sources": ["src/ui/VueEleve.tsx", "src/ui/QuiJoue.tsx", "src/ui/ActivityScreen.tsx"]
