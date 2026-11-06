@@ -17,6 +17,7 @@ import type { ClientSuivi } from '../suivi/envoi.js';
 import { lireLienActivite } from '../partage/lien.js';
 import type { ClientPartage } from '../partage/lecture.js';
 import { VueEleve } from './VueEleve.js';
+import { SUIVI_ACTIF_PAR_DEFAUT } from '../suivi/interrupteur.js';
 import { PublierActivite } from './PublierActivite.js';
 import { magasinPartageSupabase, type ClientPartageEcriture, type PartageStore } from '../partage/magasin.js';
 import { magasinSuiviSupabase, type ClientLecture, type SuiviStore } from '../suivi/lecture.js';
@@ -38,8 +39,6 @@ function stockageDuNavigateur(): (Stockage & StockageLocal) | null {
   }
 }
 
-/** Interrupteur du suivi par code : tant que la migration n'est pas appliquée, rien n'en apparaît (VITE_SUIVI_ACTIF=1 pour l'ouvrir). */
-const SUIVI_ACTIF_PAR_DEFAUT = import.meta.env.VITE_SUIVI_ACTIF === '1';
 
 function clientSuiviDuNavigateur(): ClientSuivi | undefined {
   try {
