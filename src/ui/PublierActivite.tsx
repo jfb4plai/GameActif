@@ -10,6 +10,7 @@ import { COULEURS_GROUPES } from '../partage/niveaux.js';
 import type { ClasseLue, SuiviStore } from '../suivi/lecture.js';
 import { dateFr } from './formats.js';
 import { CodeQr } from './CodeQr.js';
+import { AideEcran } from './AideEcran.js';
 
 const MESSAGE_GENERIQUE = 'L’opération n’a pas abouti. Réessayez.';
 const messageDe = (e: unknown) => (e instanceof ErreurPartage || e instanceof ErreurStockage ? e.message : MESSAGE_GENERIQUE);
@@ -133,6 +134,7 @@ export function PublierActivite({ brouillon, suivi, partage, origine, copier = c
   return (
     <section aria-label="Proposer à la classe" className="publier-activite">
       <h3>Proposer à la classe</h3>
+      <AideEcran id="proposer" />
       <div className="champs">
         <div>
           <label htmlFor="pub-classe">Classe</label>

@@ -7,6 +7,7 @@ import type { PartageStore } from '../partage/magasin.js';
 import type { ClasseLue } from '../suivi/lecture.js';
 import { afficher, lireRoster } from '../suivi/roster.js';
 import { codesDeClasse, dateFr } from './formats.js';
+import { AideEcran } from './AideEcran.js';
 
 const MESSAGE_CHARGEMENT = 'Les niveaux n’ont pas pu être chargés. Réessayez.';
 const MESSAGE_GENERIQUE = 'L’enregistrement n’a pas abouti. Réessayez.';
@@ -63,6 +64,7 @@ export function NiveauxParCode({ classe, partage, stockage }: { classe: ClasseLu
   return (
     <section aria-label="Niveaux par code" className="niveaux-par-code">
       <h3>Niveaux par code</h3>
+      <AideEcran id="niveaux" />
       <p className="aide">
         {`Ce choix est le vôtre : il est enregistré sous le code, sans prénom, et supprimé le ${dateFr(classe.purgeLe)}. L’élève ne voit pas le nom de son niveau. Un code que vous ne fixez pas joue au niveau Standard.`}
       </p>

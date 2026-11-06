@@ -8,6 +8,7 @@ import { profilDuGroupe } from '../partage/niveaux.js';
 import { enregistrerClasse } from '../suivi/classeAppareil.js';
 import type { ClientSuivi } from '../suivi/envoi.js';
 import { ActivityScreen } from './ActivityScreen.js';
+import { AideEcran } from './AideEcran.js';
 
 const MESSAGE_RETIREE = 'Cette activité n’est plus proposée.';
 const MESSAGE_ECHEC = 'L’activité n’a pas pu être chargée. Vérifiez la connexion et réessayez.';
@@ -75,6 +76,7 @@ export function VueEleve({ code, groupe, client, stockage }: Props) {
   const profilDepart: ProfileId = a.mode === 'groupes' ? profilDuGroupe(groupe) : a.profilDefaut;
   return (
     <div className="vue-eleve">
+      <AideEcran id="eleve" />
       {ouverte.depuisCache && <p role="status" className="aide">{MESSAGE_HORS_LIGNE}</p>}
       <ActivityScreen
         activity={activity}

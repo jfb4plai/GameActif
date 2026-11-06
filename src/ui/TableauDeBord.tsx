@@ -19,6 +19,7 @@ import { afficher, lireRoster } from '../suivi/roster.js';
 import { ecrireSeuils, lireSeuils } from '../suivi/seuils.js';
 import type { SessionEnregistree } from '../suivi/types.js';
 import { codesDeClasse, dateFr, pourcent } from './formats.js';
+import { AideEcran } from './AideEcran.js';
 
 const MESSAGE_CHARGEMENT = 'Les résultats n’ont pas pu être chargés. Réessayez.';
 
@@ -127,6 +128,7 @@ export function TableauDeBord({ classe, store, stockage }: { classe: ClasseLue; 
 
   return (
     <section aria-label="Tableau de bord" className="tableau-de-bord">
+      <AideEcran id="tableau" />
       <div>
         <label htmlFor="attendu">Attendu</label>
         <select id="attendu" value={cible} onChange={(e) => setChoisie(e.target.value)}>

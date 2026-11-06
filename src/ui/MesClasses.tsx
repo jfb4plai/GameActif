@@ -10,6 +10,7 @@ import type { PartageStore } from '../partage/magasin.js';
 import { PrenomsClasse } from './PrenomsClasse.js';
 import { SaisieManuelle } from './SaisieManuelle.js';
 import { TableauDeBord } from './TableauDeBord.js';
+import { AideEcran } from './AideEcran.js';
 
 const MESSAGE_LISTE = 'La liste de vos classes n’a pas pu être chargée. Réessayez.';
 const MESSAGE_GENERIQUE = 'L’opération n’a pas abouti. Réessayez.';
@@ -121,6 +122,7 @@ export function MesClasses({ store, stockage, telecharger = telechargerParLien, 
   return (
     <section aria-label="Mes classes" className="mes-classes">
       <h2>Mes classes</h2>
+      <AideEcran id="classes" />
       {erreurListe && <p role="alert" className="raisons">{MESSAGE_LISTE}</p>}
 
       {classes !== null && classes.length > 0 && (

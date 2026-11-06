@@ -17,6 +17,8 @@ import type { ClientSuivi } from '../suivi/envoi.js';
 import { lireLienActivite } from '../partage/lien.js';
 import type { ClientPartage } from '../partage/lecture.js';
 import { VueEleve } from './VueEleve.js';
+import { AideEcran } from './AideEcran.js';
+import type { AideId } from '../aide/aides.js';
 import { SUIVI_ACTIF_PAR_DEFAUT } from '../suivi/interrupteur.js';
 import { PublierActivite } from './PublierActivite.js';
 import { magasinPartageSupabase, type ClientPartageEcriture, type PartageStore } from '../partage/magasin.js';
@@ -179,6 +181,9 @@ export function Parcours({
           <button type="button" onClick={() => setExemple(true)}>Voir l’exemple des positions (P4)</button>
         </p>
       )}
+
+      {/* key : le bloc est remplacé à chaque étape, jamais réutilisé ouvert. */}
+      <AideEcran key={etat.etape} id={`parcours-${etat.etape}` as AideId} />
 
       <div className="carte">
         {etat.etape === 'niveau' && <EtapeNiveau etat={etat} envoyer={envoyer} />}

@@ -165,3 +165,38 @@ describe('axe-core, écrans du suivi et du partage', () => {
     expect(await violationsGraves(container)).toEqual([]);
   });
 });
+
+describe('axe-core, blocs d’aide ouverts', () => {
+  it('le parcours avec son aide ouverte', async () => {
+    sansMatchMedia();
+    window.location.hash = '';
+    const { container } = render(<App />);
+    (container.querySelector('details.aide-ecran') as HTMLDetailsElement).open = true;
+    expect(await violationsGraves(container)).toEqual([]);
+  });
+
+  it('la vue élève avec son aide ouverte', async () => {
+    sansMatchMedia();
+    const { VueEleve } = await import('../../src/ui/VueEleve');
+    const brouillon = {
+      niveau: 'P4', matiere: 'mathematiques', cibles: ['M.P4.1.1.i1.a1'], titre: 'Les positions', contexte: 'Activité partagée à la classe',
+      familles: [{ label: 'Position absolue', elements: 'à l’intérieur\nentre' }, { label: 'Position relative', elements: 'devant\nà gauche' }, { label: '', elements: '' }],
+      paires: 'devant | derrière\nà droite | à gauche', etapes: 'premier\ndeuxième\ntroisième', comparaisons: '', qcm: '',
+    };
+    const client = {
+      async rpc(nom: string) {
+        if (nom === 'game_get_shared_activity') return { data: { titre: 'Les positions', brouillon, mode: 'meme', profilDefaut: 'standard', classCode: 'ABCD2345', nbCodes: 6 }, error: null };
+        return { data: 6, error: null };
+      },
+    };
+    const mem = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
+    const { container } = render(
+      <CalmProvider>
+        <VueEleve code="K7M2XQ9A" groupe={null} client={client} stockage={mem} />
+      </CalmProvider>,
+    );
+    await screen.findByRole('heading', { name: 'Les positions' });
+    (container.querySelector('details.aide-ecran') as HTMLDetailsElement).open = true;
+    expect(await violationsGraves(container)).toEqual([]);
+  });
+});

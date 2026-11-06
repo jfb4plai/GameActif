@@ -36,7 +36,9 @@ describe('NiveauxParCode', () => {
     expect(await screen.findByText(/Ce choix est le vôtre/)).toBeTruthy();
     expect(screen.getByText(/sans prénom/)).toBeTruthy();
     expect(screen.getByText(/supprimé le .*2027/)).toBeTruthy();
-    expect(screen.getByText(/L’élève ne voit pas le nom de son niveau/)).toBeTruthy();
+    // La même phrase est aussi une puce du bloc d'aide : on vérifie le rappel placé hors du bloc.
+    const hors = screen.getAllByText(/L’élève ne voit pas le nom de son niveau/).filter((e) => !e.closest('details.aide-ecran'));
+    expect(hors).toHaveLength(1);
   });
 
   it('relit les niveaux déjà fixés', async () => {
