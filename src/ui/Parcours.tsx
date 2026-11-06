@@ -17,6 +17,8 @@ import type { ClientSuivi } from '../suivi/envoi.js';
 import { lireLienActivite } from '../partage/lien.js';
 import type { ClientPartage } from '../partage/lecture.js';
 import { VueEleve } from './VueEleve.js';
+import { PublierActivite } from './PublierActivite.js';
+import { magasinPartageSupabase, type ClientPartageEcriture, type PartageStore } from '../partage/magasin.js';
 import { magasinSuiviSupabase, type ClientLecture, type SuiviStore } from '../suivi/lecture.js';
 import { EtapeCompetences } from './EtapeCompetences.js';
 import { EtapeElements } from './EtapeElements.js';
@@ -47,6 +49,15 @@ function clientSuiviDuNavigateur(): ClientSuivi | undefined {
   }
 }
 
+/** Magasin de publication lié à la base ; null si la base n'est pas configurée (le bouton « Proposer à la classe » reste caché). */
+function magasinPartageDuNavigateur(): PartageStore | null {
+  try {
+    return magasinPartageSupabase(getSupabase() as unknown as ClientPartageEcriture);
+  } catch {
+    return null;
+  }
+}
+
 function clientPartageDuNavigateur(): (ClientPartage & ClientSuivi) | undefined {
   try {
     return getSupabase() as unknown as ClientPartage & ClientSuivi;
@@ -67,6 +78,7 @@ export function Parcours({
   magasinSuivi: magasinSuiviImpose,
   stockageSuivi = stockageDuNavigateur(),
   partage: partageImpose,
+  magasinPartage: magasinPartageImpose,
 }: {
   stockage?: Stockage | null;
   telecharger?: (nom: string, contenu: string) => void;
@@ -83,6 +95,8 @@ export function Parcours({
   stockageSuivi?: StockageLocal | null;
   /** Client de la vue élève (lecture d'une activité partagée) ; par défaut celui de la base, s'il est configuré. */
   partage?: ClientPartage & ClientSuivi;
+  /** Magasin de publication des activités partagées ; par défaut celui de la base pour le compte connecté. */
+  magasinPartage?: PartageStore;
 }) {
   const compte = useAuthOptionnel();
   // Lien d'activité lu une seule fois à l'ouverture. L'adresse est gardée : un rechargement de la tablette rouvre l'activité.
@@ -93,6 +107,10 @@ export function Parcours({
   const clientSuivi = useMemo<ClientSuivi | undefined>(
     () => (!suiviActif ? undefined : (suiviImpose ?? (compte?.disponible ? clientSuiviDuNavigateur() : undefined))),
     [suiviActif, suiviImpose, compte?.disponible],
+  );
+  const magasinPartage = useMemo<PartageStore | null>(
+    () => (!suiviActif || userId === null ? null : (magasinPartageImpose ?? magasinPartageDuNavigateur())),
+    [suiviActif, magasinPartageImpose, userId],
   );
   const magasinSuivi = useMemo<SuiviStore | null>(
     () => (!suiviActif || userId === null ? null : (magasinSuiviImpose ?? magasinSuiviSupabase(getSupabase() as unknown as ClientLecture, userId))),
@@ -172,7 +190,12 @@ export function Parcours({
           <>
             <h2 id="titre-etape" tabIndex={-1}>Vos jeux</h2>
             {activite ? (
-              <ActivityScreen activity={activite} suivi={clientSuivi} />
+              <>
+                <ActivityScreen activity={activite} suivi={clientSuivi} />
+                {acces === 'enseignant' && magasinSuivi !== null && magasinPartage !== null && (
+                  <PublierActivite brouillon={b} suivi={magasinSuivi} partage={magasinPartage} origine={window.location.origin} />
+                )}
+              </>
             ) : (
               <p>Votre saisie n’est plus complète. Revenez à l’étape précédente pour la corriger.</p>
             )}
