@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GameActif : mode d’emploi pour l’enseignant</title>
+<style>
+:root { --teal: #0f6e56; --orange: #f97316; --texte: #1f2933; --fond: #faf9f7; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fond); color: var(--texte); font: 1rem/1.6 "DM Sans", Arial, sans-serif; }
+header { background: var(--teal); color: #fff; padding: 20px 24px; }
+header h1 { margin: 0; font: 1.75rem/1.2 "DM Serif Display", Georgia, serif; }
+header p { margin: 6px 0 0; }
+main { max-width: 48rem; margin: 0 auto; padding: 16px 24px 40px; }
+section { background: #fff; border: 2px solid var(--teal); border-radius: 8px; padding: 4px 20px 12px; margin: 20px 0; }
+h2 { color: var(--teal); font: 1.35rem/1.3 "DM Serif Display", Georgia, serif; }
+ul { padding-left: 1.2em; }
+li { margin: 6px 0; }
+.limite { border-left: 6px solid var(--orange); padding: 6px 12px; background: #fff7ed; }
+.eleve main { font-size: 1.25rem; }
+footer { max-width: 48rem; margin: 0 auto; padding: 0 24px 32px; }
+a { color: var(--teal); }
+</style>
+</head>
+<body class="enseignant">
+<header>
+  <h1>GameActif : mode d’emploi pour l’enseignant</h1>
+  <p>Ce mode d’emploi reprend l’aide repliable de chaque écran de GameActif : à quoi il sert, quoi faire, et ce qu’il ne fait pas.</p>
+</header>
+<main>
+  <section id="parcours-niveau">
+    <h2>Parcours, étape 1 : Niveau</h2>
+    <ul>
+      <li>Choisir le niveau de vos élèves, de P1 à P6 : le programme affiché ensuite est celui de ce niveau.</li>
+      <li>« Voir l’exemple des positions (P4) » ouvre une activité prête à jouer, sans rien saisir.</li>
+      <li>Votre saisie est gardée dans ce navigateur : rien n’est envoyé.</li>
+      <li>Pour reprendre une activité exportée : « Ouvrir une activité (fichier) », en bas de page.</li>
+    </ul>
+    <p class="limite"><strong>Limite :</strong> Seules les mathématiques sont disponibles pour l’instant.</p>
+  </section>
+  <section id="parcours-matiere">
+    <h2>Parcours, étape 2 : Matière</h2>
+    <ul>
+      <li>Choisir la matière : elle détermine les attendus proposés à l’étape suivante.</li>
+      <li>Revenir en arrière avec « Précédent » ne perd rien de ce qui est saisi.</li>
+    </ul>
+    <p class="limite"><strong>Limite :</strong> Seules les mathématiques sont disponibles pour l’instant.</p>
+  </section>
+  <section id="parcours-competences">
+    <h2>Parcours, étape 3 : Compétences visées</h2>
+    <ul>
+      <li>Cocher de 1 à 3 attendus du programme que l’activité travaille.</li>
+      <li>Chaque jeu sera relié à ces attendus, côté écran et côté classe.</li>
+      <li>Les attendus viennent des référentiels de la Fédération Wallonie-Bruxelles.</li>
+    </ul>
+    <p class="limite"><strong>Limite :</strong> Cocher un attendu ne prouve pas que le jeu le travaille : c’est à vous d’en juger.</p>
+  </section>
+  <section id="parcours-elements">
+    <h2>Parcours, étape 4 : Vos éléments</h2>
+    <ul>
+      <li>Saisir vos éléments : mots, paires, étapes, comparaisons, questions.</li>
+      <li>Un jeu devient disponible quand ses données sont suffisantes : son statut est affiché.</li>
+      <li>Le contexte de classe est obligatoire : n’y mettez aucun nom d’élève.</li>
+      <li>Relire chaque élément : les élèves verront exactement ce que vous saisissez.</li>
+    </ul>
+    <p class="limite"><strong>Limite :</strong> L’outil ne vérifie pas que vos contenus sont justes.</p>
+  </section>
+  <section id="parcours-jeux">
+    <h2>Parcours, étape 5 : Vos jeux</h2>
+    <ul>
+      <li>Jouer chaque jeu avant de le proposer.</li>
+      <li>Chaque jeu sur écran a son jeu en classe, sans écran, avec une fiche à imprimer.</li>
+      <li>Le profil règle le nombre d’éléments et les aides ; il ne décide rien pour un élève.</li>
+      <li>« Télécharger mon activité » donne un fichier à partager avec un collègue.</li>
+    </ul>
+    <p class="limite"><strong>Limite :</strong> Les phrases « lien programme » sont à compléter par vous.</p>
+  </section>
+  <section id="proposer">
+    <h2>Proposer à la classe</h2>
+    <ul>
+      <li>Choisir la classe qui reçoit l’activité.</li>
+      <li>Choisir comment décider du niveau : même niveau, un lien par groupe, ou niveau par code.</li>
+      <li>Afficher le QR au TBI ou copier le lien.</li>
+      <li>« Mettre à jour le lien » après une modification ; « Retirer le lien » quand l’activité est finie.</li>
+    </ul>
+    <p class="limite"><strong>Limite :</strong> Votre contexte de classe n’est jamais envoyé ; le lien disparaît avec la classe, le 30 août.</p>
+  </section>
+  <section id="classes">
+    <h2>Mes classes</h2>
+    <ul>
+      <li>Créer une classe, puis donner son code aux élèves.</li>
+      <li>Chaque élève joue sous un code (E01, E02…) : gardez chez vous la liste des prénoms, elle reste sur cet appareil.</li>
+      <li>Consulter le tableau de bord après chaque séance.</li>
+      <li>Inviter une personne en lecture seule si besoin.</li>
+    </ul>
+    <p class="limite"><strong>Limite :</strong> Les résultats d’une classe sont supprimés le 30 août suivant sa création.</p>
+  </section>
+  <section id="tableau">
+    <h2>Le tableau de bord</h2>
+    <ul>
+      <li>Lire d’abord « Qui a joué ».</li>
+      <li>Regarder les erreurs par type : elles disent quoi réenseigner.</li>
+      <li>Les états sont un indice, pas une preuve : décidez avec ce que vous observez.</li>
+      <li>Noter vos observations avec le code, jamais le prénom.</li>
+    </ul>
+    <p class="limite"><strong>Limite :</strong> Quiconque connaît le code de classe peut enregistrer un résultat sous un code élève : ce tableau n’est pas une preuve.</p>
+  </section>
+  <section id="niveaux">
+    <h2>Niveaux par code</h2>
+    <ul>
+      <li>Le niveau de chaque code est votre décision, jamais automatique.</li>
+      <li>Standard est le niveau par défaut.</li>
+      <li>L’élève ne voit pas le nom de son niveau.</li>
+      <li>Il peut rejouer un niveau au-dessus ; vous le voyez dans le tableau de bord.</li>
+    </ul>
+    <p class="limite"><strong>Limite :</strong> Un camarade qui connaît le code de classe peut essayer d’autres codes et deviner un niveau.</p>
+  </section>
+</main>
+<footer>
+  <p>Une question, une erreur dans ce mode d’emploi : jeanfrancois.beguin@ens.ecl.be</p>
+</footer>
+</body>
+</html>
