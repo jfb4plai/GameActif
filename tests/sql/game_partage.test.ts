@@ -57,7 +57,7 @@ describe('migration game_partage et essais (Postgres en mémoire, sans toucher �
     const creations = [...sql.matchAll(/create (?:or replace )?(?:table|function|trigger|policy|index)\s+(?:if not exists\s+)?(?:public\.)?"?([a-z_0-9]+)"?/gi)].map((m) => m[1]);
     expect(creations.length).toBeGreaterThan(5);
     for (const nom of creations) expect(nom.startsWith('game_')).toBe(true);
-    expect(sql).toMatch(/NON APPLIQUÉE/);
+    expect(sql).toMatch(/APPLIQUÉE le 2026-11-06/);
     expect(sql).not.toMatch(/eyJ[A-Za-z0-9_-]{20,}/);
     expect(sql).not.toMatch(/\b(prenom|firstname|first_name|student_name)\b/i);
   });

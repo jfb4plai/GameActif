@@ -6,8 +6,8 @@
 -- « ECHEC (x) » ou SQL, et rien n'est conservé non plus.
 begin;
 set local lock_timeout = '3s';
--- GameActif : accès enseignant par lien d'invitation. NON APPLIQUÉE : l'application sur la base partagée exige
--- l'accord explicite de JF (essai d'abord dans une transaction annulée : supabase/essai-rollback-game_acces.sql).
+-- GameActif : accès enseignant par lien d'invitation. APPLIQUÉE le 2026-11-06 sur la base partagée, avec l'accord
+-- explicite de JF, après essai dans une transaction annulée (supabase/essai-rollback-game_suivi.sql).
 --
 -- Vérification des noms au 2026-11-03 : aucune table game_* n'existe dans les migrations du workspace.
 -- Tout objet créé ici est préfixé game_. `profiles` et le trigger updated_at du projet partagé ne sont pas recréés ;
@@ -199,8 +199,8 @@ create policy game_activities_delete on public.game_activities
   for delete to authenticated
   using (user_id = (select auth.uid()) and public.game_is_teacher());
 
--- GameActif : suivi des élèves par code pseudonyme. NON APPLIQUÉE : l'application sur la base partagée exige l'accord
--- explicite de JF, l'avis du DPO (docs/confidentialite/dossier-dpo-suivi.md) et un essai préalable dans une transaction
+-- GameActif : suivi des élèves par code pseudonyme. APPLIQUÉE le 2026-11-06 sur la base partagée, avec l'accord
+-- explicite de JF, après l'avis du DPO (docs/confidentialite/dossier-dpo-suivi.md) et un essai dans une transaction
 -- annulée. Dépend de 20261103_game_acces.sql (game_teachers, game_is_teacher).
 --
 -- Spec : docs/superpowers/specs/2026-11-06-suivi-par-code-design.md. Plan : plans/2026-11-06-gameactif-plan-8-suivi-par-code.md.

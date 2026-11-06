@@ -1,5 +1,5 @@
--- GameActif : activité partagée par lien et QR, profils par code élève. NON APPLIQUÉE : l'application sur la base partagée
--- exige l'accord explicite de JF, l'avis du DPO (docs/confidentialite/dossier-dpo-suivi.md) et un essai préalable dans une
+-- GameActif : activité partagée par lien et QR, profils par code élève. APPLIQUÉE le 2026-11-06 sur la base partagée,
+-- avec l'accord explicite de JF, après l'avis du DPO (docs/confidentialite/dossier-dpo-suivi.md) et un essai dans une
 -- transaction annulée. Dépend de 20261103_game_acces.sql (game_touch_updated_at) et de 20261107_game_suivi.sql (game_classes).
 --
 -- Spec : docs/superpowers/specs/2026-11-06-activite-partagee-design.md. Plan : plans/2026-11-06-gameactif-plan-9-activite-partagee.md.

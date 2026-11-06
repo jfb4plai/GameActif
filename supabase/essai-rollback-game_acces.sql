@@ -3,8 +3,8 @@
 -- À coller dans l'éditeur SQL du projet Supabase partagé UNIQUEMENT après l'accord de JF.
 -- Succès : des messages « OK (x) » pour chaque cas. Échec : une erreur « ECHEC (x) » et rien n'est conservé.
 begin;
--- GameActif : accès enseignant par lien d'invitation. NON APPLIQUÉE : l'application sur la base partagée exige
--- l'accord explicite de JF (essai d'abord dans une transaction annulée : supabase/essai-rollback-game_acces.sql).
+-- GameActif : accès enseignant par lien d'invitation. APPLIQUÉE le 2026-11-06 sur la base partagée, avec l'accord
+-- explicite de JF, après essai dans une transaction annulée (supabase/essai-rollback-game_suivi.sql).
 --
 -- Vérification des noms au 2026-11-03 : aucune table game_* n'existe dans les migrations du workspace.
 -- Tout objet créé ici est préfixé game_. `profiles` et le trigger updated_at du projet partagé ne sont pas recréés ;
