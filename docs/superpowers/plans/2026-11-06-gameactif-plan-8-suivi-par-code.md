@@ -301,4 +301,7 @@ Pas de code.
 
 ## Décisions
 
-(vide : à remplir quand JF a relu les choix [Plan] et le §4 de la spec)
+- 2026-11-06 : tâches 1 à 14 exécutées sur la branche `feat/suivi-par-code` (non poussée, migration non appliquée, interrupteur `VITE_SUIVI_ACTIF` fermé par défaut). Suite complète : 73 fichiers, 760 tests ; `tsc` et `vite build` propres. Revue finale : auto-revue de l'auteur, deux correctifs (plafonds du payload, liste de prénoms relue partout).
+- Tâche 15 (jalon JF) : non commencée, chaque étape attend un accord explicite (avis DPO, essai en transaction annulée, migration, `pg_cron`, variables Vercel, essai réel).
+- Écarts au plan assumés : fichiers en plus (`formats.ts`, `PrenomsClasse`, `SaisieManuelle`, `InvitationClasse`, `seuils.ts`), `invites()` dans `SuiviStore`, `note` dans `Fait`, `peutCreer` et `lectureSeule`, interrupteur d'environnement.
+- Constat hors plan : aucun lien d'activité pour les élèves ; une tablette ne joue l'activité que si elle ouvre le fichier exporté.
