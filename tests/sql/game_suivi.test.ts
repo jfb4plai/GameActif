@@ -97,7 +97,8 @@ describe('les essais détectent une migration affaiblie (mutations)', () => {
     [
       'above accepte n’importe quel type',
       (sql) => sql.replace("jsonb_typeof(p_payload -> 'above') is distinct from 'boolean'", 'false'),
-      /ECHEC \(s25\)/,
+      // Sans la validation, le refus « invalide » devient une exception de conversion : la détection reste valable.
+      /ECHEC \(s25\)|invalid input syntax for type boolean/,
     ],
   ];
   for (const [nom, muter, attendu] of mutations) {
