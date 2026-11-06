@@ -1,0 +1,208 @@
+import { useEffect, useMemo, useState } from 'react';
+import type { StockageLocal } from '../compte/invitation.js';
+import { mecanique } from '../engine/mecaniques.js';
+import type { MechanicId } from '../engine/types.js';
+import {
+  erreursParType,
+  etatEleve,
+  jeuxParCible,
+  participation,
+  type Etat,
+  type ResultatManuel,
+  type SeuilsEtats,
+} from '../suivi/agregats.js';
+import type { ClasseLue, SuiviStore } from '../suivi/lecture.js';
+import { afficher, lireRoster } from '../suivi/roster.js';
+import { ecrireSeuils, lireSeuils } from '../suivi/seuils.js';
+import type { SessionEnregistree } from '../suivi/types.js';
+
+const MESSAGE_CHARGEMENT = 'Les résultats n’ont pas pu être chargés. Réessayez.';
+
+const codes = (n: number) => Array.from({ length: n }, (_, i) => `E${String(i + 1).padStart(2, '0')}`);
+const pourcent = (x: number) => `${Math.round(x * 100)} %`;
+const date = (iso: string) => new Date(iso).toLocaleDateString('fr-BE', { day: 'numeric', month: 'short', year: 'numeric' });
+const nomJeu = (j: MechanicId | 'physique') => (j === 'physique' ? 'Jeu physique (saisi par l’enseignant)' : mecanique(j).label);
+
+const ETATS: { id: Etat; picto: string; mot: string }[] = [
+  { id: 'stabilise', picto: '✔', mot: 'Stabilisé' },
+  { id: 'en-cours', picto: '◐', mot: 'En cours' },
+  { id: 'a-reprendre', picto: '▲', mot: 'À reprendre' },
+  { id: 'pas-d-indice', picto: '○', mot: 'Pas d’indice' },
+];
+
+function regle(id: Etat, s: SeuilsEtats): string {
+  switch (id) {
+    case 'stabilise':
+      return `Réussi dans ${s.jeuxDifferents} jeu${s.jeuxDifferents > 1 ? 'x' : ''} différent${s.jeuxDifferents > 1 ? 's' : ''}, sur au moins ${s.jours} jour${s.jours > 1 ? 's' : ''} (réussi : au moins ${pourcent(s.reussite)} au premier essai).`;
+    case 'en-cours':
+      return 'A joué cet attendu, sans remplir les conditions des autres états.';
+    case 'a-reprendre':
+      return `Même confusion dans ${s.erreurRepetee} jeux différents, ou résultat « à reprendre » saisi par vous.`;
+    case 'pas-d-indice':
+      return 'N’a pas joué cet attendu et aucun résultat n’a été saisi.';
+  }
+}
+
+interface Donnees {
+  sessions: SessionEnregistree[];
+  manuels: ResultatManuel[];
+}
+
+/**
+ * Couche A du tableau de bord : qui a joué, erreurs par type, même attendu dans les autres jeux, états.
+ * Les codes sont remplacés par les prénoms de la liste locale à l'affichage seulement.
+ */
+export function TableauDeBord({ classe, store, stockage }: { classe: ClasseLue; store: SuiviStore; stockage: StockageLocal | null }) {
+  const [donnees, setDonnees] = useState<Donnees | null>(null);
+  const [erreur, setErreur] = useState(false);
+  const [choisie, setChoisie] = useState<string | null>(null);
+  const [seuils, setSeuils] = useState<SeuilsEtats>(() => lireSeuils(stockage, classe.id));
+  const roster = useMemo(() => lireRoster(stockage, classe.id), [stockage, classe.id]);
+  const tous = useMemo(() => codes(classe.nbCodes), [classe.nbCodes]);
+
+  useEffect(() => {
+    let actif = true;
+    setDonnees(null);
+    setErreur(false);
+    Promise.all([store.sessions(classe.id), store.manuels(classe.id)])
+      .then(([sessions, manuels]) => {
+        if (actif) setDonnees({ sessions, manuels });
+      })
+      .catch(() => {
+        if (actif) setErreur(true);
+      });
+    return () => {
+      actif = false;
+    };
+  }, [store, classe.id]);
+
+  if (erreur) return <p role="alert" className="raisons">{MESSAGE_CHARGEMENT}</p>;
+  if (donnees === null) return <p role="status">Chargement des résultats…</p>;
+
+  const cibles = [...new Set([...donnees.sessions.flatMap((s) => s.cibles), ...donnees.manuels.map((m) => m.cible)])].sort();
+  if (cibles.length === 0) return <p>Aucune séance reçue pour cette classe.</p>;
+  const cible = choisie !== null && cibles.includes(choisie) ? choisie : cibles[0];
+
+  const { sessions, manuels } = donnees;
+  const p = participation(tous, sessions, manuels, cible);
+  const erreurs = erreursParType(sessions, cible);
+  const jeux = jeuxParCible(sessions, manuels, cible);
+  const etats = new Map<Etat, string[]>(ETATS.map((e) => [e.id, []]));
+  for (const code of tous) etats.get(etatEleve(code, cible, sessions, manuels, seuils))?.push(code);
+  const noms = (liste: string[]) => liste.map((c) => afficher(c, roster)).join(', ');
+
+  function changer(champ: keyof SeuilsEtats, brut: string, min: number, max: number, facteur = 1) {
+    const v = Number(brut) / facteur;
+    if (!Number.isFinite(v) || v < min || v > max || (facteur === 1 && !Number.isInteger(v))) return;
+    const suivants = { ...seuils, [champ]: v };
+    setSeuils(suivants);
+    ecrireSeuils(stockage, classe.id, suivants);
+  }
+
+  return (
+    <section aria-label="Tableau de bord" className="tableau-de-bord">
+      <div>
+        <label htmlFor="attendu">Attendu</label>
+        <select id="attendu" value={cible} onChange={(e) => setChoisie(e.target.value)}>
+          {cibles.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+      </div>
+
+      <h3>Qui a joué</h3>
+      <progress max={tous.length} value={p.joues.length} aria-label="Participation de la classe" />
+      <p>{p.joues.length === 1 ? `1 code sur ${tous.length} a joué` : `${p.joues.length} codes sur ${tous.length} ont joué`}</p>
+      {p.absents.length > 0 && <p>{`Pas encore joué : ${noms(p.absents)}`}</p>}
+
+      <h3>Erreurs : fréquence et type</h3>
+      {erreurs.length === 0 ? (
+        <p>Aucune erreur enregistrée pour cet attendu.</p>
+      ) : (
+        <table>
+          <caption>Erreurs par type</caption>
+          <thead>
+            <tr><th scope="col">Confusion</th><th scope="col">Élèves</th><th scope="col">Jeux</th></tr>
+          </thead>
+          <tbody>
+            {erreurs.map((e) => (
+              <tr key={`${e.juste}|${e.choisi}`}>
+                <th scope="row">{`« ${e.choisi} » choisi au lieu de « ${e.juste} »`}</th>
+                <td>{`${e.eleves.length} : ${noms(e.eleves)}`}</td>
+                <td>{e.mecaniques.map((m) => mecanique(m).label).join(', ')}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      <h3>Le même attendu dans les autres jeux</h3>
+      <table>
+        <caption>Le même attendu dans les autres jeux</caption>
+        <thead>
+          <tr><th scope="col">Jeu</th><th scope="col">Joué par</th><th scope="col">Réussite au 1er essai</th><th scope="col">Dernière séance</th></tr>
+        </thead>
+        <tbody>
+          {jeux.map((j) => (
+            <tr key={j.jeu}>
+              <th scope="row">{nomJeu(j.jeu)}</th>
+              <td>{j.joueurs}</td>
+              <td>{j.r1Moyen === null ? 'saisi par l’enseignant' : pourcent(j.r1Moyen)}</td>
+              <td>{date(j.derniere)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h3>Où en sont les élèves</h3>
+      <p className="bandeau-indice">
+        <strong>Indice, pas une preuve.</strong> Réussir plusieurs parties ne prouve pas que l’élève a compris : la preuve, c’est ce que vous voyez à l’oral, au cahier, dans une autre situation.
+      </p>
+      <table>
+        <caption>Où en sont les élèves</caption>
+        <thead>
+          <tr><th scope="col">État</th><th scope="col">Règle</th><th scope="col">Élèves</th></tr>
+        </thead>
+        <tbody>
+          {ETATS.map((e) => {
+            const liste = etats.get(e.id) ?? [];
+            return (
+              <tr key={e.id}>
+                <th scope="row"><span aria-hidden="true">{e.picto} </span>{e.mot}</th>
+                <td>{regle(e.id, seuils)}</td>
+                <td>{liste.length === 0 ? 'Aucun' : `${liste.length} : ${noms(liste)}`}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <details>
+        <summary>Seuils des états</summary>
+        <p className="aide">Valeurs de départ : proposition, non validée scientifiquement. Vous les ajustez ; elles sont gardées dans ce navigateur, pour cette classe.</p>
+        <div className="champs">
+          <div>
+            <label htmlFor="seuil-reussite">Réussite minimale au 1er essai (%)</label>
+            <input id="seuil-reussite" type="number" min={50} max={100} placeholder="75" value={Math.round(seuils.reussite * 100)} onChange={(e) => changer('reussite', e.target.value, 0.5, 1, 100)} aria-describedby="seuil-reussite-aide" />
+            <p id="seuil-reussite-aide" className="aide">Une partie compte comme réussie à partir de ce pourcentage d’éléments réussis du premier coup.</p>
+          </div>
+          <div>
+            <label htmlFor="seuil-jeux">Jeux différents réussis</label>
+            <input id="seuil-jeux" type="number" min={1} max={7} placeholder="3" value={seuils.jeuxDifferents} onChange={(e) => changer('jeuxDifferents', e.target.value, 1, 7)} aria-describedby="seuil-jeux-aide" />
+            <p id="seuil-jeux-aide" className="aide">Nombre de jeux différents (Trier, Mémo, jeu physique saisi…) à réussir pour passer à « Stabilisé ».</p>
+          </div>
+          <div>
+            <label htmlFor="seuil-jours">Jours différents</label>
+            <input id="seuil-jours" type="number" min={1} max={10} placeholder="2" value={seuils.jours} onChange={(e) => changer('jours', e.target.value, 1, 10)} aria-describedby="seuil-jours-aide" />
+            <p id="seuil-jours-aide" className="aide">Une réussite répétée le même jour ne suffit pas : il en faut sur ce nombre de jours.</p>
+          </div>
+          <div>
+            <label htmlFor="seuil-erreur">Jeux où la même confusion se répète</label>
+            <input id="seuil-erreur" type="number" min={2} max={7} placeholder="2" value={seuils.erreurRepetee} onChange={(e) => changer('erreurRepetee', e.target.value, 2, 7)} aria-describedby="seuil-erreur-aide" />
+            <p id="seuil-erreur-aide" className="aide">Une même confusion dans ce nombre de jeux différents place l’élève « À reprendre ».</p>
+          </div>
+        </div>
+      </details>
+    </section>
+  );
+}
