@@ -71,6 +71,16 @@ function Courbe({ points }: { points: PointEvolution[] }) {
   );
 }
 
+/** Section repliable : le titre reste visible, le contenu se replie pour alléger l'écran. */
+function Section({ titre, ouvert, children }: { titre: string; ouvert: boolean; children: React.ReactNode }) {
+  return (
+    <details className="section-tdb" open={ouvert}>
+      <summary><h3>{titre}</h3></summary>
+      {children}
+    </details>
+  );
+}
+
 /**
  * Couche A du tableau de bord : qui a joué, erreurs par type, même attendu dans les autres jeux, états.
  * Les codes sont remplacés par les prénoms de la liste locale à l'affichage seulement.
@@ -138,72 +148,74 @@ export function TableauDeBord({ classe, store, stockage }: { classe: ClasseLue; 
         </select>
       </div>
 
-      <h3>Qui a joué</h3>
-      <progress max={tous.length} value={p.joues.length} aria-label="Participation de la classe" />
-      <p>{p.joues.length === 1 ? `1 code sur ${tous.length} a joué` : `${p.joues.length} codes sur ${tous.length} ont joué`}</p>
-      {p.absents.length > 0 && <p>{`Pas encore joué : ${noms(p.absents)}`}</p>}
+      <Section titre="Qui a joué" ouvert>
+        <progress max={tous.length} value={p.joues.length} aria-label="Participation de la classe" />
+        <p>{p.joues.length === 1 ? `1 code sur ${tous.length} a joué` : `${p.joues.length} codes sur ${tous.length} ont joué`}</p>
+        {p.absents.length > 0 && <p>{`Pas encore joué : ${noms(p.absents)}`}</p>}
+      </Section>
 
-      <h3>Erreurs : fréquence et type</h3>
-      {erreurs.length === 0 ? (
-        <p>Aucune erreur enregistrée pour cet attendu.</p>
-      ) : (
-        <table>
-          <caption>Erreurs par type</caption>
+      <Section titre="Où en sont les élèves" ouvert={true}>
+        <p className="bandeau-indice">
+          <strong>Indice, pas une preuve.</strong> Réussir plusieurs parties ne prouve pas que l’élève a compris : la preuve, c’est ce que vous voyez à l’oral, au cahier, dans une autre situation.
+        </p>
+        <table aria-label="Où en sont les élèves">
           <thead>
-            <tr><th scope="col">Confusion</th><th scope="col">Élèves</th><th scope="col">Jeux</th></tr>
+            <tr><th scope="col">État</th><th scope="col">Règle</th><th scope="col">Élèves</th></tr>
           </thead>
           <tbody>
-            {erreurs.map((e) => (
-              <tr key={`${e.juste}|${e.choisi}`}>
-                <th scope="row">{`« ${e.choisi} » choisi au lieu de « ${e.juste} »`}</th>
-                <td>{`${e.eleves.length} : ${noms(e.eleves)}`}</td>
-                <td>{e.mecaniques.map((m) => mecanique(m).label).join(', ')}</td>
+            {ETATS.map((e) => {
+              const liste = etats.get(e.id) ?? [];
+              return (
+                <tr key={e.id}>
+                  <th scope="row"><span aria-hidden="true">{e.picto} </span>{e.mot}</th>
+                  <td>{regle(e.id, seuils)}</td>
+                  <td>{liste.length === 0 ? 'Aucun' : `${liste.length} : ${noms(liste)}`}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </Section>
+
+      <Section titre="Erreurs : fréquence et type" ouvert={erreurs.length > 0}>
+        {erreurs.length === 0 ? (
+          <p>Aucune erreur enregistrée pour cet attendu.</p>
+        ) : (
+          <table>
+            <caption>Erreurs par type</caption>
+            <thead>
+              <tr><th scope="col">Confusion</th><th scope="col">Élèves</th><th scope="col">Jeux</th></tr>
+            </thead>
+            <tbody>
+              {erreurs.map((e) => (
+                <tr key={`${e.juste}|${e.choisi}`}>
+                  <th scope="row">{`« ${e.choisi} » choisi au lieu de « ${e.juste} »`}</th>
+                  <td>{`${e.eleves.length} : ${noms(e.eleves)}`}</td>
+                  <td>{e.mecaniques.map((m) => mecanique(m).label).join(', ')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </Section>
+
+      <Section titre="Le même attendu dans les autres jeux" ouvert={false}>
+        <table aria-label="Le même attendu dans les autres jeux">
+          <thead>
+            <tr><th scope="col">Jeu</th><th scope="col">Joué par</th><th scope="col">Réussite au 1er essai</th><th scope="col">Dernière séance</th></tr>
+          </thead>
+          <tbody>
+            {jeux.map((j) => (
+              <tr key={j.jeu}>
+                <th scope="row">{nomJeu(j.jeu)}</th>
+                <td>{j.dontAuDessus > 0 ? `${j.joueurs}, dont ${j.dontAuDessus} au niveau au-dessus` : j.joueurs}</td>
+                <td>{j.r1Moyen === null ? 'saisi par l’enseignant' : pourcent(j.r1Moyen)}</td>
+                <td>{date(j.derniere)}</td>
               </tr>
             ))}
           </tbody>
         </table>
-      )}
-
-      <h3>Le même attendu dans les autres jeux</h3>
-      <table>
-        <caption>Le même attendu dans les autres jeux</caption>
-        <thead>
-          <tr><th scope="col">Jeu</th><th scope="col">Joué par</th><th scope="col">Réussite au 1er essai</th><th scope="col">Dernière séance</th></tr>
-        </thead>
-        <tbody>
-          {jeux.map((j) => (
-            <tr key={j.jeu}>
-              <th scope="row">{nomJeu(j.jeu)}</th>
-              <td>{j.dontAuDessus > 0 ? `${j.joueurs}, dont ${j.dontAuDessus} au niveau au-dessus` : j.joueurs}</td>
-              <td>{j.r1Moyen === null ? 'saisi par l’enseignant' : pourcent(j.r1Moyen)}</td>
-              <td>{date(j.derniere)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h3>Où en sont les élèves</h3>
-      <p className="bandeau-indice">
-        <strong>Indice, pas une preuve.</strong> Réussir plusieurs parties ne prouve pas que l’élève a compris : la preuve, c’est ce que vous voyez à l’oral, au cahier, dans une autre situation.
-      </p>
-      <table>
-        <caption>Où en sont les élèves</caption>
-        <thead>
-          <tr><th scope="col">État</th><th scope="col">Règle</th><th scope="col">Élèves</th></tr>
-        </thead>
-        <tbody>
-          {ETATS.map((e) => {
-            const liste = etats.get(e.id) ?? [];
-            return (
-              <tr key={e.id}>
-                <th scope="row"><span aria-hidden="true">{e.picto} </span>{e.mot}</th>
-                <td>{regle(e.id, seuils)}</td>
-                <td>{liste.length === 0 ? 'Aucun' : `${liste.length} : ${noms(liste)}`}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      </Section>
 
       <div>
         <label htmlFor="eleve-detail">Élève</label>
@@ -215,50 +227,52 @@ export function TableauDeBord({ classe, store, stockage }: { classe: ClasseLue; 
         </select>
       </div>
 
-      <h3>Évolution dans le temps</h3>
-      {points === null ? (
-        <p>Pas assez de séances pour une tendance (3 jours minimum).</p>
-      ) : (
-        <>
-          <Courbe points={points} />
+      <Section titre="Évolution dans le temps" ouvert={eleve !== ''}>
+        {points === null ? (
+          <p>Pas assez de séances pour une tendance (3 jours minimum).</p>
+        ) : (
+          <>
+            <Courbe points={points} />
+            <table>
+              <caption>Réussite au 1er essai par jour</caption>
+              <thead>
+                <tr><th scope="col">Jour</th><th scope="col">Réussite au 1er essai</th></tr>
+              </thead>
+              <tbody>
+                {points.map((p) => (
+                  <tr key={p.jour}><th scope="row">{date(p.jour)}</th><td>{pourcent(p.r1)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
+      </Section>
+
+      <Section titre="Faits par code" ouvert={eleve !== ''}>
+        {eleve === '' ? (
+          <p>Choisissez un code pour voir ses faits.</p>
+        ) : faits.length === 0 ? (
+          <p>Aucun fait enregistré pour ce code.</p>
+        ) : (
           <table>
-            <caption>Réussite au 1er essai par jour</caption>
+            <caption>{`Faits pour ${afficher(eleve, roster)}`}</caption>
             <thead>
-              <tr><th scope="col">Jour</th><th scope="col">Réussite au 1er essai</th></tr>
+              <tr><th scope="col">Date</th><th scope="col">Jeu</th><th scope="col">Réussite au 1er essai</th><th scope="col">Erreurs</th><th scope="col">Origine</th></tr>
             </thead>
             <tbody>
-              {points.map((p) => (
-                <tr key={p.jour}><th scope="row">{date(p.jour)}</th><td>{pourcent(p.r1)}</td></tr>
+              {faits.map((f, i) => (
+                <tr key={`${f.date}-${f.jeu}-${i}`}>
+                  <th scope="row">{date(f.date)}</th>
+                  <td>{nomJeu(f.jeu)}</td>
+                  <td>{f.r1 === null ? 'sans objet' : pourcent(f.r1)}</td>
+                  <td>{f.erreurs.length === 0 ? 'aucune' : f.erreurs.join(' ; ')}</td>
+                  <td>{f.origine === 'ecran' ? (f.auDessus ? 'jeu sur écran, niveau au-dessus' : 'jeu sur écran') : `saisi par l’enseignant : ${f.note ? NOTES[f.note] : ''}`}</td>
+                </tr>
               ))}
             </tbody>
           </table>
-        </>
-      )}
-
-      <h3>Faits par code</h3>
-      {eleve === '' ? (
-        <p>Choisissez un code pour voir ses faits.</p>
-      ) : faits.length === 0 ? (
-        <p>Aucun fait enregistré pour ce code.</p>
-      ) : (
-        <table>
-          <caption>{`Faits pour ${afficher(eleve, roster)}`}</caption>
-          <thead>
-            <tr><th scope="col">Date</th><th scope="col">Jeu</th><th scope="col">Réussite au 1er essai</th><th scope="col">Erreurs</th><th scope="col">Origine</th></tr>
-          </thead>
-          <tbody>
-            {faits.map((f, i) => (
-              <tr key={`${f.date}-${f.jeu}-${i}`}>
-                <th scope="row">{date(f.date)}</th>
-                <td>{nomJeu(f.jeu)}</td>
-                <td>{f.r1 === null ? 'sans objet' : pourcent(f.r1)}</td>
-                <td>{f.erreurs.length === 0 ? 'aucune' : f.erreurs.join(' ; ')}</td>
-                <td>{f.origine === 'ecran' ? (f.auDessus ? 'jeu sur écran, niveau au-dessus' : 'jeu sur écran') : `saisi par l’enseignant : ${f.note ? NOTES[f.note] : ''}`}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+        )}
+      </Section>
 
       <details>
         <summary>Seuils des états</summary>

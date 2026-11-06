@@ -134,3 +134,40 @@ describe('TableauDeBord, couche des états', () => {
     for (const mot of ['Stabilisé', 'En cours', 'À reprendre', 'Pas d’indice']) expect(within(tableau).getByText(new RegExp(mot))).toBeTruthy();
   });
 });
+
+describe('TableauDeBord, lisibilité : sections repliables', () => {
+  const ouvert = (titre: string) => (screen.getByRole('heading', { name: titre }).closest('details') as HTMLDetailsElement).open;
+  const sansErreur = () => magasinSuiviMemoire({ classes: [classe], sessions: { c1: [s('E01', 'trier', '2026-11-09', [el('entre'), el('devant')])] } });
+
+  it('chaque titre de section n’apparaît qu’une fois (pas de légende de tableau en double)', async () => {
+    render(<TableauDeBord classe={classe} store={deuxSeances()} stockage={stockage()} />);
+    await screen.findByText('2 codes sur 24 ont joué');
+    expect(screen.getAllByText('Le même attendu dans les autres jeux')).toHaveLength(1);
+    expect(screen.getAllByText('Où en sont les élèves')).toHaveLength(1);
+  });
+
+  it('ouvre par défaut l’essentiel (qui a joué, où en sont les élèves, erreurs) et replie le reste', async () => {
+    render(<TableauDeBord classe={classe} store={deuxSeances()} stockage={stockage()} />);
+    await screen.findByText('2 codes sur 24 ont joué');
+    expect(ouvert('Qui a joué')).toBe(true);
+    expect(ouvert('Où en sont les élèves')).toBe(true);
+    expect(ouvert('Erreurs : fréquence et type')).toBe(true);
+    expect(ouvert('Le même attendu dans les autres jeux')).toBe(false);
+    expect(ouvert('Évolution dans le temps')).toBe(false);
+    expect(ouvert('Faits par code')).toBe(false);
+  });
+
+  it('replie la section des erreurs quand il n’y en a aucune', async () => {
+    render(<TableauDeBord classe={classe} store={sansErreur()} stockage={stockage()} />);
+    await screen.findByText('1 code sur 24 a joué');
+    expect(ouvert('Erreurs : fréquence et type')).toBe(false);
+  });
+
+  it('choisir un code ouvre l’évolution et les faits', async () => {
+    render(<TableauDeBord classe={classe} store={deuxSeances()} stockage={stockage()} />);
+    await screen.findByText('2 codes sur 24 ont joué');
+    fireEvent.change(screen.getByLabelText('Élève'), { target: { value: 'E01' } });
+    expect(ouvert('Évolution dans le temps')).toBe(true);
+    expect(ouvert('Faits par code')).toBe(true);
+  });
+});

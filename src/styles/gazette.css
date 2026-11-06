@@ -202,3 +202,17 @@ body.calme *, body.calme *::before, body.calme *::after { animation: none !impor
 .carte-memo.visible { background: var(--jaune); }
 .carte-memo.trouvee { background: var(--vert); }
 .carte-memo.indice { outline: 5px solid var(--vermillon); outline-offset: 2px; }
+
+/* Tableau de bord enseignant : sections repliables */
+.section-tdb { margin: 10px 0; border: 2px solid var(--encre); background: var(--papier); box-shadow: 3px 3px 0 var(--ombre); }
+.section-tdb > summary { cursor: pointer; list-style: none; min-height: 44px; display: flex; align-items: center; padding: 6px 12px; }
+.section-tdb > summary::-webkit-details-marker { display: none; }
+.section-tdb > summary::before { content: '\25B6'; margin-right: 10px; font-size: 14px; }
+.section-tdb[open] > summary::before { content: '\25BC'; }
+.section-tdb > summary:focus-visible { outline: 4px solid var(--vermillon); outline-offset: 2px; }
+.section-tdb > summary h3 { font-family: var(--machine); font-weight: 400; font-size: 18px; margin: 0; }
+.section-tdb > :not(summary) { margin-left: 14px; margin-right: 14px; }
+.section-tdb[open] > :last-child { margin-bottom: 14px; }
+.section-tdb table { width: calc(100% - 28px); border-collapse: collapse; background: #fff; }
+.section-tdb th, .section-tdb td { border: 2px solid var(--encre); padding: 6px 10px; text-align: left; font-size: 16px; vertical-align: top; }
+.section-tdb th { background: var(--jaune); font-family: var(--machine); font-weight: 400; }
