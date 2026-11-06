@@ -38,7 +38,7 @@ async function jouer(sqlMigrations: string[], sqlEssais: string): Promise<void> 
   }
 }
 
-const CAS = ['(s1)', '(s2)', '(s3)', '(s4)', '(s5)', '(s6)', '(s7)', '(s8)', '(s9)', '(s10)', '(s11)', '(s12)', '(s13)', '(s14)', '(s15)', '(s16)', '(s17)', '(s18)', '(s19)', '(s20)', '(s21)', '(s22)'];
+const CAS = ['(s1)', '(s2)', '(s3)', '(s4)', '(s5)', '(s6)', '(s7)', '(s8)', '(s9)', '(s10)', '(s11)', '(s12)', '(s13)', '(s14)', '(s15)', '(s16)', '(s17)', '(s18)', '(s19)', '(s20)', '(s21)', '(s22)', '(s23)', '(s24)'];
 
 describe('les essais détectent une migration affaiblie (mutations)', () => {
   const mutations: [string, (sql: string) => string, RegExp][] = [
@@ -110,6 +110,16 @@ describe('les essais détectent une migration affaiblie (mutations)', () => {
       'un non-propriétaire révoque un invité',
       (sql) => sql.replace(' or not exists (select 1 from public.game_classes where id = v_class and user_id = auth.uid())', ''),
       /ECHEC \(s21\)/,
+    ],
+    [
+      'la purge supprime aussi les classes du lendemain',
+      (sql) => sql.replace('delete from public.game_classes where purge_on <= p_today;', 'delete from public.game_classes where purge_on <= p_today + 1;'),
+      /ECHEC \(s23\)/,
+    ],
+    [
+      'authenticated peut lancer la purge',
+      (sql) => `${sql}\ngrant execute on function public.game_purge_expired(date) to authenticated;`,
+      /ECHEC \(s24\)/,
     ],
     [
       'une séance rejouée double la ligne',

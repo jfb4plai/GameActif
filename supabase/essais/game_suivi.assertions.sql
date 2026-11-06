@@ -557,3 +557,74 @@ begin
   if n <> 1 then raise exception 'ECHEC (s22) : la classe B a perdu des données'; end if;
   raise notice 'OK (s22) : suppression de classe en cascade';
 end $$;
+
+-- ---------------------------------------------------------------------------------------------------------------
+-- Suppression au 30 août : trois classes dont la date de suppression est la veille, le jour même, le lendemain.
+-- ---------------------------------------------------------------------------------------------------------------
+insert into public.game_activities (user_id, titre, niveau, matiere, brouillon)
+  values ('00000000-0000-4000-8000-000000000001', 'Activité à conserver', 'P4', 'mathematiques', '{}');
+insert into public.game_classes (id, user_id, label, nb_codes, class_code, purge_on) values
+  ('c0000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000001', 'Veille', 5, 'PURGEAAA', current_date - 1),
+  ('c0000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000001', 'Jour même', 5, 'PURGEBBB', current_date),
+  ('c0000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000001', 'Lendemain', 5, 'PURGECCC', current_date + 1);
+insert into public.game_sessions (id, class_id, student_code, mechanic, profile, cibles, total_elements, ended_at, labels, results)
+  select gen_random_uuid(), id, 'E01', 'trier', 'standard', array['M.P4.1.1.i1.a1'], 1, now(), '{}', '[]'
+  from public.game_classes where class_code in ('PURGEAAA', 'PURGEBBB', 'PURGECCC');
+insert into public.game_observations (class_id, texte)
+  select id, 'obs' from public.game_classes where class_code in ('PURGEAAA', 'PURGEBBB', 'PURGECCC');
+insert into public.game_manual_results (class_id, student_code, cible, resultat)
+  select id, 'E01', 'M.P4.1.1.i1.a1', 'reussi' from public.game_classes where class_code in ('PURGEAAA', 'PURGEBBB', 'PURGECCC');
+insert into public.game_class_guests (class_id, guest_user_id, expires_at)
+  select id, '00000000-0000-4000-8000-000000000003', now() + interval '1 day' from public.game_classes where class_code in ('PURGEAAA', 'PURGEBBB', 'PURGECCC');
+insert into public.game_guest_invitations (class_id, code_hash, expires_at)
+  select id, encode(digest(class_code, 'sha256'), 'hex'), now() + interval '1 day' from public.game_classes where class_code in ('PURGEAAA', 'PURGEBBB', 'PURGECCC');
+
+-- (s23) La purge supprime les deux premières et tout ce qui s'y rattache ; la troisième, les comptes et les activités restent.
+do $$
+declare avant int; n int; teachers_avant int; r int;
+begin
+  select count(*) into avant from public.game_classes where purge_on <= current_date;
+  select count(*) into teachers_avant from public.game_teachers;
+  r := public.game_purge_expired(current_date);
+  if r <> avant then raise exception 'ECHEC (s23) : % classe(s) supprimée(s) au lieu de %', r, avant; end if;
+  select count(*) into n from public.game_classes where class_code in ('PURGEAAA', 'PURGEBBB');
+  if n <> 0 then raise exception 'ECHEC (s23) : classes échues non supprimées'; end if;
+  select count(*) into n from public.game_classes where class_code = 'PURGECCC';
+  if n <> 1 then raise exception 'ECHEC (s23) : la classe du lendemain a été supprimée'; end if;
+  select count(*) into n from public.game_sessions where class_id in ('c0000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000002');
+  if n <> 0 then raise exception 'ECHEC (s23) : séances restantes'; end if;
+  select count(*) into n from public.game_observations where class_id in ('c0000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000002');
+  if n <> 0 then raise exception 'ECHEC (s23) : observations restantes'; end if;
+  select count(*) into n from public.game_manual_results where class_id in ('c0000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000002');
+  if n <> 0 then raise exception 'ECHEC (s23) : résultats saisis restants'; end if;
+  select count(*) into n from public.game_class_guests where class_id in ('c0000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000002');
+  if n <> 0 then raise exception 'ECHEC (s23) : invités restants'; end if;
+  select count(*) into n from public.game_guest_invitations where class_id in ('c0000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000002');
+  if n <> 0 then raise exception 'ECHEC (s23) : invitations restantes'; end if;
+  select count(*) into n from public.game_sessions where class_id = 'c0000000-0000-4000-8000-000000000003';
+  if n <> 1 then raise exception 'ECHEC (s23) : les séances du lendemain ont disparu'; end if;
+  select count(*) into n from public.game_teachers;
+  if n <> teachers_avant then raise exception 'ECHEC (s23) : des comptes enseignants ont été touchés'; end if;
+  select count(*) into n from public.game_activities where titre = 'Activité à conserver';
+  if n <> 1 then raise exception 'ECHEC (s23) : une activité a été supprimée'; end if;
+  raise notice 'OK (s23) : suppression au 30 août';
+end $$;
+
+-- (s24) Ni anon ni authenticated n'appellent la purge.
+set local role authenticated;
+do $$
+declare ok boolean := false;
+begin
+  begin perform public.game_purge_expired(current_date + 4000); exception when insufficient_privilege then ok := true; end;
+  if not ok then raise exception 'ECHEC (s24) : authenticated appelle la purge'; end if;
+end $$;
+reset role;
+set local role anon;
+do $$
+declare ok boolean := false;
+begin
+  begin perform public.game_purge_expired(current_date + 4000); exception when insufficient_privilege then ok := true; end;
+  if not ok then raise exception 'ECHEC (s24) : anon appelle la purge'; end if;
+  raise notice 'OK (s24) : purge réservée à service_role';
+end $$;
+reset role;

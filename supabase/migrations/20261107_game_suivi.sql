@@ -525,3 +525,27 @@ create policy game_class_guests_select on public.game_class_guests
   using (public.game_owns_class(class_id));
 
 -- game_guest_invitations : aucune règle, donc aucun accès pour les rôles API.
+
+-- ---------------------------------------------------------------------------------------------------------------
+-- Suppression des résultats à la date de fin d'année de chaque classe (30 août, voir game_school_year_end)
+-- ---------------------------------------------------------------------------------------------------------------
+
+-- Supprime les classes dont la date est atteinte ; séances, observations, résultats saisis, invités et invitations
+-- partent avec elles (on delete cascade). Les comptes enseignants et leurs activités ne sont pas touchés.
+-- Réservée à service_role et à l'administrateur ; la planification est faite à part (supabase/admin/planifier-purge.sql).
+create function public.game_purge_expired(p_today date default current_date) returns int
+language plpgsql
+security definer
+set search_path = pg_catalog, public, pg_temp
+as $$
+declare
+  v_n int;
+begin
+  delete from public.game_classes where purge_on <= p_today;
+  get diagnostics v_n = row_count;
+  return v_n;
+end;
+$$;
+
+revoke all on function public.game_purge_expired(date) from public, anon, authenticated;
+grant execute on function public.game_purge_expired(date) to service_role;
