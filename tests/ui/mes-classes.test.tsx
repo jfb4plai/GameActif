@@ -194,6 +194,14 @@ describe('MesClasses, niveaux par code', () => {
     expect(await screen.findByRole('region', { name: 'Niveaux par code' })).toBeTruthy();
   });
 
+  it('les niveaux par code sont repliés par défaut sous un titre cliquable', async () => {
+    avecPartage(classe);
+    const region = await screen.findByRole('region', { name: 'Niveaux par code' });
+    const details = within(region).getByRole('heading', { name: 'Niveaux par code' }).closest('details') as HTMLDetailsElement;
+    expect(details).not.toBeNull();
+    expect(details.open).toBe(false);
+  });
+
   it('une classe seulement lue ne les propose pas', async () => {
     avecPartage({ ...classe, proprietaire: false });
     await screen.findByText(/personne invitée/);

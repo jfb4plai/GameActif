@@ -63,24 +63,26 @@ export function NiveauxParCode({ classe, partage, stockage }: { classe: ClasseLu
 
   return (
     <section aria-label="Niveaux par code" className="niveaux-par-code">
-      <h3>Niveaux par code</h3>
-      <AideEcran id="niveaux" />
-      <p className="aide">
-        {`Ce choix est le vôtre : il est enregistré sous le code, sans prénom, et supprimé le ${dateFr(classe.purgeLe)}. L’élève ne voit pas le nom de son niveau. Un code que vous ne fixez pas joue au niveau Standard.`}
-      </p>
-      {erreur !== '' && <p role="alert" className="raisons">{erreur}</p>}
-      <div className="champs">
-        {codesDeClasse(classe.nbCodes).map((c) => (
-          <div key={c}>
-            <label htmlFor={`niveau-${c}`}>{`Niveau de ${afficher(c, roster)}`}</label>
-            <select id={`niveau-${c}`} value={profils[c] ?? 'standard'} onChange={(e) => void changer(c, e.target.value as ProfileId)}>
-              {NIVEAUX.map((n) => (
-                <option key={n} value={n}>{PROFILE_LABELS[n]}</option>
-              ))}
-            </select>
-          </div>
-        ))}
-      </div>
+      <details className="section-tdb">
+        <summary><h3>Niveaux par code</h3></summary>
+        <AideEcran id="niveaux" />
+        <p className="aide">
+          {`Ce choix est le vôtre : il est enregistré sous le code, sans prénom, et supprimé le ${dateFr(classe.purgeLe)}. L’élève ne voit pas le nom de son niveau. Un code que vous ne fixez pas joue au niveau Standard.`}
+        </p>
+        {erreur !== '' && <p role="alert" className="raisons">{erreur}</p>}
+        <div className="champs">
+          {codesDeClasse(classe.nbCodes).map((c) => (
+            <div key={c}>
+              <label htmlFor={`niveau-${c}`}>{`Niveau de ${afficher(c, roster)}`}</label>
+              <select id={`niveau-${c}`} value={profils[c] ?? 'standard'} onChange={(e) => void changer(c, e.target.value as ProfileId)}>
+                {NIVEAUX.map((n) => (
+                  <option key={n} value={n}>{PROFILE_LABELS[n]}</option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </div>
+      </details>
     </section>
   );
 }
