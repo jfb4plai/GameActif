@@ -5,9 +5,12 @@ import type { MechanicId } from '../engine/types.js';
 import {
   erreursParType,
   etatEleve,
+  evolution,
+  faitsParEleve,
   jeuxParCible,
   participation,
   type Etat,
+  type PointEvolution,
   type ResultatManuel,
   type SeuilsEtats,
 } from '../suivi/agregats.js';
@@ -48,6 +51,25 @@ interface Donnees {
   manuels: ResultatManuel[];
 }
 
+const NOTES = { reussi: 'réussi', partiel: 'partiel', a_reprendre: 'à reprendre' } as const;
+
+/** Courbe de la réussite au premier essai, par jour. Le tableau placé dessous porte les mêmes valeurs. */
+function Courbe({ points }: { points: PointEvolution[] }) {
+  const largeur = 300;
+  const hauteur = 100;
+  const marge = 10;
+  const x = (i: number) => (points.length === 1 ? largeur / 2 : marge + (i * (largeur - 2 * marge)) / (points.length - 1));
+  const y = (r: number) => hauteur - marge - r * (hauteur - 2 * marge);
+  return (
+    <svg viewBox={`0 0 ${largeur} ${hauteur}`} role="img" aria-label="Courbe de la réussite au premier essai par jour" width="100%" height={120}>
+      <polyline fill="none" stroke="currentColor" strokeWidth="2" points={points.map((p, i) => `${x(i)},${y(p.r1)}`).join(' ')} />
+      {points.map((p, i) => (
+        <circle key={p.jour} cx={x(i)} cy={y(p.r1)} r={4} fill="currentColor" />
+      ))}
+    </svg>
+  );
+}
+
 /**
  * Couche A du tableau de bord : qui a joué, erreurs par type, même attendu dans les autres jeux, états.
  * Les codes sont remplacés par les prénoms de la liste locale à l'affichage seulement.
@@ -56,6 +78,7 @@ export function TableauDeBord({ classe, store, stockage }: { classe: ClasseLue; 
   const [donnees, setDonnees] = useState<Donnees | null>(null);
   const [erreur, setErreur] = useState(false);
   const [choisie, setChoisie] = useState<string | null>(null);
+  const [eleve, setEleve] = useState('');
   const [seuils, setSeuils] = useState<SeuilsEtats>(() => lireSeuils(stockage, classe.id));
   const roster = useMemo(() => lireRoster(stockage, classe.id), [stockage, classe.id]);
   const tous = useMemo(() => codes(classe.nbCodes), [classe.nbCodes]);
@@ -90,6 +113,8 @@ export function TableauDeBord({ classe, store, stockage }: { classe: ClasseLue; 
   const etats = new Map<Etat, string[]>(ETATS.map((e) => [e.id, []]));
   for (const code of tous) etats.get(etatEleve(code, cible, sessions, manuels, seuils))?.push(code);
   const noms = (liste: string[]) => liste.map((c) => afficher(c, roster)).join(', ');
+  const points = evolution(sessions.filter((s) => s.cibles.includes(cible)), cible, eleve === '' ? undefined : eleve);
+  const faits = eleve === '' ? [] : faitsParEleve(eleve, sessions.filter((s) => s.cibles.includes(cible)), manuels.filter((m) => m.cible === cible));
 
   function changer(champ: keyof SeuilsEtats, brut: string, min: number, max: number, facteur = 1) {
     const v = Number(brut) / facteur;
@@ -176,6 +201,61 @@ export function TableauDeBord({ classe, store, stockage }: { classe: ClasseLue; 
           })}
         </tbody>
       </table>
+
+      <div>
+        <label htmlFor="eleve-detail">Élève</label>
+        <select id="eleve-detail" value={eleve} onChange={(e) => setEleve(e.target.value)}>
+          <option value="">Toute la classe</option>
+          {tous.map((c) => (
+            <option key={c} value={c}>{afficher(c, roster)}</option>
+          ))}
+        </select>
+      </div>
+
+      <h3>Évolution dans le temps</h3>
+      {points === null ? (
+        <p>Pas assez de séances pour une tendance (3 jours minimum).</p>
+      ) : (
+        <>
+          <Courbe points={points} />
+          <table>
+            <caption>Réussite au 1er essai par jour</caption>
+            <thead>
+              <tr><th scope="col">Jour</th><th scope="col">Réussite au 1er essai</th></tr>
+            </thead>
+            <tbody>
+              {points.map((p) => (
+                <tr key={p.jour}><th scope="row">{date(p.jour)}</th><td>{pourcent(p.r1)}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+
+      <h3>Faits par code</h3>
+      {eleve === '' ? (
+        <p>Choisissez un code pour voir ses faits.</p>
+      ) : faits.length === 0 ? (
+        <p>Aucun fait enregistré pour ce code.</p>
+      ) : (
+        <table>
+          <caption>{`Faits pour ${afficher(eleve, roster)}`}</caption>
+          <thead>
+            <tr><th scope="col">Date</th><th scope="col">Jeu</th><th scope="col">Réussite au 1er essai</th><th scope="col">Erreurs</th><th scope="col">Origine</th></tr>
+          </thead>
+          <tbody>
+            {faits.map((f, i) => (
+              <tr key={`${f.date}-${f.jeu}-${i}`}>
+                <th scope="row">{date(f.date)}</th>
+                <td>{nomJeu(f.jeu)}</td>
+                <td>{f.r1 === null ? '—' : pourcent(f.r1)}</td>
+                <td>{f.erreurs.length === 0 ? '—' : f.erreurs.join(' ; ')}</td>
+                <td>{f.origine === 'ecran' ? 'jeu sur écran' : `saisi par l’enseignant : ${f.note ? NOTES[f.note] : ''}`}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       <details>
         <summary>Seuils des états</summary>
