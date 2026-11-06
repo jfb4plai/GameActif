@@ -15,9 +15,9 @@ const classe: ClasseLue = { id: 'c1', label: 'P4 B', nbCodes: 24, classCode: 'AB
 function el(correct: string, wrong: string[] = []): ResultatEnvoye {
   return { elementId: `el-${correct}`, mechanic: 'trier', firstTry: wrong.length === 0, tries: wrong.length + 1, hintUsed: false, revealed: false, wrongChoices: wrong, correct };
 }
-function s(code: string, mechanic: MechanicId, jour: string, resultats: ResultatEnvoye[]): SessionEnregistree {
+function s(code: string, mechanic: MechanicId, jour: string, resultats: ResultatEnvoye[], above = false): SessionEnregistree {
   return {
-    sessionId: `${code}-${mechanic}-${jour}`,
+    sessionId: `${code}-${mechanic}-${jour}${above ? '-haut' : ''}`,
     studentCode: code,
     profile: 'standard',
     totalElements: resultats.length,
@@ -27,7 +27,7 @@ function s(code: string, mechanic: MechanicId, jour: string, resultats: Resultat
     mechanic,
     labels: { devant: 'devant', derriere: 'derrière', entre: 'entre' },
     origine: 'ecran',
-    above: false,
+    above,
   };
 }
 const pas = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
@@ -76,6 +76,16 @@ describe('TableauDeBord, évolution et faits', () => {
     expect(lignes).toHaveLength(2);
     expect(lignes[0].textContent).toMatch(/Jeu physique.*saisi par l’enseignant.*partiel/);
     expect(lignes[1].textContent).toMatch(/Trier.*50 %.*derrière au lieu de devant.*jeu sur écran/);
+  });
+
+  it('les faits indiquent un tour joué au niveau au-dessus', async () => {
+    monter([s('E01', 'trier', '2026-11-10', [el('entre')], true), s('E01', 'memo', '2026-11-11', [el('entre')])]);
+    await choisirEleve('E01');
+    const faits = screen.getByRole('table', { name: 'Faits pour E01' });
+    const lignes = within(faits).getAllByRole('row').slice(1);
+    expect(lignes[0].textContent).toMatch(/Trier.*jeu sur écran, niveau au-dessus/);
+    expect(lignes[1].textContent).toMatch(/Mémo/);
+    expect(lignes[1].textContent).not.toMatch(/niveau au-dessus/);
   });
 
   it('place les couches dans l’ordre : états, évolution, faits', async () => {

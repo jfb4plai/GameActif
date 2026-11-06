@@ -172,7 +172,7 @@ export function TableauDeBord({ classe, store, stockage }: { classe: ClasseLue; 
           {jeux.map((j) => (
             <tr key={j.jeu}>
               <th scope="row">{nomJeu(j.jeu)}</th>
-              <td>{j.joueurs}</td>
+              <td>{j.dontAuDessus > 0 ? `${j.joueurs}, dont ${j.dontAuDessus} au niveau au-dessus` : j.joueurs}</td>
               <td>{j.r1Moyen === null ? 'saisi par l’enseignant' : pourcent(j.r1Moyen)}</td>
               <td>{date(j.derniere)}</td>
             </tr>
@@ -251,7 +251,7 @@ export function TableauDeBord({ classe, store, stockage }: { classe: ClasseLue; 
                 <td>{nomJeu(f.jeu)}</td>
                 <td>{f.r1 === null ? 'sans objet' : pourcent(f.r1)}</td>
                 <td>{f.erreurs.length === 0 ? 'aucune' : f.erreurs.join(' ; ')}</td>
-                <td>{f.origine === 'ecran' ? 'jeu sur écran' : `saisi par l’enseignant : ${f.note ? NOTES[f.note] : ''}`}</td>
+                <td>{f.origine === 'ecran' ? (f.auDessus ? 'jeu sur écran, niveau au-dessus' : 'jeu sur écran') : `saisi par l’enseignant : ${f.note ? NOTES[f.note] : ''}`}</td>
               </tr>
             ))}
           </tbody>

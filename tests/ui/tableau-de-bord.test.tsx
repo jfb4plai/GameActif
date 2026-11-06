@@ -15,9 +15,9 @@ const classe: ClasseLue = { id: 'c1', label: 'P4 B', nbCodes: 24, classCode: 'AB
 function el(correct: string, wrong: string[] = []): ResultatEnvoye {
   return { elementId: `el-${correct}`, mechanic: 'trier', firstTry: wrong.length === 0, tries: wrong.length + 1, hintUsed: false, revealed: false, wrongChoices: wrong, correct };
 }
-function s(code: string, mechanic: MechanicId, jour: string, resultats: ResultatEnvoye[]): SessionEnregistree {
+function s(code: string, mechanic: MechanicId, jour: string, resultats: ResultatEnvoye[], above = false): SessionEnregistree {
   return {
-    sessionId: `${code}-${mechanic}-${jour}`,
+    sessionId: `${code}-${mechanic}-${jour}${above ? '-haut' : ''}`,
     studentCode: code,
     profile: 'standard',
     totalElements: resultats.length,
@@ -27,7 +27,7 @@ function s(code: string, mechanic: MechanicId, jour: string, resultats: Resultat
     mechanic,
     labels: { devant: 'devant', derriere: 'derrière', entre: 'entre' },
     origine: 'ecran',
-    above: false,
+    above,
   };
 }
 
@@ -59,6 +59,18 @@ describe('TableauDeBord, couche des états', () => {
     const tableau = await screen.findByRole('table', { name: 'Le même attendu dans les autres jeux' });
     expect(within(tableau).getByRole('row', { name: /Trier.*50 %/ })).toBeTruthy();
     expect(within(tableau).getByRole('row', { name: /Mémo.*100 %/ })).toBeTruthy();
+  });
+
+  it('compte à part les tours joués au niveau au-dessus et les exclut de la réussite moyenne', async () => {
+    const store = magasinSuiviMemoire({
+      classes: [classe],
+      sessions: { c1: [s('E01', 'trier', '2026-11-09', [el('entre'), el('devant', ['derriere'])]), s('E02', 'trier', '2026-11-10', [el('entre'), el('entre')], true)] },
+    });
+    render(<TableauDeBord classe={classe} store={store} stockage={stockage()} />);
+    const tableau = await screen.findByRole('table', { name: 'Le même attendu dans les autres jeux' });
+    const ligne = within(tableau).getByRole('row', { name: /Trier/ });
+    expect(ligne.textContent).toMatch(/dont 1 au niveau au-dessus/);
+    expect(ligne.textContent).toMatch(/50 %/);
   });
 
   it('affiche toujours le bandeau « Indice, pas une preuve »', async () => {

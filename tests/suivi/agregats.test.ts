@@ -24,8 +24,8 @@ function el(correct: string, wrong: string[] = []): ResultatEnvoye {
 function tour(ok: number, ko = 0): ResultatEnvoye[] {
   return [...Array.from({ length: ok }, () => el('entre')), ...Array.from({ length: ko }, () => el('devant', ['derriere']))];
 }
-function s(code: string, mechanic: MechanicId, jour: string, resultats: ResultatEnvoye[], cibles = [C]): SessionEnregistree {
-  return { sessionId: `${code}-${mechanic}-${jour}`, studentCode: code, profile: 'standard', totalElements: resultats.length, endedAt: `${jour}T10:00:00.000Z`, results: resultats, cibles, mechanic, labels: LABELS, origine: 'ecran', above: false };
+function s(code: string, mechanic: MechanicId, jour: string, resultats: ResultatEnvoye[], cibles = [C], above = false): SessionEnregistree {
+  return { sessionId: `${code}-${mechanic}-${jour}${above ? '-haut' : ''}`, studentCode: code, profile: 'standard', totalElements: resultats.length, endedAt: `${jour}T10:00:00.000Z`, results: resultats, cibles, mechanic, labels: LABELS, origine: 'ecran', above };
 }
 const manuel = (code: string, resultat: ResultatManuel['resultat'], date: string, cible = C): ResultatManuel => ({ studentCode: code, cible, resultat, date: `${date}T10:00:00.000Z` });
 
@@ -79,12 +79,12 @@ describe('erreursParType', () => {
 describe('jeuxParCible', () => {
   it('donne, par jeu, le nombre de joueurs et la réussite moyenne au premier essai', () => {
     const r = jeuxParCible([s('E01', 'trier', '2026-11-09', tour(1, 1)), s('E02', 'trier', '2026-11-10', tour(2))], [], C);
-    expect(r).toEqual([{ jeu: 'trier', joueurs: 2, r1Moyen: 0.75, derniere: '2026-11-10T10:00:00.000Z' }]);
+    expect(r).toEqual([{ jeu: 'trier', joueurs: 2, r1Moyen: 0.75, derniere: '2026-11-10T10:00:00.000Z', dontAuDessus: 0 }]);
   });
 
   it('ajoute une ligne « physique » pour les résultats saisis, sans pourcentage', () => {
     const r = jeuxParCible([], [manuel('E01', 'reussi', '2026-11-11'), manuel('E02', 'partiel', '2026-11-11')], C);
-    expect(r).toEqual([{ jeu: 'physique', joueurs: 2, r1Moyen: null, derniere: '2026-11-11T10:00:00.000Z' }]);
+    expect(r).toEqual([{ jeu: 'physique', joueurs: 2, r1Moyen: null, derniere: '2026-11-11T10:00:00.000Z', dontAuDessus: 0 }]);
   });
 
   it('renvoie une liste vide sans séance ni saisie', () => {
@@ -165,8 +165,53 @@ describe('faitsParEleve', () => {
   it('liste les séances jouées et les saisies de l’enseignant, étiquetées, par date', () => {
     const f = faitsParEleve('E01', [s('E01', 'trier', '2026-11-10', tour(1, 1)), s('E02', 'trier', '2026-11-10', tour(2))], [manuel('E01', 'partiel', '2026-11-09')]);
     expect(f).toEqual([
-      { date: '2026-11-09T10:00:00.000Z', jeu: 'physique', r1: null, erreurs: [], origine: 'enseignant', note: 'partiel' },
-      { date: '2026-11-10T10:00:00.000Z', jeu: 'trier', r1: 0.5, erreurs: ['derrière au lieu de devant'], origine: 'ecran' },
+      { date: '2026-11-09T10:00:00.000Z', jeu: 'physique', r1: null, erreurs: [], origine: 'enseignant', note: 'partiel', auDessus: false },
+      { date: '2026-11-10T10:00:00.000Z', jeu: 'trier', r1: 0.5, erreurs: ['derrière au lieu de devant'], origine: 'ecran', auDessus: false },
     ]);
+  });
+
+  it('marque les tours joués au niveau au-dessus', () => {
+    const f = faitsParEleve('E01', [s('E01', 'trier', '2026-11-10', tour(2), [C], true), s('E01', 'memo', '2026-11-11', tour(2))], []);
+    expect(f.map((x) => x.auDessus)).toEqual([true, false]);
+  });
+});
+
+describe('dépassement : un tour au niveau au-dessus ne compte jamais contre l’élève', () => {
+  it('une confusion répétée dont une occurrence est au-dessus ne met pas « à reprendre »', () => {
+    const ss = [s('E01', 'trier', '2026-11-09', tour(2, 2)), s('E01', 'memo', '2026-11-10', tour(2, 2), [C], true)];
+    expect(etatEleve('E01', C, ss, [])).toBe('en-cours');
+    expect(etatEleve('E01', C, [s('E01', 'trier', '2026-11-09', tour(2, 2)), s('E01', 'memo', '2026-11-10', tour(2, 2))], [])).toBe('a-reprendre');
+  });
+
+  it('une réussite au-dessus compte pour « stabilisé » (jeux et jours)', () => {
+    const ss = [s('E01', 'trier', '2026-11-09', tour(4)), s('E01', 'associer', '2026-11-09', tour(4)), s('E01', 'memo', '2026-11-10', tour(4), [C], true)];
+    expect(etatEleve('E01', C, ss, [])).toBe('stabilise');
+  });
+
+  it('un échec au-dessus n’ajoute aucune preuve et n’enlève rien', () => {
+    const ss = [s('E01', 'trier', '2026-11-09', tour(4)), s('E01', 'memo', '2026-11-10', tour(1, 3), [C], true)];
+    expect(etatEleve('E01', C, ss, [])).toBe('en-cours');
+  });
+
+  it('les erreurs d’un tour au-dessus sont exclues des erreurs par type', () => {
+    const r = erreursParType([s('E01', 'trier', '2026-11-09', tour(0, 1)), s('E02', 'memo', '2026-11-09', tour(0, 1), [C], true)]);
+    expect(r).toEqual([{ juste: 'devant', choisi: 'derrière', eleves: ['E01'], mecaniques: ['trier'] }]);
+  });
+
+  it('un jour qui n’a que des tours au-dessus ne compte pas dans l’évolution, et ne la fait pas baisser', () => {
+    const base = [s('E01', 'trier', '2026-11-09', tour(2)), s('E01', 'memo', '2026-11-10', tour(2))];
+    expect(evolution([...base, s('E01', 'qcm', '2026-11-11', tour(0, 2), [C], true)], C)).toBeNull();
+    const avec = evolution([...base, s('E01', 'qcm', '2026-11-11', tour(2)), s('E01', 'qcm', '2026-11-11', tour(0, 4), [C], true)], C);
+    expect(avec?.at(-1)).toEqual({ jour: '2026-11-11', r1: 1 });
+  });
+
+  it('la réussite moyenne d’un jeu exclut les tours au-dessus et les compte à part', () => {
+    const r = jeuxParCible([s('E01', 'trier', '2026-11-09', tour(1, 1)), s('E02', 'trier', '2026-11-10', tour(2), [C], true)], [], C);
+    expect(r).toEqual([{ jeu: 'trier', joueurs: 2, r1Moyen: 0.5, derniere: '2026-11-10T10:00:00.000Z', dontAuDessus: 1 }]);
+  });
+
+  it('un jeu joué seulement au-dessus garde sa réussite moyenne (rien d’autre à montrer)', () => {
+    const r = jeuxParCible([s('E01', 'trier', '2026-11-09', tour(2), [C], true)], [], C);
+    expect(r[0]).toMatchObject({ r1Moyen: 1, dontAuDessus: 1 });
   });
 });

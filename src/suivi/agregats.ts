@@ -57,7 +57,8 @@ export interface ErreurType {
 export function erreursParType(sessions: SessionEnregistree[], cible?: string): ErreurType[] {
   const groupes = new Map<string, ErreurType>();
   for (const s of sessions) {
-    if (!pourCible(s, cible)) continue;
+    // Un tour joué au niveau au-dessus n'est pas une erreur au niveau de l'élève : exclu.
+    if (!pourCible(s, cible) || s.above) continue;
     for (const r of s.results) {
       for (const w of r.wrongChoices) {
         const cle = `${r.correct}\u0000${w}`;
@@ -79,9 +80,14 @@ export function erreursParType(sessions: SessionEnregistree[], cible?: string): 
 export interface LigneJeu {
   jeu: Jeu;
   joueurs: number;
-  /** Moyenne, sur les séances, de la part des éléments réussis au 1er essai ; null pour les saisies de l'enseignant. */
+  /**
+   * Moyenne, sur les séances, de la part des éléments réussis au 1er essai ; null pour les saisies de l'enseignant.
+   * Les tours joués au niveau au-dessus sont exclus (sauf si le jeu n'a été joué qu'ainsi) : ils ne font pas baisser la moyenne.
+   */
   r1Moyen: number | null;
   derniere: string;
+  /** Nombre de séances jouées au niveau au-dessus du profil attribué. */
+  dontAuDessus: number;
 }
 
 /** Pour un attendu : ce qui a été joué, jeu par jeu, plus les résultats saisis par l'enseignant. Du plus ancien au plus récent. */
@@ -93,16 +99,18 @@ export function jeuxParCible(sessions: SessionEnregistree[], manuels: ResultatMa
     parJeu.set(s.mechanic, [...(parJeu.get(s.mechanic) ?? []), s]);
   }
   for (const [jeu, ss] of parJeu) {
+    const aNiveau = ss.filter((s) => !s.above);
     lignes.push({
       jeu,
       joueurs: new Set(ss.map((s) => s.studentCode)).size,
-      r1Moyen: moyenne(ss.map(r1De)),
+      r1Moyen: moyenne((aNiveau.length > 0 ? aNiveau : ss).map(r1De)),
       derniere: ss.map((s) => s.endedAt).sort().at(-1) as string,
+      dontAuDessus: ss.length - aNiveau.length,
     });
   }
   const ms = manuels.filter((m) => m.cible === cible);
   if (ms.length > 0) {
-    lignes.push({ jeu: 'physique', joueurs: new Set(ms.map((m) => m.studentCode)).size, r1Moyen: null, derniere: ms.map((m) => m.date).sort().at(-1) as string });
+    lignes.push({ jeu: 'physique', joueurs: new Set(ms.map((m) => m.studentCode)).size, r1Moyen: null, derniere: ms.map((m) => m.date).sort().at(-1) as string, dontAuDessus: 0 });
   }
   return lignes.sort((a, b) => a.derniere.localeCompare(b.derniere));
 }
@@ -127,6 +135,7 @@ export function etatEleve(
 
   const mecaniquesParConfusion = new Map<string, Set<MechanicId>>();
   for (const s of ss) {
+    if (s.above) continue; // une erreur au niveau au-dessus n'est jamais comptée contre l'élève
     for (const r of s.results) {
       for (const w of r.wrongChoices) {
         const cle = `${r.correct}\u0000${w}`;
@@ -164,7 +173,8 @@ export interface PointEvolution {
 export function evolution(sessions: SessionEnregistree[], cible: string, code?: string): PointEvolution[] | null {
   const parJour = new Map<string, number[]>();
   for (const s of sessions) {
-    if (!s.cibles.includes(cible) || (code !== undefined && s.studentCode !== code)) continue;
+    // Les tours au niveau au-dessus n'ont pas la même difficulté : ils ne tirent pas la courbe vers le bas.
+    if (!s.cibles.includes(cible) || s.above || (code !== undefined && s.studentCode !== code)) continue;
     const j = jourDe(s.endedAt);
     parJour.set(j, [...(parJour.get(j) ?? []), r1De(s)]);
   }
@@ -180,6 +190,8 @@ export interface Fait {
   origine: 'ecran' | 'enseignant';
   /** Résultat saisi par l'enseignant, pour les lignes « enseignant ». */
   note?: 'reussi' | 'partiel' | 'a_reprendre';
+  /** Tour joué au niveau au-dessus du profil attribué. */
+  auDessus: boolean;
 }
 
 /** Tout ce qui est connu d'un code, sans étiquette d'état : à interpréter par l'enseignant. */
@@ -189,11 +201,11 @@ export function faitsParEleve(code: string, sessions: SessionEnregistree[], manu
     if (s.studentCode !== code) continue;
     const erreurs: string[] = [];
     for (const r of s.results) for (const w of r.wrongChoices) erreurs.push(`${s.labels[w] ?? w} au lieu de ${s.labels[r.correct] ?? r.correct}`);
-    faits.push({ date: s.endedAt, jeu: s.mechanic, r1: r1De(s), erreurs, origine: 'ecran' });
+    faits.push({ date: s.endedAt, jeu: s.mechanic, r1: r1De(s), erreurs, origine: 'ecran', auDessus: s.above });
   }
   for (const m of manuels) {
     if (m.studentCode !== code) continue;
-    faits.push({ date: m.date, jeu: 'physique', r1: null, erreurs: [], origine: 'enseignant', note: m.resultat });
+    faits.push({ date: m.date, jeu: 'physique', r1: null, erreurs: [], origine: 'enseignant', note: m.resultat, auDessus: false });
   }
   return faits.sort((a, b) => a.date.localeCompare(b.date));
 }
