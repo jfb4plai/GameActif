@@ -24,6 +24,15 @@ Des élèves de l'enseignement fondamental (P1 à P6 : `src/data/referentiel.ts`
 
 Dans le navigateur de l'enseignant seulement (jamais envoyé à la base) : la liste code vers prénom (`src/suivi/roster.ts`), les seuils des états (`src/suivi/seuils.ts`), le code de classe associé à un appareil (`src/suivi/classeAppareil.ts`).
 
+### 3 bis. Activité partagée et niveaux par code (plan 9, migration `supabase/migrations/20261108_game_partage.sql`, non appliquée)
+
+| Table | Ce qu'elle contient | Ce qu'elle ne contient pas |
+|---|---|---|
+| `game_shared_activities` | code d'activité (8 caractères), titre, contenu de l'activité (consignes, éléments, attendus), mode de niveau, niveau de départ, dates | le contexte de classe : la fonction `game_publish_activity` le remplace par un texte fixe côté serveur (essai `(p2)`) ; aucun prénom n'est demandé |
+| `game_class_profiles` | code élève et niveau (soutien, standard, défi) fixé par l'enseignant | aucun prénom |
+
+La table `game_sessions` gagne une colonne `above` : le tour a été joué au niveau au-dessus de celui de l'élève (dépassement volontaire). Les tablettes lisent une activité par `game_get_shared_activity` et un niveau par `game_profile_for`, deux fonctions ouvertes à `anon` ; `anon` ne lit aucune table (essai `(p5)`). La tablette garde une copie de l'activité dans le stockage local de son navigateur (`src/partage/lecture.ts`), sans contexte. Les activités partagées et les niveaux sont supprimés avec la classe (essais `(p8)`, `(p9)`) ; au plus 20 activités partagées par classe (essai `(p3)`).
+
 ## 4. Pseudonymat
 
 Un code est un pseudonyme, pas un anonymat : l'enseignant peut relier E07 à un enfant grâce à sa liste locale. Les résultats restent donc des données personnelles. La liste de prénoms ne quitte pas l'appareil de l'enseignant ; le tableau de bord remplace le code par le prénom à l'affichage seulement.
@@ -49,6 +58,10 @@ Les résultats d'une classe sont supprimés à la date de fin d'année : le 30 a
 6. **Une personne invitée lit des données de classe.** Limitée aux codes et aux observations cochées ; l'enseignant est responsable du choix de la personne invitée.
 7. **Code de classe deviné par force brute.** Un code de classe compte 8 caractères parmi 31 (environ 8,5 · 10^11 possibilités). `game_class_info` et `game_record_session` n'ont pas de limite par appelant ; la seule limite (60 séances par classe et par minute) ne joue qu'une fois un code juste trouvé. Un tiers qui trouverait un code actif pourrait y écrire des résultats, jamais en lire. Une limitation de débit côté API Supabase est **non vérifiée**.
 8. **Sous-traitant.** Supabase héberge la base ; Vercel héberge l'application. La région d'hébergement, le contrat et les journaux techniques (adresses IP) de chacun sont **non vérifiés**.
+9. **Contenu partagé lisible par quiconque connaît le code d'activité.** Aucune donnée d'élève, mais le titre et le contenu sont rédigés par l'enseignant. Le garde-fou « prénom » (liste locale) s'applique aux observations, pas aux éléments de l'activité : un nom propre saisi dans un élément serait publié sans contrôle.
+10. **Niveau par code : une information sur l'élève.** Le niveau fixé par l'enseignant révèle un besoin d'accompagnement, même sous pseudonyme. Comme `game_profile_for` est ouverte à `anon`, quiconque connaît le code de classe peut essayer d'autres codes et déduire par le comportement du jeu le niveau d'un camarade : le mode est discret, pas secret.
+11. **Copie locale sur la tablette.** L'activité reste dans le navigateur de la tablette jusqu'à son vidage ; elle ne contient ni contexte ni donnée d'élève.
+12. **Dépassement.** L'indicateur `above` dit qu'un élève a choisi de jouer plus haut : une donnée de comportement, enregistrée sous son code.
 
 ## 8. Droits des personnes
 
@@ -60,6 +73,8 @@ Accès et effacement : par écrit à `jeanfrancois.beguin@ens.ecl.be`, traitemen
 - Base légale et responsable du traitement.
 - Faut-il une suppression par code (risque 3) et une suppression d'observation dans l'interface (risque 4) avant l'ouverture ?
 - Durée : le 30 août convient-il, y compris pour les classes créées en cours d'année ?
+- Le mode « niveau par code » (risque 10) peut-il être livré avec les autres, ou seulement après votre avis ?
+- Faut-il un contrôle serveur ou client des noms propres dans le contenu d'une activité partagée (risque 9) ?
 - Le texte de la page Confidentialité du plan 7 (tâche 1) : relecture avant publication.
 
 ## 10. Ce que ce dossier ne prétend pas
