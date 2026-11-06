@@ -16,6 +16,7 @@ import type { StockageLocal } from '../compte/invitation.js';
 import { enregistrerClasse, lireClasse, oublierClasse, type ClasseAppareil } from '../suivi/classeAppareil.js';
 import { chercherClasse, envoyerSession, MESSAGES_ENVOI, type ClientSuivi } from '../suivi/envoi.js';
 import { construirePayload } from '../suivi/payload.js';
+import { NOMS_NEUTRES, estAuDessus, niveauAuDessus } from '../partage/niveaux.js';
 
 const A_COMPLETER = 'À compléter par l’enseignant : en quoi ce jeu travaille cet attendu.';
 const DEFAULT_PUPILS = 24;
@@ -61,20 +62,37 @@ function nouvelId(): string | null {
   return globalThis.crypto?.randomUUID?.() ?? null;
 }
 
+/** Vue élève d'une activité partagée : sans l'outillage de l'enseignant, au profil décidé par l'enseignant. */
+export interface EleveProps {
+  /** Profil joué tant qu'aucun code n'a donné le sien (mode « même profil » ou « un lien par groupe »). */
+  profilDepart: ProfileId;
+  /** Mode « par code » : renvoie le profil du code choisi ; null ou erreur laisse le profil de départ. */
+  resoudreProfil?: (codeEleve: string) => Promise<ProfileId | null>;
+}
+
+const MESSAGE_NIVEAU_DEFAUT = 'Niveau par défaut : le niveau de votre code n’a pas pu être chargé.';
+
 interface Props {
   activity: Activity;
   /** Client de la base : sans lui, aucun suivi (comportement d'origine). */
   suivi?: ClientSuivi;
   /** Stockage local de l'appareil (classe associée) ; par défaut `localStorage`. */
   stockage?: StockageLocal | null;
+  /** Présente : vue élève (outillage de l'enseignant masqué, dépassement d'un niveau possible). */
+  eleve?: EleveProps;
 }
 
-export function ActivityScreen({ activity, suivi, stockage }: Props) {
+export function ActivityScreen({ activity, suivi, stockage, eleve }: Props) {
   const magasin = stockage !== undefined ? stockage : stockageNavigateur();
   const [classe, setClasse] = useState<ClasseAppareil | null>(() => (suivi ? lireClasse(magasin) : null));
   const [quiJoue, setQuiJoue] = useState('');
   const [retour, setRetour] = useState('');
-  const [profile, setProfile] = useState<ProfileId>('standard');
+  const [profile, setProfile] = useState<ProfileId>(eleve?.profilDepart ?? 'standard');
+  // Vue élève : niveau décidé par l'enseignant (le niveau joué peut le dépasser), dernier tour joué, message de repli.
+  const [profilAttribue, setProfilAttribue] = useState<ProfileId>(eleve?.profilDepart ?? 'standard');
+  const [dernier, setDernier] = useState<{ code: string; profil: ProfileId; attribue: ProfileId; mechanic: MechanicId } | null>(null);
+  const [messageNiveau, setMessageNiveau] = useState('');
+  const jeton = useRef(0);
   const effectif = effectifDuContexte(activity.context);
   const [pupilsText, setPupilsText] = useState(String(effectif ?? DEFAULT_PUPILS));
   const [playing, setPlaying] = useState<{ mechanic: MechanicId; seed: number } | null>(null);
@@ -132,7 +150,44 @@ export function ActivityScreen({ activity, suivi, stockage }: Props) {
     return null;
   }
 
-  function jouer(mechanic: MechanicId) {
+  /** Vue élève : choisir un code donne son niveau (mode « par code »), le vider rend le niveau de départ. */
+  async function choisirCode(code: string) {
+    setQuiJoue(code);
+    if (!eleve) return;
+    const numero = ++jeton.current;
+    if (code === '' || !eleve.resoudreProfil) {
+      setProfilAttribue(eleve.profilDepart);
+      setProfile(eleve.profilDepart);
+      setMessageNiveau('');
+      return;
+    }
+    let p: ProfileId | null = null;
+    try {
+      p = await eleve.resoudreProfil(code);
+    } catch {
+      p = null;
+    }
+    if (numero !== jeton.current) return; // un autre code a été choisi entre-temps
+    setMessageNiveau(p === null ? MESSAGE_NIVEAU_DEFAUT : '');
+    const niveau = p ?? eleve.profilDepart;
+    setProfilAttribue(niveau);
+    setProfile(niveau);
+  }
+
+  function jouer(mechanic: MechanicId, reprise?: { code: string; profil: ProfileId; attribue: ProfileId }) {
+    if (eleve) {
+      if (reprise) {
+        // « Rejouer un niveau au-dessus » : même élève, niveau suivant, le niveau décidé par l'enseignant ne change pas.
+        setQuiJoue(reprise.code);
+        setProfilAttribue(reprise.attribue);
+        setProfile(reprise.profil);
+      } else if (quiJoue === '') {
+        // Un tour sans code repart du niveau de départ : jamais celui de l'élève précédent sur un appareil partagé.
+        setProfilAttribue(eleve.profilDepart);
+        setProfile(eleve.profilDepart);
+      }
+      setDernier(null);
+    }
     setPlays(plays + 1);
     setFinished(null);
     setRetour('');
@@ -142,6 +197,7 @@ export function ActivityScreen({ activity, suivi, stockage }: Props) {
   const round = playing ? setupRound(activity, playing.mechanic, profile, makeRng(playing.seed)) : null;
   const onDone = (results: ElementResult[]) => {
     setFinished(results.length);
+    if (eleve && playing) setDernier({ code: quiJoue, profil: profile, attribue: profilAttribue, mechanic: playing.mechanic });
     if (!suivi || !classe || quiJoue === '' || !round) return;
     // Le code repasse à « Jouer sans enregistrer » dès l'envoi : sur un appareil partagé, le tour suivant
     // n'est jamais attribué à l'élève précédent.
@@ -152,12 +208,22 @@ export function ActivityScreen({ activity, suivi, stockage }: Props) {
       setRetour(MESSAGES_ENVOI.echec);
       return;
     }
-    const payload = construirePayload({ sessionId, round, results, profile, cibles: activity.cibles, maintenant: new Date() });
+    const auDessus = eleve ? estAuDessus(profile, profilAttribue) : false;
+    const payload = construirePayload({ sessionId, round, results, profile, cibles: activity.cibles, maintenant: new Date(), auDessus });
     void envoyerSession(suivi, classe.code, code, payload).then((r) => setRetour(MESSAGES_ENVOI[r]));
   };
 
   return (
     <div className="page-activite">
+      {eleve && (
+        <div className="carte controles">
+          <h2>{activity.title}</h2>
+          <p className="aide">{`${activity.discipline}, ${activity.year}`}</p>
+          <p>{`Niveau : ${NOMS_NEUTRES[profile]}`}</p>
+          {messageNiveau !== '' && <p role="status" className="aide">{messageNiveau}</p>}
+        </div>
+      )}
+      {!eleve && (
       <div className="carte controles">
         <h2>{activity.title}</h2>
         <p className="aide">{`${activity.discipline}, ${activity.year}`}</p>
@@ -188,13 +254,14 @@ export function ActivityScreen({ activity, suivi, stockage }: Props) {
           </div>
         </div>
       </div>
+      )}
 
       {suivi && (
         <div className="carte">
           <QuiJoue
             classe={classe}
             valeur={quiJoue}
-            onChange={setQuiJoue}
+            onChange={(code) => void choisirCode(code)}
             onAssocier={associer}
             onOublier={() => { oublierClasse(magasin); setClasse(null); setQuiJoue(''); }}
           />
@@ -206,9 +273,10 @@ export function ActivityScreen({ activity, suivi, stockage }: Props) {
         <article key={m} className="deux-cartes">
           <div className="carte carte-ecran">
             <h2>{`Jeu sur écran : ${mecanique(m).label}`}</h2>
-            <LinksView links={programmeLinks(m, 'numerique', activity.cibles)} />
+            {!eleve && <LinksView links={programmeLinks(m, 'numerique', activity.cibles)} />}
             <button type="button" onClick={() => jouer(m)} aria-label={`Jouer : ${mecanique(m).label}`}>Jouer</button>
           </div>
+          {!eleve && (
           <div className="carte carte-classe">
             <h2>{`En classe, sans écran : ${kits[m].title}`}</h2>
             <details className="fiche-pliee">
@@ -216,6 +284,7 @@ export function ActivityScreen({ activity, suivi, stockage }: Props) {
               <PhysicalKitView kit={kits[m]} links={programmeLinks(m, 'physique', activity.cibles)} />
             </details>
           </div>
+          )}
           {playing?.mechanic === m && round && (
             <div className="carte jeu-en-cours" ref={gameRef} tabIndex={-1}>
               <p>
@@ -226,18 +295,29 @@ export function ActivityScreen({ activity, suivi, stockage }: Props) {
                 return <Plateau key={playing.seed} round={round} profile={profile} onDone={onDone} />;
               })()}
               {finished !== null && <p className="aide">{`Tour terminé : ${finished} éléments joués.`}</p>}
+              {eleve && finished !== null && dernier !== null && niveauAuDessus(dernier.profil) !== null && (
+                <button
+                  type="button"
+                  onClick={() => jouer(dernier.mechanic, { code: dernier.code, profil: niveauAuDessus(dernier.profil) as ProfileId, attribue: dernier.attribue })}
+                >
+                  Rejouer un niveau au-dessus
+                </button>
+              )}
             </div>
           )}
         </article>
       ))}
 
-      {mechanics.length === 0 && (
+      {eleve && mechanics.length === 0 && <p className="aide">Aucun jeu sur écran pour cette activité.</p>}
+      {!eleve && mechanics.length === 0 && (
         <p className="aide">Aucun jeu intégré : remplissez des éléments pour en avoir, ou utilisez les jeux avec votre IA ci-dessous.</p>
       )}
-      <details className="autres-jeux-pliee hors-impression" open={mechanics.length === 0 ? true : undefined}>
-        <summary>Autres jeux, avec votre IA</summary>
-        <AutresJeux activity={activity} profile={profile} graine={seed} />
-      </details>
+      {!eleve && (
+        <details className="autres-jeux-pliee hors-impression" open={mechanics.length === 0 ? true : undefined}>
+          <summary>Autres jeux, avec votre IA</summary>
+          <AutresJeux activity={activity} profile={profile} graine={seed} />
+        </details>
+      )}
     </div>
   );
 }
