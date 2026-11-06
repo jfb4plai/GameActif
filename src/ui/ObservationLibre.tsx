@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ErreurStockage } from '../compte/activites.js';
 import type { StockageLocal } from '../compte/invitation.js';
 import type { Observation, SuiviStore } from '../suivi/lecture.js';
@@ -24,7 +24,8 @@ interface Props {
  * écrire de prénom, et le navigateur compare le texte à la liste locale de prénoms avant tout envoi.
  */
 export function ObservationLibre({ classId, purgeLe, codes, store, stockage, lectureSeule = false }: Props) {
-  const roster = useMemo(() => lireRoster(stockage, classId), [stockage, classId]);
+  // Relue à chaque rendu et à chaque envoi : la liste peut être modifiée ailleurs sur la page (garde-fou toujours à jour).
+  const roster = lireRoster(stockage, classId);
   const [texte, setTexte] = useState('');
   const [code, setCode] = useState('');
   const [visible, setVisible] = useState(false);
@@ -50,7 +51,7 @@ export function ObservationLibre({ classId, purgeLe, codes, store, stockage, lec
   async function enregistrer() {
     const t = texte.trim();
     if (t === '') return;
-    const prenom = contientPrenom(t, roster);
+    const prenom = contientPrenom(t, lireRoster(stockage, classId));
     if (prenom !== null) {
       setErreur(`Ce texte contient « ${prenom} ». Remplacez-le par son code.`);
       return;

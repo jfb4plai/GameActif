@@ -80,7 +80,8 @@ export function TableauDeBord({ classe, store, stockage }: { classe: ClasseLue; 
   const [choisie, setChoisie] = useState<string | null>(null);
   const [eleve, setEleve] = useState('');
   const [seuils, setSeuils] = useState<SeuilsEtats>(() => lireSeuils(stockage, classe.id));
-  const roster = useMemo(() => lireRoster(stockage, classe.id), [stockage, classe.id]);
+  // Relue à chaque rendu : la liste peut être modifiée ailleurs sur la page (le prénom s'affiche aussitôt).
+  const roster = lireRoster(stockage, classe.id);
   const tous = useMemo(() => codes(classe.nbCodes), [classe.nbCodes]);
 
   useEffect(() => {

@@ -77,6 +77,35 @@ describe('MesClasses, classe d’un propriétaire', () => {
     expect(s.donnees.get('gameactif.roster.v1.c1')).toContain('Léa');
   });
 
+  it('le garde-fou des observations connaît un prénom saisi à l’instant, sans rechargement', async () => {
+    const { espions } = monter();
+    fireEvent.change(await screen.findByLabelText('Prénom du code E04'), { target: { value: 'Léa' } });
+    await userEvent.type(screen.getByLabelText('Observation sur la classe ou sur un code'), 'Léa a corrigé seule');
+    await userEvent.click(screen.getByRole('button', { name: 'Enregistrer l’observation' }));
+    expect((await screen.findByRole('alert')).textContent).toBe('Ce texte contient « Léa ». Remplacez-le par son code.');
+    expect(espions.enregistrerObservation).not.toHaveBeenCalled();
+  });
+
+  it('le tableau de bord affiche à l’instant le prénom saisi', async () => {
+    const seance = {
+      sessionId: 's1',
+      studentCode: 'E04',
+      profile: 'standard' as const,
+      totalElements: 1,
+      endedAt: '2026-11-10T10:00:00.000Z',
+      cibles: ['M.P4.1.1.i1.a1'],
+      mechanic: 'trier' as const,
+      labels: {},
+      results: [{ elementId: 'e1', mechanic: 'trier' as const, firstTry: true, tries: 1, hintUsed: false, revealed: false, wrongChoices: [], correct: 'devant' }],
+      origine: 'ecran' as const,
+    };
+    monter({ classes: [classe], sessions: { c1: [seance] } });
+    const tableau = await screen.findByRole('table', { name: 'Où en sont les élèves' });
+    expect(within(tableau).queryByText(/Léa/)).toBeNull();
+    fireEvent.change(screen.getByLabelText('Prénom du code E04'), { target: { value: 'Léa' } });
+    expect(within(tableau).getByText(/Léa/)).toBeTruthy();
+  });
+
   it('demande une confirmation avant de supprimer la classe', async () => {
     const { espions } = monter();
     await userEvent.click(await screen.findByRole('button', { name: 'Supprimer cette classe' }));

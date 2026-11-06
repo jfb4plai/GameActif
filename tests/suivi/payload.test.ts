@@ -62,6 +62,29 @@ describe('construirePayload', () => {
     );
   });
 
+  it('plafonne à 10 les mauvais choix d’un élément sans changer le nombre d’essais (la base refuserait toute la séance)', () => {
+    const beaucoup: ElementResult[] = [{ elementId: 'e1', mechanic: 'trier', firstTry: false, tries: 13, hintUsed: false, revealed: false, wrongChoices: Array.from({ length: 12 }, () => 'derriere') }];
+    const p = construirePayload({ ...ctx(), results: beaucoup });
+    expect(p.results[0].wrongChoices).toHaveLength(10);
+    expect(p.results[0].tries).toBe(13);
+  });
+
+  it('plafonne à 50 les résultats et le nombre d’éléments', () => {
+    const elements = Array.from({ length: 60 }, (_, i) => ({ id: `e${i}`, correct: 'devant' }));
+    const round = createRound({ mechanic: 'trier', exclusive: false, elements, options: ['devant'], labels: { devant: 'devant' }, hintsLeft: 0, maxTries: null });
+    const res: ElementResult[] = elements.map((e) => ({ elementId: e.id, mechanic: 'trier', firstTry: true, tries: 1, hintUsed: false, revealed: false, wrongChoices: [] }));
+    const p = construirePayload({ ...ctx(), round, results: res });
+    expect(p.results).toHaveLength(50);
+    expect(p.totalElements).toBe(50);
+  });
+
+  it('tronque à 80 caractères une étiquette plus longue', () => {
+    const round = tour();
+    round.labels.devant = 'd'.repeat(120);
+    const p = construirePayload({ ...ctx(), round });
+    expect(p.labels.devant).toHaveLength(80);
+  });
+
   it('ignore un résultat dont l’élément n’est pas dans le tour plutôt que d’inventer une bonne réponse', () => {
     const p = construirePayload({ ...ctx(), results: [...resultats, { elementId: 'inconnu', mechanic: 'trier', firstTry: true, tries: 1, hintUsed: false, revealed: false, wrongChoices: [] }] });
     expect(p.results.map((r) => r.elementId)).toEqual(['e1', 'e2']);

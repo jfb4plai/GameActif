@@ -8,6 +8,8 @@ interface Props {
   classe: ClasseLue;
   stockage: StockageLocal | null;
   telecharger: (nom: string, contenu: string) => void;
+  /** Prévient le parent que la liste a changé : les autres zones relisent la liste (affichage, garde-fou). */
+  onChange?: () => void;
 }
 
 const nomDeFichier = (label: string) => `prenoms-${label.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'classe'}.json`;
@@ -16,7 +18,7 @@ const nomDeFichier = (label: string) => `prenoms-${label.toLowerCase().normalize
  * Liste code vers prénom, gardée dans le navigateur de l'enseignant : elle n'est jamais envoyée à la base. Elle sert à
  * afficher le prénom à la place du code et au garde-fou des observations.
  */
-export function PrenomsClasse({ classe, stockage, telecharger }: Props) {
+export function PrenomsClasse({ classe, stockage, telecharger, onChange }: Props) {
   const [roster, setRoster] = useState<Roster>(() => lireRoster(stockage, classe.id));
   const [message, setMessage] = useState('');
 
@@ -26,6 +28,7 @@ export function PrenomsClasse({ classe, stockage, telecharger }: Props) {
     else suivant[code] = prenom.trim().slice(0, 40);
     setRoster(suivant);
     ecrireRoster(stockage, classe.id, suivant);
+    onChange?.();
   }
 
   async function importer(fichier: File | undefined) {
@@ -38,6 +41,7 @@ export function PrenomsClasse({ classe, stockage, telecharger }: Props) {
     setRoster(r);
     ecrireRoster(stockage, classe.id, r);
     setMessage('Liste importée.');
+    onChange?.();
   }
 
   return (

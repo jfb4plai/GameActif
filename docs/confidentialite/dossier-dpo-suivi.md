@@ -47,7 +47,8 @@ Les résultats d'une classe sont supprimés à la date de fin d'année : le 30 a
 4. **Pas de suppression d'une observation dans l'interface.** La base l'autorise au propriétaire, l'interface ne l'offre pas.
 5. **Perte d'un envoi.** Il n'y a pas de file d'attente : un tour dont l'envoi échoue est perdu, avec un message à l'écran.
 6. **Une personne invitée lit des données de classe.** Limitée aux codes et aux observations cochées ; l'enseignant est responsable du choix de la personne invitée.
-7. **Sous-traitant.** Supabase héberge la base ; Vercel héberge l'application. La région d'hébergement, le contrat et les journaux techniques (adresses IP) de chacun sont **non vérifiés**.
+7. **Code de classe deviné par force brute.** Un code de classe compte 8 caractères parmi 31 (environ 8,5 · 10^11 possibilités). `game_class_info` et `game_record_session` n'ont pas de limite par appelant ; la seule limite (60 séances par classe et par minute) ne joue qu'une fois un code juste trouvé. Un tiers qui trouverait un code actif pourrait y écrire des résultats, jamais en lire. Une limitation de débit côté API Supabase est **non vérifiée**.
+8. **Sous-traitant.** Supabase héberge la base ; Vercel héberge l'application. La région d'hébergement, le contrat et les journaux techniques (adresses IP) de chacun sont **non vérifiés**.
 
 ## 8. Droits des personnes
 

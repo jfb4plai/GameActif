@@ -2,6 +2,12 @@ import type { ElementResult, RoundState } from '../engine/round.js';
 import type { ProfileId } from '../engine/types.js';
 import type { ResultatEnvoye, SessionPayload } from './types.js';
 
+/** Plafonds de `game_record_session` (supabase/migrations/20261107_game_suivi.sql) : au-delà, la base refuse toute la séance. */
+const MAX_RESULTATS = 50;
+const MAX_MAUVAIS_CHOIX = 10;
+const MAX_ETIQUETTES = 100;
+const MAX_LONGUEUR_ETIQUETTE = 80;
+
 export interface ContexteSession {
   sessionId: string;
   round: RoundState;
@@ -20,9 +26,11 @@ export function construirePayload(c: ContexteSession): SessionPayload {
   const corrects = new Map(c.round.elements.map((e) => [e.id, e.correct]));
   const results: ResultatEnvoye[] = [];
   for (const r of c.results) {
+    if (results.length >= MAX_RESULTATS) break;
     const correct = corrects.get(r.elementId);
     if (correct === undefined) continue;
-    results.push({ ...r, wrongChoices: [...r.wrongChoices], correct });
+    // Le nombre d'essais reste exact ; seuls les premiers mauvais choix sont gardés (la base refuse la séance entière au-delà).
+    results.push({ ...r, wrongChoices: r.wrongChoices.slice(0, MAX_MAUVAIS_CHOIX), correct });
   }
 
   const ids = new Set<string>();
@@ -32,8 +40,9 @@ export function construirePayload(c: ContexteSession): SessionPayload {
   }
   const labels: Record<string, string> = {};
   for (const id of ids) {
+    if (Object.keys(labels).length >= MAX_ETIQUETTES) break;
     const label = c.round.labels[id];
-    if (label !== undefined) labels[id] = label;
+    if (label !== undefined) labels[id] = label.slice(0, MAX_LONGUEUR_ETIQUETTE);
   }
 
   return {
@@ -41,7 +50,7 @@ export function construirePayload(c: ContexteSession): SessionPayload {
     mechanic: c.round.mechanic,
     profile: c.profile,
     cibles: [...c.cibles],
-    totalElements: c.round.elements.length,
+    totalElements: Math.min(c.round.elements.length, MAX_RESULTATS),
     endedAt: c.maintenant.toISOString(),
     labels,
     results,

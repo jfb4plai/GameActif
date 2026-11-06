@@ -37,6 +37,8 @@ export function MesClasses({ store, stockage, telecharger = telechargerParLien, 
   const [choisie, setChoisie] = useState<string | null>(null);
   const [erreurListe, setErreurListe] = useState(false);
   const [version, setVersion] = useState(0);
+  // Compteur qui ne sert qu'à relancer le rendu des zones qui relisent la liste locale de prénoms.
+  const [, setPrenoms] = useState(0);
 
   const [nom, setNom] = useState('');
   const [nbCodes, setNbCodes] = useState('24');
@@ -142,7 +144,7 @@ export function MesClasses({ store, stockage, telecharger = telechargerParLien, 
           <p className="aide">Donnez ce code à vos élèves : ils l’entrent une seule fois sur l’appareil, avec « Associer cet appareil à une classe », puis choisissent leur code E01, E02… avant de jouer.</p>
           <p>{`Les résultats de cette classe sont supprimés le ${dateFr(classe.purgeLe)}.`}</p>
 
-          <PrenomsClasse key={`prenoms-${classe.id}`} classe={classe} stockage={stockage} telecharger={telecharger} />
+          <PrenomsClasse key={`prenoms-${classe.id}`} classe={classe} stockage={stockage} telecharger={telecharger} onChange={() => setPrenoms((v) => v + 1)} />
           <TableauDeBord key={`tdb-${classe.id}-${version}`} classe={classe} store={store} stockage={stockage} />
           <SaisieManuelle key={`manuel-${classe.id}`} classe={classe} store={store} onEnregistre={() => setVersion((v) => v + 1)} />
           <ObservationLibre key={`obs-${classe.id}`} classId={classe.id} purgeLe={classe.purgeLe} codes={codesDeClasse(classe.nbCodes)} store={store} stockage={stockage} />
