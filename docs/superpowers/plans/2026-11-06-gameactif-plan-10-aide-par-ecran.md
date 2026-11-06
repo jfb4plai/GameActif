@@ -134,4 +134,5 @@ Chaque aide : `public`, puces, limite, sources. Les affirmations viennent du cod
 
 ## Décisions
 
-(vide : à remplir quand JF a relu l'annexe)
+- 2026-11-06 : tâches 1 à 4 exécutées sur la branche `feat/aide-par-ecran` (coupée de `feat/confiance-preuves`). Suite complète : 94 fichiers, 985 tests ; `tsc` et `vite build` propres. Écarts assumés : les modes d'emploi n'embarquent ni lien Google Fonts ni logo (polices du système, zéro ressource externe) ; les écrans composites montrent plusieurs blocs, un par écran. Correction : une puce de l'aide élève disait que chaque jeu a un bouton « Écouter la consigne » ; seul « Placer » en a un.
+- Tâche 5 (jalon JF) : non commencée ; la relecture de l'annexe par JF, la copie dans le portail et la vignette attendent son accord.
