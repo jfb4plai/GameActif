@@ -18,12 +18,12 @@ import type { ClasseLue, SuiviStore } from '../suivi/lecture.js';
 import { afficher, lireRoster } from '../suivi/roster.js';
 import { ecrireSeuils, lireSeuils } from '../suivi/seuils.js';
 import type { SessionEnregistree } from '../suivi/types.js';
+import { codesDeClasse, dateFr, pourcent } from './formats.js';
 
 const MESSAGE_CHARGEMENT = 'Les résultats n’ont pas pu être chargés. Réessayez.';
 
-const codes = (n: number) => Array.from({ length: n }, (_, i) => `E${String(i + 1).padStart(2, '0')}`);
-const pourcent = (x: number) => `${Math.round(x * 100)} %`;
-const date = (iso: string) => new Date(iso).toLocaleDateString('fr-BE', { day: 'numeric', month: 'short', year: 'numeric' });
+const codes = codesDeClasse;
+const date = dateFr;
 const nomJeu = (j: MechanicId | 'physique') => (j === 'physique' ? 'Jeu physique (saisi par l’enseignant)' : mecanique(j).label);
 
 const ETATS: { id: Etat; picto: string; mot: string }[] = [

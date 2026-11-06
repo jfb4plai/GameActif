@@ -247,7 +247,7 @@ export function magasinSuiviMemoire(init: DonneesMemoire = {}): SuiviStore {
   const manuels = new Map(Object.entries(init.manuels ?? {}));
   const observations = new Map(Object.entries(init.observations ?? {}));
   const invites = new Map<string, Invite[]>();
-  const codesEmis = new Set<string>();
+  const codesEmis = new Map<string, string>();
   let compteur = 0;
   const maintenant = () => new Date(1_700_000_000_000 + ++compteur * 1000).toISOString();
 
@@ -289,13 +289,15 @@ export function magasinSuiviMemoire(init: DonneesMemoire = {}): SuiviStore {
     },
     async inviter(classId) {
       const code = tirage(32);
-      codesEmis.add(code);
-      invites.set(classId, [...(invites.get(classId) ?? []), { id: `g${++compteur}`, expireLe: '2026-12-31T00:00:00Z', revoqueLe: null }]);
+      codesEmis.set(code, classId);
       return code;
     },
+    // Comme la base : l'invité n'apparaît qu'une fois le code utilisé.
     async rejoindre(code) {
-      if (!codesEmis.has(code)) return 'invalide';
+      const classId = codesEmis.get(code);
+      if (classId === undefined) return 'invalide';
       codesEmis.delete(code);
+      invites.set(classId, [...(invites.get(classId) ?? []), { id: `g${++compteur}`, expireLe: '2026-12-31T00:00:00Z', revoqueLe: null }]);
       return 'ok';
     },
     async revoquer(guestId) {

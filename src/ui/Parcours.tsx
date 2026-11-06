@@ -12,6 +12,9 @@ import { ActivityScreen } from './ActivityScreen.js';
 import { BarreFichier } from './BarreFichier.js';
 import { EspaceEnseignant, type EtatAcces } from './EspaceEnseignant.js';
 import { MesActivites } from './MesActivites.js';
+import { MesClasses } from './MesClasses.js';
+import type { ClientSuivi } from '../suivi/envoi.js';
+import { magasinSuiviSupabase, type ClientLecture, type SuiviStore } from '../suivi/lecture.js';
 import { EtapeCompetences } from './EtapeCompetences.js';
 import { EtapeElements } from './EtapeElements.js';
 import { EtapeMatiere } from './EtapeMatiere.js';
@@ -30,6 +33,17 @@ function stockageDuNavigateur(): (Stockage & StockageLocal) | null {
   }
 }
 
+/** Interrupteur du suivi par code : tant que la migration n'est pas appliquée, rien n'en apparaît (VITE_SUIVI_ACTIF=1 pour l'ouvrir). */
+const SUIVI_ACTIF_PAR_DEFAUT = import.meta.env.VITE_SUIVI_ACTIF === '1';
+
+function clientSuiviDuNavigateur(): ClientSuivi | undefined {
+  try {
+    return getSupabase() as unknown as ClientSuivi;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Parcours : niveau, matière, compétences visées, saisie des éléments, puis les jeux sur écran et en classe. */
 export function Parcours({
   stockage = stockageDuNavigateur(),
@@ -37,6 +51,10 @@ export function Parcours({
   rpc = rpcSupabase,
   stockageInvitation = stockageDuNavigateur(),
   magasin: magasinImpose,
+  suiviActif = SUIVI_ACTIF_PAR_DEFAUT,
+  suivi: suiviImpose,
+  magasinSuivi: magasinSuiviImpose,
+  stockageSuivi = stockageDuNavigateur(),
 }: {
   stockage?: Stockage | null;
   telecharger?: (nom: string, contenu: string) => void;
@@ -44,10 +62,25 @@ export function Parcours({
   stockageInvitation?: StockageLocal | null;
   /** Magasin d'activités ; par défaut celui de la base Supabase pour le compte connecté. */
   magasin?: ActivitesStore;
+  /** Suivi des élèves par code : actif seulement avec cet interrupteur. */
+  suiviActif?: boolean;
+  /** Client pour « Qui joue ? » ; par défaut celui de la base, s'il est configuré. */
+  suivi?: ClientSuivi;
+  /** Magasin des classes et résultats ; par défaut celui de la base pour le compte connecté. */
+  magasinSuivi?: SuiviStore;
+  stockageSuivi?: StockageLocal | null;
 }) {
   const compte = useAuthOptionnel();
   const [acces, setAcces] = useState<EtatAcces>('inconnu');
   const userId = compte?.user?.id ?? null;
+  const clientSuivi = useMemo<ClientSuivi | undefined>(
+    () => (!suiviActif ? undefined : (suiviImpose ?? (compte?.disponible ? clientSuiviDuNavigateur() : undefined))),
+    [suiviActif, suiviImpose, compte?.disponible],
+  );
+  const magasinSuivi = useMemo<SuiviStore | null>(
+    () => (!suiviActif || userId === null ? null : (magasinSuiviImpose ?? magasinSuiviSupabase(getSupabase() as unknown as ClientLecture, userId))),
+    [suiviActif, magasinSuiviImpose, userId],
+  );
   const magasin = useMemo<ActivitesStore | null>(
     () => magasinImpose ?? (userId !== null ? magasinSupabase(getSupabase() as unknown as ClientActivites, userId) : null),
     [magasinImpose, userId],
@@ -87,7 +120,7 @@ export function Parcours({
         <p>
           <button type="button" onClick={() => setExemple(false)}>Retour au parcours</button>
         </p>
-        <ActivityScreen activity={activitePilote()} />
+        <ActivityScreen activity={activitePilote()} suivi={clientSuivi} />
       </div>
     );
   }
@@ -118,7 +151,7 @@ export function Parcours({
           <>
             <h2 id="titre-etape" tabIndex={-1}>Vos jeux</h2>
             {activite ? (
-              <ActivityScreen activity={activite} />
+              <ActivityScreen activity={activite} suivi={clientSuivi} />
             ) : (
               <p>Votre saisie n’est plus complète. Revenez à l’étape précédente pour la corriger.</p>
             )}
@@ -148,6 +181,13 @@ export function Parcours({
 
       {acces === 'enseignant' && magasin !== null && (etat.etape === 'elements' || etat.etape === 'jeux') && (
         <MesActivites store={magasin} brouillon={b} enCours={enCours} onOuvrir={(brouillon) => envoyer({ type: 'charger', brouillon })} />
+      )}
+
+      {magasinSuivi !== null && (
+        <details className="espace-pliee">
+          <summary>Mes classes et résultats</summary>
+          <MesClasses store={magasinSuivi} stockage={stockageSuivi} telecharger={telecharger} peutCreer={acces === 'enseignant'} />
+        </details>
       )}
 
       {compte?.disponible && (
