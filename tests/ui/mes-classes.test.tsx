@@ -155,10 +155,20 @@ describe('MesClasses, classe d’un propriétaire', () => {
 describe('MesClasses, code d’invitation', () => {
   it('un code invalide affiche le message de refus', async () => {
     const { espions } = monter({});
-    await userEvent.type(await screen.findByLabelText('Code d’invitation'), 'X'.repeat(32));
+    await userEvent.click(await screen.findByText('Rejoindre la classe d’un collègue (lecture seule)'));
+    await userEvent.type(await screen.findByLabelText('Code d’accès d’un collègue'), 'X'.repeat(32));
     await userEvent.click(screen.getByRole('button', { name: 'Rejoindre la classe' }));
     expect(espions.rejoindre).toHaveBeenCalledWith('X'.repeat(32));
     expect((await screen.findByRole('alert')).textContent).toBe('Ce code d’invitation n’est plus valable. Demandez-en un nouveau.');
+  });
+});
+
+describe('MesClasses, rejoindre la classe d’un collègue', () => {
+  it('un enseignant ne voit pas ce champ de saisie tant que le bloc est replié', async () => {
+    monter({});
+    const resume = await screen.findByText('Rejoindre la classe d’un collègue (lecture seule)');
+    expect((resume.closest('details') as HTMLDetailsElement).open).toBe(false);
+    expect(screen.queryByText('J’ai un code d’invitation')).toBeNull();
   });
 });
 

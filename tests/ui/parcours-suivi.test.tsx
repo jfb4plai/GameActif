@@ -66,7 +66,9 @@ describe('Parcours, suivi par code derrière son interrupteur', () => {
   it('suivi actif et compte sans accès enseignant : le code d’invitation, pas la création', async () => {
     monter({ suiviActif: true, session: true, enseignant: false });
     expect(await screen.findByRole('region', { name: 'Mes classes' })).toBeTruthy();
-    expect(screen.getByLabelText('Code d’invitation')).toBeTruthy();
+    const resume = screen.getByText('Rejoindre la classe d’un collègue (lecture seule)');
+    expect((resume.closest('details') as HTMLDetailsElement).open).toBe(true);
+    expect(screen.getByLabelText('Code d’accès d’un collègue')).toBeTruthy();
     expect(screen.queryByText('Créer une classe')).toBeNull();
   });
 });

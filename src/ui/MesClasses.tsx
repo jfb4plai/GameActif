@@ -196,16 +196,16 @@ export function MesClasses({ store, stockage, telecharger = telechargerParLien, 
       </details>
       )}
 
-      <div>
-        <h3>J’ai un code d’invitation</h3>
-        <label htmlFor="code-invitation">Code d’invitation</label>
-        <input id="code-invitation" type="text" maxLength={40} autoComplete="off" placeholder="Les 32 caractères reçus" value={codeInvitation} aria-describedby="code-invitation-aide" onChange={(e) => setCodeInvitation(e.target.value)} />
-        <p id="code-invitation-aide" className="aide">Une personne qui gère une classe vous a donné ce code : il vous ouvre sa classe en lecture seule, sans rien modifier.</p>
+      <details open={!peutCreer}>
+        <summary>Rejoindre la classe d’un collègue (lecture seule)</summary>
+        <label htmlFor="code-invitation">Code d’accès d’un collègue</label>
+        <input id="code-invitation" type="text" maxLength={40} autoComplete="off" placeholder="Les 32 caractères donnés par votre collègue" value={codeInvitation} aria-describedby="code-invitation-aide" onChange={(e) => setCodeInvitation(e.target.value)} />
+        <p id="code-invitation-aide" className="aide">Seulement si un collègue qui gère une classe vous a donné ce code : il vous ouvre sa classe en lecture seule, sans rien modifier. Ce n’est pas le code d’inscription de votre compte.</p>
         {retourInvitation !== null && (
           <p role={retourInvitation.erreur ? 'alert' : 'status'} className={retourInvitation.erreur ? 'raisons' : 'retour-court'}>{retourInvitation.texte}</p>
         )}
         <button type="button" onClick={rejoindre} disabled={codeInvitation.trim() === ''}>Rejoindre la classe</button>
-      </div>
+      </details>
     </section>
   );
 }
