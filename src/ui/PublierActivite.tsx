@@ -165,7 +165,7 @@ export function PublierActivite({ brouillon, suivi, partage, origine, copier = c
               ))}
             </select>
             <p id="pub-profil-aide" className="aide">
-              Le niveau joué par tous les élèves, ou par les codes dont vous n’avez rien fixé. L’élève ne voit pas le nom de ce niveau.
+              Le niveau joué par tous les élèves. En mode « niveau par code », il ne sert que si le niveau d’un code ne peut pas être chargé. L’élève ne voit pas le nom de ce niveau.
             </p>
           </div>
         )}

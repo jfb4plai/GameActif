@@ -70,7 +70,15 @@ describe('magasinPartageSupabase', () => {
     const { client, rpcs } = faux(() => ({ data: null, error: null }), () => ({ data: 'K7M2XQ9A', error: null }));
     const b = brouillon();
     expect(await magasinPartageSupabase(client).publier('c1', b, 'groupes', 'soutien')).toBe('K7M2XQ9A');
-    expect(rpcs).toEqual([{ nom: 'game_publish_activity', args: { p_class_id: 'c1', p_code: null, p_brouillon: b, p_mode: 'groupes', p_profil: 'soutien' } }]);
+    expect(rpcs).toEqual([{ nom: 'game_publish_activity', args: { p_class_id: 'c1', p_code: null, p_brouillon: { ...b, contexte: 'Activité partagée à la classe' }, p_mode: 'groupes', p_profil: 'soutien' } }]);
+  });
+
+  it('le contexte de classe ne quitte jamais l’appareil : il est remplacé avant l’envoi, sans toucher au brouillon de l’enseignant', async () => {
+    const { client, rpcs } = faux(() => ({ data: null, error: null }), () => ({ data: 'K7M2XQ9A', error: null }));
+    const b = brouillon();
+    await magasinPartageSupabase(client).publier('c1', b, 'meme', 'standard');
+    expect(JSON.stringify(rpcs)).not.toMatch(/Léa/);
+    expect(b.contexte).toBe('Classe de Léa');
   });
 
   it('republie avec le code existant', async () => {

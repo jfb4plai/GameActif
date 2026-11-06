@@ -75,7 +75,9 @@ export function magasinPartageSupabase(client: ClientPartageEcriture): PartageSt
 
   return {
     async publier(classId, b, mode, profil, code) {
-      const r = await appel(() => client.rpc('game_publish_activity', { p_class_id: classId, p_code: code ?? null, p_brouillon: b, p_mode: mode, p_profil: profil }));
+      // Le contexte de classe ne quitte pas l'appareil : remplacé ici et, par sécurité, de nouveau par la base.
+      const partageable = { ...b, contexte: CONTEXTE_FIXE };
+      const r = await appel(() => client.rpc('game_publish_activity', { p_class_id: classId, p_code: code ?? null, p_brouillon: partageable, p_mode: mode, p_profil: profil }));
       if (typeof r !== 'string') throw new ErreurStockage('inconnue');
       return r;
     },

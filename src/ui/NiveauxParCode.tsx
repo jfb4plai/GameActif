@@ -64,7 +64,7 @@ export function NiveauxParCode({ classe, partage, stockage }: { classe: ClasseLu
     <section aria-label="Niveaux par code" className="niveaux-par-code">
       <h3>Niveaux par code</h3>
       <p className="aide">
-        {`Ce choix est le vôtre : il est enregistré sous le code, sans prénom, et supprimé le ${dateFr(classe.purgeLe)}. L’élève ne voit pas le nom de son niveau. Un code que vous ne fixez pas joue au niveau Standard, ou à celui de départ de l’activité.`}
+        {`Ce choix est le vôtre : il est enregistré sous le code, sans prénom, et supprimé le ${dateFr(classe.purgeLe)}. L’élève ne voit pas le nom de son niveau. Un code que vous ne fixez pas joue au niveau Standard.`}
       </p>
       {erreur !== '' && <p role="alert" className="raisons">{erreur}</p>}
       <div className="champs">
