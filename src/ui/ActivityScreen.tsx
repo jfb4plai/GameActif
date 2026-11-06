@@ -11,6 +11,11 @@ import { AutresJeux } from './AutresJeux.js';
 import { PhysicalKitView } from './PhysicalKitView.js';
 import { MECANIQUES, mecanique } from '../engine/mecaniques.js';
 import { PLATEAUX } from './plateaux.js';
+import { QuiJoue } from './QuiJoue.js';
+import type { StockageLocal } from '../compte/invitation.js';
+import { enregistrerClasse, lireClasse, oublierClasse, type ClasseAppareil } from '../suivi/classeAppareil.js';
+import { chercherClasse, envoyerSession, MESSAGES_ENVOI, type ClientSuivi } from '../suivi/envoi.js';
+import { construirePayload } from '../suivi/payload.js';
 
 const A_COMPLETER = 'À compléter par l’enseignant : en quoi ce jeu travaille cet attendu.';
 const DEFAULT_PUPILS = 24;
@@ -44,7 +49,31 @@ function LinksView({ links }: { links: ProgrammeLink[] }) {
   );
 }
 
-export function ActivityScreen({ activity }: { activity: Activity }) {
+function stockageNavigateur(): StockageLocal | null {
+  try {
+    return typeof window !== 'undefined' ? window.localStorage : null;
+  } catch {
+    return null;
+  }
+}
+
+function nouvelId(): string | null {
+  return globalThis.crypto?.randomUUID?.() ?? null;
+}
+
+interface Props {
+  activity: Activity;
+  /** Client de la base : sans lui, aucun suivi (comportement d'origine). */
+  suivi?: ClientSuivi;
+  /** Stockage local de l'appareil (classe associée) ; par défaut `localStorage`. */
+  stockage?: StockageLocal | null;
+}
+
+export function ActivityScreen({ activity, suivi, stockage }: Props) {
+  const magasin = stockage !== undefined ? stockage : stockageNavigateur();
+  const [classe, setClasse] = useState<ClasseAppareil | null>(() => (suivi ? lireClasse(magasin) : null));
+  const [quiJoue, setQuiJoue] = useState('');
+  const [retour, setRetour] = useState('');
   const [profile, setProfile] = useState<ProfileId>('standard');
   const effectif = effectifDuContexte(activity.context);
   const [pupilsText, setPupilsText] = useState(String(effectif ?? DEFAULT_PUPILS));
@@ -94,14 +123,38 @@ export function ActivityScreen({ activity }: { activity: Activity }) {
     [activity, profile, pupilsUsed, seed, mechanics.join(',')],
   );
 
+  async function associer(codeClasse: string): Promise<string | null> {
+    if (!suivi) return 'Le suivi n’est pas disponible.';
+    const c = await chercherClasse(suivi, codeClasse);
+    if (!c) return 'Ce code n’est pas reconnu, ou la connexion a échoué. Vérifiez le code et réessayez.';
+    enregistrerClasse(magasin, c);
+    setClasse(c);
+    return null;
+  }
+
   function jouer(mechanic: MechanicId) {
     setPlays(plays + 1);
     setFinished(null);
+    setRetour('');
     setPlaying({ mechanic, seed: plays + 1 });
   }
 
   const round = playing ? setupRound(activity, playing.mechanic, profile, makeRng(playing.seed)) : null;
-  const onDone = (results: ElementResult[]) => setFinished(results.length);
+  const onDone = (results: ElementResult[]) => {
+    setFinished(results.length);
+    if (!suivi || !classe || quiJoue === '' || !round) return;
+    // Le code repasse à « Jouer sans enregistrer » dès l'envoi : sur un appareil partagé, le tour suivant
+    // n'est jamais attribué à l'élève précédent.
+    const code = quiJoue;
+    setQuiJoue('');
+    const sessionId = nouvelId();
+    if (!sessionId) {
+      setRetour(MESSAGES_ENVOI.echec);
+      return;
+    }
+    const payload = construirePayload({ sessionId, round, results, profile, cibles: activity.cibles, maintenant: new Date() });
+    void envoyerSession(suivi, classe.code, code, payload).then((r) => setRetour(MESSAGES_ENVOI[r]));
+  };
 
   return (
     <div className="page-activite">
@@ -135,6 +188,19 @@ export function ActivityScreen({ activity }: { activity: Activity }) {
           </div>
         </div>
       </div>
+
+      {suivi && (
+        <div className="carte">
+          <QuiJoue
+            classe={classe}
+            valeur={quiJoue}
+            onChange={setQuiJoue}
+            onAssocier={associer}
+            onOublier={() => { oublierClasse(magasin); setClasse(null); setQuiJoue(''); }}
+          />
+          <p role="status" aria-live="polite" className="retour-court">{retour}</p>
+        </div>
+      )}
 
       {mechanics.map((m) => (
         <article key={m} className="deux-cartes">
