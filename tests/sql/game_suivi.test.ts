@@ -145,6 +145,15 @@ describe('migration game_suivi et essais (Postgres en mémoire, sans toucher à 
     }
   });
 
+  it('le fichier d’essai de la base partagée est à jour, annule tout et échoue vite plutôt que de bloquer auth.users', () => {
+    const fichier = lire('supabase/essai-rollback-game_suivi.sql');
+    const attendu = `begin;\nset local lock_timeout = '3s';\n${lire(ACCES)}\n${lire(SUIVI)}\n${essais()}\nrollback;\n`;
+    expect(fichier.endsWith('rollback;\n')).toBe(true);
+    expect(fichier.slice(fichier.indexOf('begin;'))).toBe(attendu);
+    expect(fichier).not.toMatch(/^\s*commit\s*;/im);
+    expect(fichier.match(/^\s*begin\s*;/gim)).toHaveLength(1);
+  });
+
   it('aucun prénom, nom ou secret dans la migration', () => {
     const sql = lire(SUIVI);
     expect(sql).not.toMatch(/eyJ[A-Za-z0-9_-]{20,}/);
