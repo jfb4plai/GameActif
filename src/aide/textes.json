@@ -1,0 +1,109 @@
+{
+  "parcours-niveau": {
+    "public": "enseignant",
+    "puces": [
+      "Choisir le niveau de vos élèves, de P1 à P6 : le programme affiché ensuite est celui de ce niveau.",
+      "« Voir l’exemple des positions (P4) » ouvre une activité prête à jouer, sans rien saisir.",
+      "Votre saisie est gardée dans ce navigateur : rien n’est envoyé.",
+      "Pour reprendre une activité exportée : « Ouvrir une activité (fichier) », en bas de page."
+    ],
+    "limite": "Seules les mathématiques sont disponibles pour l’instant.",
+    "sources": ["src/ui/EtapeNiveau.tsx", "src/ui/Parcours.tsx", "src/data/catalogue.ts", "src/parcours/stockage.ts"]
+  },
+  "parcours-matiere": {
+    "public": "enseignant",
+    "puces": [
+      "Choisir la matière : elle détermine les attendus proposés à l’étape suivante.",
+      "Revenir en arrière avec « Précédent » ne perd rien de ce qui est saisi."
+    ],
+    "limite": "Seules les mathématiques sont disponibles pour l’instant.",
+    "sources": ["src/ui/EtapeMatiere.tsx", "src/parcours/etapes.ts", "src/data/catalogue.ts"]
+  },
+  "parcours-competences": {
+    "public": "enseignant",
+    "puces": [
+      "Cocher de 1 à 3 attendus du programme que l’activité travaille.",
+      "Chaque jeu sera relié à ces attendus, côté écran et côté classe.",
+      "Les attendus viennent des référentiels de la Fédération Wallonie-Bruxelles."
+    ],
+    "limite": "Cocher un attendu ne prouve pas que le jeu le travaille : c’est à vous d’en juger.",
+    "sources": ["src/ui/EtapeCompetences.tsx", "src/atelier/brouillon.ts", "src/data/referentiel.ts"]
+  },
+  "parcours-elements": {
+    "public": "enseignant",
+    "puces": [
+      "Saisir vos éléments : mots, paires, étapes, comparaisons, questions.",
+      "Un jeu devient disponible quand ses données sont suffisantes : son statut est affiché.",
+      "Le contexte de classe est obligatoire : n’y mettez aucun nom d’élève.",
+      "Relire chaque élément : les élèves verront exactement ce que vous saisissez."
+    ],
+    "limite": "L’outil ne vérifie pas que vos contenus sont justes.",
+    "sources": ["src/ui/EtapeElements.tsx", "src/atelier/brouillon.ts"]
+  },
+  "parcours-jeux": {
+    "public": "enseignant",
+    "puces": [
+      "Jouer chaque jeu avant de le proposer.",
+      "Chaque jeu sur écran a son jeu en classe, sans écran, avec une fiche à imprimer.",
+      "Le profil règle le nombre d’éléments et les aides ; il ne décide rien pour un élève.",
+      "« Télécharger mon activité » donne un fichier à partager avec un collègue."
+    ],
+    "limite": "Les phrases « lien programme » sont à compléter par vous.",
+    "sources": ["src/ui/ActivityScreen.tsx", "src/ui/BarreFichier.tsx", "src/physical/programme.ts"]
+  },
+  "proposer": {
+    "public": "enseignant",
+    "puces": [
+      "Choisir la classe qui reçoit l’activité.",
+      "Choisir comment décider du niveau : même niveau, un lien par groupe, ou niveau par code.",
+      "Afficher le QR au TBI ou copier le lien.",
+      "« Mettre à jour le lien » après une modification ; « Retirer le lien » quand l’activité est finie."
+    ],
+    "limite": "Votre contexte de classe n’est jamais envoyé ; le lien disparaît avec la classe, le 30 août.",
+    "sources": ["src/ui/PublierActivite.tsx", "src/partage/magasin.ts", "supabase/migrations/20261108_game_partage.sql"]
+  },
+  "classes": {
+    "public": "enseignant",
+    "puces": [
+      "Créer une classe, puis donner son code aux élèves.",
+      "Chaque élève joue sous un code (E01, E02…) : gardez chez vous la liste des prénoms, elle reste sur cet appareil.",
+      "Consulter le tableau de bord après chaque séance.",
+      "Inviter une personne en lecture seule si besoin."
+    ],
+    "limite": "Les résultats d’une classe sont supprimés le 30 août suivant sa création.",
+    "sources": ["src/ui/MesClasses.tsx", "src/ui/PrenomsClasse.tsx", "src/ui/InvitationClasse.tsx", "supabase/migrations/20261107_game_suivi.sql"]
+  },
+  "tableau": {
+    "public": "enseignant",
+    "puces": [
+      "Lire d’abord « Qui a joué ».",
+      "Regarder les erreurs par type : elles disent quoi réenseigner.",
+      "Les états sont un indice, pas une preuve : décidez avec ce que vous observez.",
+      "Noter vos observations avec le code, jamais le prénom."
+    ],
+    "limite": "Quiconque connaît le code de classe peut enregistrer un résultat sous un code élève : ce tableau n’est pas une preuve.",
+    "sources": ["src/ui/TableauDeBord.tsx", "src/ui/ObservationLibre.tsx", "src/suivi/agregats.ts", "docs/confidentialite/dossier-dpo-suivi.md"]
+  },
+  "niveaux": {
+    "public": "enseignant",
+    "puces": [
+      "Le niveau de chaque code est votre décision, jamais automatique.",
+      "Standard est le niveau par défaut.",
+      "L’élève ne voit pas le nom de son niveau.",
+      "Il peut rejouer un niveau au-dessus ; vous le voyez dans le tableau de bord."
+    ],
+    "limite": "Un camarade qui connaît le code de classe peut essayer d’autres codes et deviner un niveau.",
+    "sources": ["src/ui/NiveauxParCode.tsx", "src/ui/ActivityScreen.tsx", "supabase/migrations/20261108_game_partage.sql"]
+  },
+  "eleve": {
+    "public": "eleve",
+    "puces": [
+      "Choisir son code dans la liste « Qui joue ? ».",
+      "Appuyer sur « Jouer ».",
+      "Lire la consigne, puis choisir une réponse.",
+      "Écouter la consigne avec le bouton prévu.",
+      "Rejouer un niveau au-dessus après un tour, si l’envie est là."
+    ],
+    "sources": ["src/ui/VueEleve.tsx", "src/ui/QuiJoue.tsx", "src/ui/ActivityScreen.tsx"]
+  }
+}
