@@ -57,7 +57,7 @@ describe('migration game_partage et essais (Postgres en mémoire, sans toucher �
     const creations = [...sql.matchAll(/create (?:or replace )?(?:table|function|trigger|policy|index)\s+(?:if not exists\s+)?(?:public\.)?"?([a-z_0-9]+)"?/gi)].map((m) => m[1]);
     expect(creations.length).toBeGreaterThan(5);
     for (const nom of creations) expect(nom.startsWith('game_')).toBe(true);
-    expect(sql).toMatch(/NON APPLIQUÉE/);
+    expect(sql).toMatch(/APPLIQUÉE le 2026-11-06/);
     expect(sql).not.toMatch(/eyJ[A-Za-z0-9_-]{20,}/);
     expect(sql).not.toMatch(/\b(prenom|firstname|first_name|student_name)\b/i);
   });
@@ -70,5 +70,20 @@ describe('migration game_partage et essais (Postgres en mémoire, sans toucher �
       expect(sql).toMatch(new RegExp(`alter table public\\.${t} enable row level security`, 'i'));
       expect(sql).toMatch(new RegExp(`revoke all on table public\\.${t} from[^;]*anon`, 'i'));
     }
+  });
+
+  it('le fichier d’essai de la base partagée est à jour, annule tout et échoue vite plutôt que de bloquer auth.users', () => {
+    const fichier = lire('supabase/essai-rollback-game_partage.sql');
+    const attendu = `begin;
+set local lock_timeout = '3s';
+${lire(ACCES)}
+${lire(SUIVI)}
+${lire(PARTAGE)}
+${essais()}
+rollback;
+`;
+    expect(fichier.slice(fichier.indexOf('begin;'))).toBe(attendu);
+    expect(fichier).not.toMatch(/^\s*commit\s*;/im);
+    expect(fichier.match(/^\s*begin\s*;/gim)).toHaveLength(1);
   });
 });

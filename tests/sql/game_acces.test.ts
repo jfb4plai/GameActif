@@ -64,7 +64,7 @@ describe('migration game_acces et essais (Postgres en mémoire, sans toucher à 
     expect(creations.length).toBeGreaterThan(5);
     for (const nom of creations) expect(nom.startsWith('game_')).toBe(true);
     expect(sql).not.toMatch(/create table[^;]*profiles/i);
-    expect(sql).toMatch(/NON APPLIQUÉE/);
+    expect(sql).toMatch(/APPLIQUÉE le 2026-11-06/);
   });
 
   it('chaque table de la migration active la sécurité par ligne et donne des droits explicites', () => {

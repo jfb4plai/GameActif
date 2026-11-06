@@ -132,7 +132,7 @@ describe('migration game_suivi et essais (Postgres en mémoire, sans toucher à 
     expect(creations.length).toBeGreaterThan(3);
     for (const nom of creations) expect(nom.startsWith('game_')).toBe(true);
     expect(sql).not.toMatch(/create table[^;]*profiles/i);
-    expect(sql).toMatch(/NON APPLIQUÉE/);
+    expect(sql).toMatch(/APPLIQUÉE le 2026-11-06/);
   });
 
   it('chaque table active la sécurité par ligne et retire les droits de anon', () => {
@@ -143,6 +143,15 @@ describe('migration game_suivi et essais (Postgres en mémoire, sans toucher à 
       expect(sql).toMatch(new RegExp(`alter table public\\.${t} enable row level security`, 'i'));
       expect(sql).toMatch(new RegExp(`revoke all on table public\\.${t} from[^;]*anon`, 'i'));
     }
+  });
+
+  it('le fichier d’essai de la base partagée est à jour, annule tout et échoue vite plutôt que de bloquer auth.users', () => {
+    const fichier = lire('supabase/essai-rollback-game_suivi.sql');
+    const attendu = `begin;\nset local lock_timeout = '3s';\n${lire(ACCES)}\n${lire(SUIVI)}\n${essais()}\nrollback;\n`;
+    expect(fichier.endsWith('rollback;\n')).toBe(true);
+    expect(fichier.slice(fichier.indexOf('begin;'))).toBe(attendu);
+    expect(fichier).not.toMatch(/^\s*commit\s*;/im);
+    expect(fichier.match(/^\s*begin\s*;/gim)).toHaveLength(1);
   });
 
   it('aucun prénom, nom ou secret dans la migration', () => {
