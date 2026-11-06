@@ -1,0 +1,13 @@
+{
+  "annee": "P3",
+  "matiere": "francais",
+  "rubriques": [
+    {
+      "rubrique": "Orienter sa prise de parole",
+      "sous_rubrique": null,
+      "items": [{ "type": "Savoir", "contenu": "Intentions de communication.", "visees": ["LIRE"], "attendus": ["Citer les intentions.", "Repérer l'intention d'un texte."] }]
+    }
+  ],
+  "competences_reception": { "ecouter": [{ "contenu": "Écouter une consigne", "attendus": ["Reformuler la consigne."] }], "lire": [] },
+  "competences_production": { "ecrire": [], "parler": [] }
+}

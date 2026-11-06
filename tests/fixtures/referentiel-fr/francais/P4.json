@@ -1,0 +1,13 @@
+{
+  "annee": "P4",
+  "matiere": "francais",
+  "rubriques": [
+    {
+      "rubrique": "Orthographe",
+      "sous_rubrique": null,
+      "items": [{ "type": "Savoir-faire", "contenu": "Accord du verbe.", "visees": ["ÉCRIRE"], "attendus": ["Accorder le verbe avec son sujet."] }]
+    }
+  ],
+  "competences_reception": { "ecouter": [{ "contenu": "Écouter un récit", "attendus": ["Résumer le récit."] }], "lire": [] },
+  "competences_production": { "ecrire": [], "parler": [{ "contenu": "Raconter", "attendus": ["Raconter dans l'ordre."] }] }
+}
