@@ -144,5 +144,6 @@ Pas de code. Le livrable est un protocole que JF et 2 ou 3 collègues du Pôle p
 
 ## Décisions
 
+- 2026-11-06 : tâches 1 à 4 exécutées sur la branche `feat/confiance-preuves` (coupée de `feat/activite-partagee`, non poussée). Suite complète : 90 fichiers, 913 tests ; `tsc` et `vite build` propres. Écarts assumés : la page de confidentialité décrit trois états (sans compte, avec compte, suivi ouvert) car ce plan est antérieur aux plans 8 et 9 ; le lien d'évitement n'utilise pas l'ancre native (`#contenu` changerait la vue) ; l'étude du français lit `referentiels-fwb/francais/` et le test lance la ligne de commande ; la page « Mentions » ne revendique aucune licence (aucun `LICENSE` dans le dépôt). Constat corrigé : le plateau « Placer » avait un contrôle focusable dans un `svg role="img"` (axe, grave).
 - 2026-11-06, D1 : JF choisit (b), suivi des élèves par code anonyme. Tâche 5, étape 2 déclenchée (brainstorming, puis spec et plan 8). La recommandation (c), ne pas mesurer le temps passé, n'a pas été contredite par JF ; elle reste une entrée imposée de la spec, à confirmer.
 - D2, D3 et les actions du plan 4b : en attente.
