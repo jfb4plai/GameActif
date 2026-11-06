@@ -38,13 +38,13 @@ async function jouer(sqlMigrations: string[], sqlEssais: string): Promise<void> 
   }
 }
 
-const CAS = ['(s1)', '(s2)', '(s3)', '(s4)', '(s5)', '(s6)', '(s7)', '(s8)', '(s9)', '(s10)', '(s11)', '(s12)', '(s13)', '(s14)', '(s15)'];
+const CAS = ['(s1)', '(s2)', '(s3)', '(s4)', '(s5)', '(s6)', '(s7)', '(s8)', '(s9)', '(s10)', '(s11)', '(s12)', '(s13)', '(s14)', '(s15)', '(s16)', '(s17)', '(s18)', '(s19)', '(s20)', '(s21)', '(s22)'];
 
 describe('les essais détectent une migration affaiblie (mutations)', () => {
   const mutations: [string, (sql: string) => string, RegExp][] = [
     [
       'tout enseignant voit les classes des autres',
-      (sql) => sql.replace('using (user_id = (select auth.uid()));', 'using (true);'),
+      (sql) => sql.replace('using (public.game_can_read_class(id));', 'using (true);'),
       /ECHEC \(s4\)/,
     ],
     [
@@ -76,6 +76,40 @@ describe('les essais détectent une migration affaiblie (mutations)', () => {
       'une classe expirée accepte encore des séances',
       (sql) => sql.replaceAll(' and purge_on >= current_date', ''),
       /ECHEC \(s14\)/,
+    ],
+    [
+      'un code d’invitation sert plusieurs fois',
+      (sql) => sql.replace(' or v_inv.used_at is not null', ''),
+      /ECHEC \(s18\)/,
+    ],
+    [
+      'l’invité lit aussi les observations privées',
+      (sql) => sql.replace('(visible_invites and public.game_can_read_class(class_id))', 'public.game_can_read_class(class_id)'),
+      /ECHEC \(s19\)/,
+    ],
+    [
+      'l’invité peut écrire des observations',
+      (sql) =>
+        sql.replace(
+          'create policy game_observations_insert on public.game_observations\n  for insert to authenticated\n  with check (public.game_owns_class(class_id));',
+          'create policy game_observations_insert on public.game_observations\n  for insert to authenticated\n  with check (public.game_can_read_class(class_id));',
+        ),
+      /ECHEC \(s20\)/,
+    ],
+    [
+      'un invité révoqué lit encore',
+      (sql) => sql.replace('guest_user_id = auth.uid() and revoked_at is null and expires_at > now()', 'guest_user_id = auth.uid() and expires_at > now()'),
+      /ECHEC \(s21\)/,
+    ],
+    [
+      'un invité échu lit encore',
+      (sql) => sql.replace('guest_user_id = auth.uid() and revoked_at is null and expires_at > now()', 'guest_user_id = auth.uid() and revoked_at is null'),
+      /ECHEC \(s21\)/,
+    ],
+    [
+      'un non-propriétaire révoque un invité',
+      (sql) => sql.replace(' or not exists (select 1 from public.game_classes where id = v_class and user_id = auth.uid())', ''),
+      /ECHEC \(s21\)/,
     ],
     [
       'une séance rejouée double la ligne',

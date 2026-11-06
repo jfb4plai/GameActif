@@ -257,3 +257,303 @@ begin
   raise notice 'OK (s14) : classe expirée refusée';
 end $$;
 reset role;
+
+-- ---------------------------------------------------------------------------------------------------------------
+-- Observations, résultats saisis, invité par code. Deux classes neuves : A (u1) et B (u2). u3 n'a aucun accès enseignant.
+-- ---------------------------------------------------------------------------------------------------------------
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000001', true);
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000001","role":"authenticated"}', true);
+set local role authenticated;
+do $$
+declare v_id uuid;
+begin
+  select c.id into v_id from public.game_create_class('Classe A', 10) c;
+  perform set_config('essai.a', v_id::text, true);
+end $$;
+reset role;
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000002', true);
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000002","role":"authenticated"}', true);
+set local role authenticated;
+do $$
+declare v_id uuid;
+begin
+  select c.id into v_id from public.game_create_class('Classe B', 10) c;
+  perform set_config('essai.b', v_id::text, true);
+end $$;
+reset role;
+
+-- Séances de A et de B, ajoutées sans passer par la fonction.
+insert into public.game_sessions (id, class_id, student_code, mechanic, profile, cibles, total_elements, ended_at, labels, results) values
+  ('a0000000-0000-4000-8000-000000000001', current_setting('essai.a')::uuid, 'E01', 'trier', 'standard', array['M.P4.1.1.i1.a1'], 1, now(), '{}', '[]'),
+  ('b0000000-0000-4000-8000-000000000001', current_setting('essai.b')::uuid, 'E02', 'trier', 'standard', array['M.P4.1.1.i1.a1'], 1, now(), '{}', '[]');
+
+-- (s16) Observations : 1000 caractères acceptés, 1001 refusés, code élève mal formé refusé, invisibles pour l'invité par défaut.
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000001', true);
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000001","role":"authenticated"}', true);
+set local role authenticated;
+do $$
+declare ok boolean; v boolean;
+begin
+  insert into public.game_observations (class_id, student_code, texte) values (current_setting('essai.a')::uuid, 'E04', repeat('a', 1000));
+  ok := false; begin insert into public.game_observations (class_id, texte) values (current_setting('essai.a')::uuid, repeat('a', 1001)); exception when check_violation then ok := true; end;
+  if not ok then raise exception 'ECHEC (s16) : observation de 1001 caractères acceptée'; end if;
+  ok := false; begin insert into public.game_observations (class_id, student_code, texte) values (current_setting('essai.a')::uuid, 'Léa', 'x'); exception when check_violation then ok := true; end;
+  if not ok then raise exception 'ECHEC (s16) : code élève « Léa » accepté'; end if;
+  ok := false; begin insert into public.game_observations (class_id, texte) values (current_setting('essai.a')::uuid, '   '); exception when check_violation then ok := true; end;
+  if not ok then raise exception 'ECHEC (s16) : observation vide acceptée'; end if;
+  select visible_invites into v from public.game_observations where student_code = 'E04';
+  if v is distinct from false then raise exception 'ECHEC (s16) : visible_invites devrait valoir false par défaut'; end if;
+  insert into public.game_observations (class_id, student_code, texte, visible_invites) values (current_setting('essai.a')::uuid, 'E05', 'partagée', true);
+  -- Une classe qui n'est pas la sienne : refusé.
+  ok := false;
+  begin insert into public.game_observations (class_id, texte) values (current_setting('essai.b')::uuid, 'intrus'); exception when insufficient_privilege then ok := true; end;
+  if not ok then raise exception 'ECHEC (s16) : écriture dans la classe d''un autre enseignant'; end if;
+  raise notice 'OK (s16) : observations';
+end $$;
+
+-- (s17) Résultats saisis : valeurs admises seulement.
+do $$
+declare ok boolean;
+begin
+  insert into public.game_manual_results (class_id, student_code, cible, resultat) values (current_setting('essai.a')::uuid, 'E04', 'M.P4.1.1.i1.a1', 'reussi');
+  ok := false; begin insert into public.game_manual_results (class_id, student_code, cible, resultat) values (current_setting('essai.a')::uuid, 'E04', 'M.P4.1.1.i1.a1', 'foo'); exception when check_violation then ok := true; end;
+  if not ok then raise exception 'ECHEC (s17) : résultat « foo » accepté'; end if;
+  ok := false; begin insert into public.game_manual_results (class_id, student_code, cible, resultat) values (current_setting('essai.a')::uuid, 'E04', 'Léa', 'reussi'); exception when check_violation then ok := true; end;
+  if not ok then raise exception 'ECHEC (s17) : cible « Léa » acceptée'; end if;
+  ok := false; begin insert into public.game_manual_results (class_id, student_code, cible, resultat) values (current_setting('essai.a')::uuid, 'Léa', 'M.P4.1.1.i1.a1', 'reussi'); exception when check_violation then ok := true; end;
+  if not ok then raise exception 'ECHEC (s17) : code élève « Léa » accepté'; end if;
+  raise notice 'OK (s17) : résultats saisis';
+end $$;
+
+-- (s18) Invitation : seul le propriétaire en crée ; usage unique ; expirée refusée ; code mal formé refusé.
+do $$
+declare v_code text; ok boolean;
+begin
+  v_code := public.game_create_guest_invitation(current_setting('essai.a')::uuid);
+  if v_code !~ '^[A-Za-z0-9_-]{32}$' then raise exception 'ECHEC (s18) : forme du code d''invitation'; end if;
+  perform set_config('essai.ia', v_code, true);
+  perform set_config('essai.ib', public.game_create_guest_invitation(current_setting('essai.a')::uuid), true);
+  perform set_config('essai.ic', public.game_create_guest_invitation(current_setting('essai.a')::uuid), true);
+end $$;
+do $$
+declare ok boolean := false;
+begin
+  begin perform public.game_create_guest_invitation(current_setting('essai.b')::uuid); exception when others then ok := true; end;
+  if not ok then raise exception 'ECHEC (s18) : invitation créée pour la classe d''un autre'; end if;
+end $$;
+reset role;
+-- Le code en clair n'est stocké nulle part.
+do $$
+declare n int;
+begin
+  select count(*) into n from public.game_guest_invitations where code_hash in (current_setting('essai.ia'), current_setting('essai.ib'), current_setting('essai.ic'));
+  if n <> 0 then raise exception 'ECHEC (s18) : un code d''invitation est stocké en clair'; end if;
+end $$;
+-- L'invitation « ic » expire.
+update public.game_guest_invitations set expires_at = now() - interval '1 day'
+  where code_hash = encode(digest(current_setting('essai.ic'), 'sha256'), 'hex');
+
+-- u3 (sans accès enseignant) utilise « ia » : ok, puis deja ; u2 rejoue le même code : invalide.
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000003', true);
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000003","role":"authenticated"}', true);
+set local role authenticated;
+do $$
+declare r text;
+begin
+  r := public.game_redeem_guest_invitation(current_setting('essai.ia'));
+  if r <> 'ok' then raise exception 'ECHEC (s18) : attendu ok, obtenu %', r; end if;
+  r := public.game_redeem_guest_invitation(current_setting('essai.ia'));
+  if r <> 'deja' then raise exception 'ECHEC (s18) : attendu deja, obtenu %', r; end if;
+  r := public.game_redeem_guest_invitation(substr(current_setting('essai.ib'), 1, 31));
+  if r <> 'invalide' then raise exception 'ECHEC (s18) : code de 31 caractères : %', r; end if;
+end $$;
+reset role;
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000002', true);
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000002","role":"authenticated"}', true);
+set local role authenticated;
+do $$
+declare r text;
+begin
+  r := public.game_redeem_guest_invitation(current_setting('essai.ia'));
+  if r <> 'invalide' then raise exception 'ECHEC (s18) : code déjà utilisé par un autre compte : %', r; end if;
+  r := public.game_redeem_guest_invitation(current_setting('essai.ic'));
+  if r <> 'invalide' then raise exception 'ECHEC (s18) : invitation expirée : %', r; end if;
+  raise notice 'OK (s18) : invitation par code';
+end $$;
+reset role;
+-- Sans identité (auth.uid() null) : invalide.
+select set_config('request.jwt.claim.sub', '', true);
+select set_config('request.jwt.claims', '{"role":"authenticated"}', true);
+set local role authenticated;
+do $$
+declare r text;
+begin
+  r := public.game_redeem_guest_invitation(current_setting('essai.ib'));
+  if r <> 'invalide' then raise exception 'ECHEC (s18) : sans identité : %', r; end if;
+end $$;
+reset role;
+
+-- (s19) L'invité u3 lit la classe A, ses séances et ses seules observations partagées ; rien de la classe B.
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000003', true);
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000003","role":"authenticated"}', true);
+set local role authenticated;
+do $$
+declare n int; t text;
+begin
+  select count(*) into n from public.game_classes;
+  if n <> 1 then raise exception 'ECHEC (s19) : u3 voit % classes au lieu de 1', n; end if;
+  select count(*) into n from public.game_sessions;
+  if n <> 1 then raise exception 'ECHEC (s19) : u3 voit % séances au lieu de 1', n; end if;
+  select count(*) into n from public.game_sessions where class_id = current_setting('essai.b')::uuid;
+  if n <> 0 then raise exception 'ECHEC (s19) : u3 voit une séance de la classe B'; end if;
+  select count(*) into n from public.game_observations;
+  select min(texte) into t from public.game_observations;
+  if n <> 1 or t <> 'partagée' then raise exception 'ECHEC (s19) : u3 voit % observation(s), « % »', n, t; end if;
+  select count(*) into n from public.game_manual_results;
+  if n <> 1 then raise exception 'ECHEC (s19) : u3 voit % résultat(s) saisi(s) au lieu de 1', n; end if;
+  raise notice 'OK (s19) : lecture de l''invité bornée à sa classe et aux observations partagées';
+end $$;
+
+-- (s20) L'invité n'écrit, ne modifie et ne supprime rien.
+do $$
+declare ok boolean; n int;
+begin
+  ok := false; begin insert into public.game_observations (class_id, texte) values (current_setting('essai.a')::uuid, 'intrus'); exception when insufficient_privilege then ok := true; end;
+  if not ok then raise exception 'ECHEC (s20) : insertion d''observation par l''invité'; end if;
+  ok := false; begin insert into public.game_manual_results (class_id, student_code, cible, resultat) values (current_setting('essai.a')::uuid, 'E01', 'M.P4.1.1.i1.a1', 'reussi'); exception when insufficient_privilege then ok := true; end;
+  if not ok then raise exception 'ECHEC (s20) : insertion de résultat par l''invité'; end if;
+  -- Modifier ou supprimer : soit « permission refusée », soit 0 ligne touchée ; jamais une ligne modifiée.
+  begin update public.game_observations set texte = 'modifié'; get diagnostics n = row_count;
+    if n <> 0 then raise exception 'ECHEC (s20) : % observation(s) modifiée(s) par l''invité', n; end if;
+  exception when insufficient_privilege then null; end;
+  begin delete from public.game_observations; get diagnostics n = row_count;
+    if n <> 0 then raise exception 'ECHEC (s20) : % observation(s) supprimée(s) par l''invité', n; end if;
+  exception when insufficient_privilege then null; end;
+  begin delete from public.game_manual_results; get diagnostics n = row_count;
+    if n <> 0 then raise exception 'ECHEC (s20) : résultat supprimé par l''invité'; end if;
+  exception when insufficient_privilege then null; end;
+  begin delete from public.game_sessions; get diagnostics n = row_count;
+    if n <> 0 then raise exception 'ECHEC (s20) : séance supprimée par l''invité'; end if;
+  exception when insufficient_privilege then null; end;
+  begin delete from public.game_classes; get diagnostics n = row_count;
+    if n <> 0 then raise exception 'ECHEC (s20) : classe supprimée par l''invité'; end if;
+  exception when insufficient_privilege then null; end;
+  raise notice 'OK (s20) : l''invité est en lecture seule';
+end $$;
+reset role;
+
+-- (s21) Révocation et expiration : la prochaine lecture renvoie 0 ligne. Un non-propriétaire ne révoque pas.
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000002', true);
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000002","role":"authenticated"}', true);
+set local role authenticated;
+do $$
+declare ok boolean := false; g uuid;
+begin
+  select id into g from public.game_class_guests limit 1;
+  if g is not null then raise exception 'ECHEC (s21) : u2 voit les invités de la classe de u1'; end if;
+end $$;
+reset role;
+do $$
+declare ok boolean := false; g uuid;
+begin
+  select id into g from public.game_class_guests where guest_user_id = '00000000-0000-4000-8000-000000000003' and class_id = current_setting('essai.a')::uuid;
+  perform set_config('essai.g', g::text, true);
+end $$;
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000002', true);
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000002","role":"authenticated"}', true);
+set local role authenticated;
+do $$
+declare ok boolean := false;
+begin
+  begin perform public.game_revoke_guest(current_setting('essai.g')::uuid); exception when others then ok := true; end;
+  if not ok then raise exception 'ECHEC (s21) : un non-propriétaire a révoqué un invité'; end if;
+end $$;
+reset role;
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000001', true);
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000001","role":"authenticated"}', true);
+set local role authenticated;
+do $$
+declare n int;
+begin
+  select count(*) into n from public.game_class_guests where class_id = current_setting('essai.a')::uuid;
+  if n <> 1 then raise exception 'ECHEC (s21) : le propriétaire voit % invité(s) au lieu de 1', n; end if;
+  perform public.game_revoke_guest(current_setting('essai.g')::uuid);
+end $$;
+reset role;
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000003', true);
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000003","role":"authenticated"}', true);
+set local role authenticated;
+do $$
+declare n int;
+begin
+  select count(*) into n from public.game_sessions;
+  if n <> 0 then raise exception 'ECHEC (s21) : invité révoqué voit encore % séance(s)', n; end if;
+  select count(*) into n from public.game_classes;
+  if n <> 0 then raise exception 'ECHEC (s21) : invité révoqué voit encore % classe(s)', n; end if;
+end $$;
+reset role;
+-- Expiration : u2 devient invité de A avec « ib », puis l'invitation est échue.
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000002', true);
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000002","role":"authenticated"}', true);
+set local role authenticated;
+do $$
+declare r text; n int;
+begin
+  r := public.game_redeem_guest_invitation(current_setting('essai.ib'));
+  if r <> 'ok' then raise exception 'ECHEC (s21) : u2 devrait pouvoir rejoindre A : %', r; end if;
+  select count(*) into n from public.game_sessions where class_id = current_setting('essai.a')::uuid;
+  if n <> 1 then raise exception 'ECHEC (s21) : u2 invité devrait voir 1 séance de A, voit %', n; end if;
+end $$;
+reset role;
+update public.game_class_guests set expires_at = now() - interval '1 second'
+  where guest_user_id = '00000000-0000-4000-8000-000000000002' and class_id = current_setting('essai.a')::uuid;
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000002', true);
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000002","role":"authenticated"}', true);
+set local role authenticated;
+do $$
+declare n int;
+begin
+  select count(*) into n from public.game_sessions where class_id = current_setting('essai.a')::uuid;
+  if n <> 0 then raise exception 'ECHEC (s21) : invité expiré voit encore % séance(s)', n; end if;
+  raise notice 'OK (s21) : révocation et expiration';
+end $$;
+reset role;
+
+-- (s22) Suppression d'une classe par son propriétaire : tout ce qui s'y rattache disparaît ; un autre enseignant n'y touche pas.
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000002', true);
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000002","role":"authenticated"}', true);
+set local role authenticated;
+do $$
+declare n int;
+begin
+  delete from public.game_classes where id = current_setting('essai.a')::uuid; get diagnostics n = row_count;
+  if n <> 0 then raise exception 'ECHEC (s22) : u2 a supprimé la classe de u1'; end if;
+end $$;
+reset role;
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000001', true);
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-000000000001","role":"authenticated"}', true);
+set local role authenticated;
+do $$
+declare n int;
+begin
+  delete from public.game_classes where id = current_setting('essai.a')::uuid; get diagnostics n = row_count;
+  if n <> 1 then raise exception 'ECHEC (s22) : u1 n''a pas pu supprimer sa classe (%)', n; end if;
+end $$;
+reset role;
+do $$
+declare n int;
+begin
+  select count(*) into n from public.game_sessions where class_id = current_setting('essai.a')::uuid;
+  if n <> 0 then raise exception 'ECHEC (s22) : séances restantes'; end if;
+  select count(*) into n from public.game_observations where class_id = current_setting('essai.a')::uuid;
+  if n <> 0 then raise exception 'ECHEC (s22) : observations restantes'; end if;
+  select count(*) into n from public.game_manual_results where class_id = current_setting('essai.a')::uuid;
+  if n <> 0 then raise exception 'ECHEC (s22) : résultats saisis restants'; end if;
+  select count(*) into n from public.game_class_guests where class_id = current_setting('essai.a')::uuid;
+  if n <> 0 then raise exception 'ECHEC (s22) : invités restants'; end if;
+  select count(*) into n from public.game_guest_invitations where class_id = current_setting('essai.a')::uuid;
+  if n <> 0 then raise exception 'ECHEC (s22) : invitations restantes'; end if;
+  select count(*) into n from public.game_sessions where class_id = current_setting('essai.b')::uuid;
+  if n <> 1 then raise exception 'ECHEC (s22) : la classe B a perdu des données'; end if;
+  raise notice 'OK (s22) : suppression de classe en cascade';
+end $$;
