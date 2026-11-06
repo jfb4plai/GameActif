@@ -111,6 +111,7 @@ function versSession(l: unknown): SessionEnregistree | null {
     labels: { ...(l.labels as Record<string, string>) },
     results: l.results.map((r) => ({ ...r, wrongChoices: [...r.wrongChoices] })),
     origine: 'ecran',
+    above: l.above === true,
   };
 }
 
@@ -160,7 +161,7 @@ export function magasinSuiviSupabase(client: ClientLecture, userId: string): Sui
   return {
     classes,
     async sessions(classId) {
-      const l = await toutes('game_sessions', 'id, student_code, mechanic, profile, cibles, total_elements, ended_at, labels, results', classId, 'ended_at');
+      const l = await toutes('game_sessions', 'id, student_code, mechanic, profile, cibles, total_elements, ended_at, labels, results, above', classId, 'ended_at');
       return l.map(versSession).filter((s): s is SessionEnregistree => s !== null);
     },
     async manuels(classId) {

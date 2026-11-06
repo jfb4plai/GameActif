@@ -27,6 +27,7 @@ function s(code: string, mechanic: MechanicId, jour: string, resultats: Resultat
     mechanic,
     labels: { devant: 'devant', derriere: 'derrière', entre: 'entre' },
     origine: 'ecran',
+    above: false,
   };
 }
 

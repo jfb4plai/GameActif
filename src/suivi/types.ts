@@ -22,6 +22,8 @@ export interface SessionPayload {
   /** Étiquette affichable de chaque identifiant cité dans `results` (bonnes réponses et mauvais choix). */
   labels: Record<string, string>;
   results: ResultatEnvoye[];
+  /** Tour joué au niveau au-dessus du profil attribué (dépassement volontaire). */
+  above: boolean;
 }
 
 /** Séance relue côté enseignant : les signaux du moteur (`SessionResults`) plus l'attendu, la mécanique et les étiquettes. */
@@ -31,4 +33,6 @@ export interface SessionEnregistree extends SessionResults {
   labels: Record<string, string>;
   results: ResultatEnvoye[];
   origine: 'ecran';
+  /** Tour joué au niveau au-dessus du profil attribué (dépassement volontaire). */
+  above: boolean;
 }

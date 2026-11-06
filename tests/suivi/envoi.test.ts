@@ -9,6 +9,7 @@ const payload: SessionPayload = {
   cibles: ['M.P4.1.1.i1.a1'],
   totalElements: 1,
   endedAt: '2026-11-12T10:00:00.000Z',
+  above: false,
   labels: { devant: 'devant' },
   results: [{ elementId: 'e1', mechanic: 'trier', firstTry: true, tries: 1, hintUsed: false, revealed: false, wrongChoices: [], correct: 'devant' }],
 };

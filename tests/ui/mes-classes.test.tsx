@@ -98,6 +98,7 @@ describe('MesClasses, classe d’un propriétaire', () => {
       labels: {},
       results: [{ elementId: 'e1', mechanic: 'trier' as const, firstTry: true, tries: 1, hintUsed: false, revealed: false, wrongChoices: [], correct: 'devant' }],
       origine: 'ecran' as const,
+      above: false,
     };
     monter({ classes: [classe], sessions: { c1: [seance] } });
     const tableau = await screen.findByRole('table', { name: 'Où en sont les élèves' });

@@ -15,6 +15,8 @@ export interface ContexteSession {
   profile: ProfileId;
   cibles: string[];
   maintenant: Date;
+  /** Tour joué au niveau au-dessus du profil attribué à l'élève (faux par défaut). */
+  auDessus?: boolean;
 }
 
 /**
@@ -50,6 +52,7 @@ export function construirePayload(c: ContexteSession): SessionPayload {
     mechanic: c.round.mechanic,
     profile: c.profile,
     cibles: [...c.cibles],
+    above: c.auDessus ?? false,
     totalElements: Math.min(c.round.elements.length, MAX_RESULTATS),
     endedAt: c.maintenant.toISOString(),
     labels,

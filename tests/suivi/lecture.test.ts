@@ -97,8 +97,16 @@ describe('magasinSuiviSupabase', () => {
         labels: { devant: 'devant' },
         results: [{ elementId: 'e1', mechanic: 'trier', firstTry: true, tries: 1, hintUsed: false, revealed: false, wrongChoices: [], correct: 'devant' }],
         origine: 'ecran',
+        above: false,
       },
     ]);
+  });
+
+  it('relit l’indicateur « above » (faux quand la colonne est absente) et le demande à la base', async () => {
+    const { client, appels } = faux(() => ({ data: [ligneSession('s1', { above: true }), ligneSession('s2')], error: null }));
+    const r = await magasinSuiviSupabase(client, 'u1').sessions('c1');
+    expect(r.map((s) => s.above)).toEqual([true, false]);
+    expect(appels[0].colonnes).toContain('above');
   });
 
   it('ignore une ligne dont la forme est inattendue sans lever', async () => {

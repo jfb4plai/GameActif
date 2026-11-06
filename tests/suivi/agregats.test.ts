@@ -25,7 +25,7 @@ function tour(ok: number, ko = 0): ResultatEnvoye[] {
   return [...Array.from({ length: ok }, () => el('entre')), ...Array.from({ length: ko }, () => el('devant', ['derriere']))];
 }
 function s(code: string, mechanic: MechanicId, jour: string, resultats: ResultatEnvoye[], cibles = [C]): SessionEnregistree {
-  return { sessionId: `${code}-${mechanic}-${jour}`, studentCode: code, profile: 'standard', totalElements: resultats.length, endedAt: `${jour}T10:00:00.000Z`, results: resultats, cibles, mechanic, labels: LABELS, origine: 'ecran' };
+  return { sessionId: `${code}-${mechanic}-${jour}`, studentCode: code, profile: 'standard', totalElements: resultats.length, endedAt: `${jour}T10:00:00.000Z`, results: resultats, cibles, mechanic, labels: LABELS, origine: 'ecran', above: false };
 }
 const manuel = (code: string, resultat: ResultatManuel['resultat'], date: string, cible = C): ResultatManuel => ({ studentCode: code, cible, resultat, date: `${date}T10:00:00.000Z` });
 

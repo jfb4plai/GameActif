@@ -58,8 +58,14 @@ describe('construirePayload', () => {
     const json = JSON.stringify(construirePayload(ctx()));
     expect(json).not.toMatch(/prenom|nom|name|duree|duration|temps/i);
     expect(Object.keys(construirePayload(ctx())).sort()).toEqual(
-      ['cibles', 'endedAt', 'labels', 'mechanic', 'profile', 'results', 'sessionId', 'totalElements'],
+      ['above', 'cibles', 'endedAt', 'labels', 'mechanic', 'profile', 'results', 'sessionId', 'totalElements'],
     );
+  });
+
+  it('marque le tour joué au niveau au-dessus, faux par défaut', () => {
+    expect(construirePayload(ctx()).above).toBe(false);
+    expect(construirePayload({ ...ctx(), auDessus: false }).above).toBe(false);
+    expect(construirePayload({ ...ctx(), auDessus: true }).above).toBe(true);
   });
 
   it('plafonne à 10 les mauvais choix d’un élément sans changer le nombre d’essais (la base refuserait toute la séance)', () => {
