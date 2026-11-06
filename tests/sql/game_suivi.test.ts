@@ -1,44 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { PGlite } from '@electric-sql/pglite';
-import { pgcrypto } from '@electric-sql/pglite/contrib/pgcrypto';
+import { jouer, lire } from './supabaseSimule';
 
-const lire = (chemin: string) => readFileSync(new URL(`../../${chemin}`, import.meta.url), 'utf-8');
 const ACCES = 'supabase/migrations/20261103_game_acces.sql';
 const SUIVI = 'supabase/migrations/20261107_game_suivi.sql';
 const migrations = () => [lire(ACCES), lire(SUIVI)];
 const essais = () => lire('supabase/essais/game_suivi.assertions.sql');
 
-/** Même simulation de Supabase que tests/sql/game_acces.test.ts : rôles, auth.uid(), anciens droits par défaut. */
-async function baseSupabase(): Promise<PGlite> {
-  const db = new PGlite({ extensions: { pgcrypto } });
-  await db.exec(`
-    create extension if not exists pgcrypto;
-    create role anon nologin; create role authenticated nologin; create role service_role nologin;
-    create schema auth;
-    create table auth.users (id uuid primary key);
-    create function auth.uid() returns uuid language sql stable as $$
-      select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
-    grant usage on schema public to anon, authenticated, service_role;
-    grant usage on schema auth to anon, authenticated, service_role;
-    grant select on auth.users to authenticated;
-    alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
-    alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
-    alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
-  `);
-  return db;
-}
-
-async function jouer(sqlMigrations: string[], sqlEssais: string): Promise<void> {
-  const db = await baseSupabase();
-  try {
-    await db.exec(`begin;\n${sqlMigrations.join('\n')}\n${sqlEssais}\nrollback;`);
-  } finally {
-    await db.close();
-  }
-}
-
-const CAS = ['(s1)', '(s2)', '(s3)', '(s4)', '(s5)', '(s6)', '(s7)', '(s8)', '(s9)', '(s10)', '(s11)', '(s12)', '(s13)', '(s14)', '(s15)', '(s16)', '(s17)', '(s18)', '(s19)', '(s20)', '(s21)', '(s22)', '(s23)', '(s24)'];
+const CAS = ['(s1)', '(s2)', '(s3)', '(s4)', '(s5)', '(s6)', '(s7)', '(s8)', '(s9)', '(s10)', '(s11)', '(s12)', '(s13)', '(s14)', '(s15)', '(s16)', '(s17)', '(s18)', '(s19)', '(s20)', '(s21)', '(s22)', '(s23)', '(s24)', '(s25)'];
 
 describe('les essais détectent une migration affaiblie (mutations)', () => {
   const mutations: [string, (sql: string) => string, RegExp][] = [
@@ -125,6 +93,11 @@ describe('les essais détectent une migration affaiblie (mutations)', () => {
       'une séance rejouée double la ligne',
       (sql) => sql.replace('on conflict (id) do nothing', 'on conflict (id) do update set created_at = now()').replace('id uuid primary key,\n  class_id uuid not null references public.game_classes (id) on delete cascade,\n  student_code', 'id uuid not null,\n  class_id uuid not null references public.game_classes (id) on delete cascade,\n  student_code'),
       /ECHEC \(s9\/s10\)|ON CONFLICT/i,
+    ],
+    [
+      'above accepte n’importe quel type',
+      (sql) => sql.replace("jsonb_typeof(p_payload -> 'above') is distinct from 'boolean'", 'false'),
+      /ECHEC \(s25\)/,
     ],
   ];
   for (const [nom, muter, attendu] of mutations) {

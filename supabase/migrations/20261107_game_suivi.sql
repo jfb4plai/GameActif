@@ -130,6 +130,8 @@ create table public.game_sessions (
   ended_at timestamptz not null,
   labels jsonb not null check (jsonb_typeof(labels) = 'object'),
   results jsonb not null check (jsonb_typeof(results) = 'array'),
+  -- Tour joué au niveau au-dessus du profil de l'élève (dépassement volontaire) : exclu des signaux négatifs du tableau de bord.
+  above boolean not null default false,
   created_at timestamptz not null default now()
 );
 
@@ -229,6 +231,11 @@ begin
     end if;
     v_ended := (p_payload ->> 'endedAt')::timestamptz;
 
+    -- « above » : facultatif (faux par défaut) ; s'il est présent, il doit être un booléen.
+    if p_payload ? 'above' and jsonb_typeof(p_payload -> 'above') is distinct from 'boolean' then
+      return 'invalide';
+    end if;
+
     if jsonb_typeof(p_payload -> 'labels') is distinct from 'object' then
       return 'invalide';
     end if;
@@ -273,11 +280,12 @@ begin
     return 'limite';
   end if;
 
-  insert into public.game_sessions (id, class_id, student_code, mechanic, profile, cibles, total_elements, ended_at, labels, results)
+  insert into public.game_sessions (id, class_id, student_code, mechanic, profile, cibles, total_elements, ended_at, labels, results, above)
     values (
       v_sid, v_class.id, p_student_code, p_payload ->> 'mechanic', p_payload ->> 'profile',
       array(select jsonb_array_elements_text(p_payload -> 'cibles')),
-      v_total, v_ended, p_payload -> 'labels', p_payload -> 'results'
+      v_total, v_ended, p_payload -> 'labels', p_payload -> 'results',
+      coalesce((p_payload ->> 'above')::boolean, false)
     )
     on conflict (id) do nothing;
   return 'ok';

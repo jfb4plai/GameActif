@@ -628,3 +628,38 @@ begin
   raise notice 'OK (s24) : purge réservée à service_role';
 end $$;
 reset role;
+
+-- (s25) Indicateur « above » (tour joué au niveau au-dessus du profil) : booléen facultatif, faux par défaut.
+do $$
+begin
+  perform set_config('essai.ccb', (select class_code from public.game_classes where id = current_setting('essai.b')::uuid), true);
+end $$;
+set local role anon;
+do $$
+declare base jsonb := current_setting('essai.payload')::jsonb; v jsonb; r text;
+begin
+  v := jsonb_set(jsonb_set(base, '{sessionId}', '"66666666-6666-4666-8666-666666666661"'), '{above}', 'true');
+  r := public.game_record_session(current_setting('essai.ccb'), 'E02', v);
+  if r <> 'ok' then raise exception 'ECHEC (s25) : above vrai refusé : %', r; end if;
+  v := jsonb_set(base, '{sessionId}', '"66666666-6666-4666-8666-666666666662"');
+  r := public.game_record_session(current_setting('essai.ccb'), 'E02', v);
+  if r <> 'ok' then raise exception 'ECHEC (s25) : sans above refusé : %', r; end if;
+  v := jsonb_set(jsonb_set(base, '{sessionId}', '"66666666-6666-4666-8666-666666666663"'), '{above}', '"oui"');
+  r := public.game_record_session(current_setting('essai.ccb'), 'E02', v);
+  if r <> 'invalide' then raise exception 'ECHEC (s25) : above « oui » accepté : %', r; end if;
+  v := jsonb_set(jsonb_set(base, '{sessionId}', '"66666666-6666-4666-8666-666666666664"'), '{above}', '1');
+  r := public.game_record_session(current_setting('essai.ccb'), 'E02', v);
+  if r <> 'invalide' then raise exception 'ECHEC (s25) : above 1 accepté : %', r; end if;
+end $$;
+reset role;
+do $$
+declare a boolean; b boolean; n int;
+begin
+  select above into a from public.game_sessions where id = '66666666-6666-4666-8666-666666666661';
+  select above into b from public.game_sessions where id = '66666666-6666-4666-8666-666666666662';
+  select count(*) into n from public.game_sessions where id in ('66666666-6666-4666-8666-666666666663', '66666666-6666-4666-8666-666666666664');
+  if a is distinct from true then raise exception 'ECHEC (s25) : above vrai non enregistré'; end if;
+  if b is distinct from false then raise exception 'ECHEC (s25) : above absent devrait valoir faux'; end if;
+  if n <> 0 then raise exception 'ECHEC (s25) : une séance au above invalide a été écrite'; end if;
+  raise notice 'OK (s25) : indicateur above';
+end $$;
