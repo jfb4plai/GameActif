@@ -14,6 +14,9 @@ import { EspaceEnseignant, type EtatAcces } from './EspaceEnseignant.js';
 import { MesActivites } from './MesActivites.js';
 import { MesClasses } from './MesClasses.js';
 import type { ClientSuivi } from '../suivi/envoi.js';
+import { lireLienActivite } from '../partage/lien.js';
+import type { ClientPartage } from '../partage/lecture.js';
+import { VueEleve } from './VueEleve.js';
 import { magasinSuiviSupabase, type ClientLecture, type SuiviStore } from '../suivi/lecture.js';
 import { EtapeCompetences } from './EtapeCompetences.js';
 import { EtapeElements } from './EtapeElements.js';
@@ -44,6 +47,14 @@ function clientSuiviDuNavigateur(): ClientSuivi | undefined {
   }
 }
 
+function clientPartageDuNavigateur(): (ClientPartage & ClientSuivi) | undefined {
+  try {
+    return getSupabase() as unknown as ClientPartage & ClientSuivi;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Parcours : niveau, matière, compétences visées, saisie des éléments, puis les jeux sur écran et en classe. */
 export function Parcours({
   stockage = stockageDuNavigateur(),
@@ -55,6 +66,7 @@ export function Parcours({
   suivi: suiviImpose,
   magasinSuivi: magasinSuiviImpose,
   stockageSuivi = stockageDuNavigateur(),
+  partage: partageImpose,
 }: {
   stockage?: Stockage | null;
   telecharger?: (nom: string, contenu: string) => void;
@@ -69,8 +81,13 @@ export function Parcours({
   /** Magasin des classes et résultats ; par défaut celui de la base pour le compte connecté. */
   magasinSuivi?: SuiviStore;
   stockageSuivi?: StockageLocal | null;
+  /** Client de la vue élève (lecture d'une activité partagée) ; par défaut celui de la base, s'il est configuré. */
+  partage?: ClientPartage & ClientSuivi;
 }) {
   const compte = useAuthOptionnel();
+  // Lien d'activité lu une seule fois à l'ouverture. L'adresse est gardée : un rechargement de la tablette rouvre l'activité.
+  const [lienEleve] = useState(() => (suiviActif && typeof window !== 'undefined' ? lireLienActivite(new URL(window.location.href)) : null));
+  const clientPartage = useMemo(() => partageImpose ?? (compte?.disponible ? clientPartageDuNavigateur() : undefined), [partageImpose, compte?.disponible]);
   const [acces, setAcces] = useState<EtatAcces>('inconnu');
   const userId = compte?.user?.id ?? null;
   const clientSuivi = useMemo<ClientSuivi | undefined>(
@@ -113,6 +130,10 @@ export function Parcours({
       return null;
     }
   }, [etat.etape, etat.brouillon]);
+
+  if (lienEleve !== null && clientPartage !== undefined) {
+    return <VueEleve code={lienEleve.code} groupe={lienEleve.groupe} client={clientPartage} stockage={stockageSuivi} />;
+  }
 
   if (exemple) {
     return (
