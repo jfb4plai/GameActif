@@ -38,7 +38,7 @@ async function jouer(sqlMigrations: string[], sqlEssais: string): Promise<void> 
   }
 }
 
-const CAS = ['(s1)', '(s2)', '(s3)', '(s4)', '(s5)', '(s6)', '(s7)'];
+const CAS = ['(s1)', '(s2)', '(s3)', '(s4)', '(s5)', '(s6)', '(s7)', '(s8)', '(s9)', '(s10)', '(s11)', '(s12)', '(s13)', '(s14)', '(s15)'];
 
 describe('les essais détectent une migration affaiblie (mutations)', () => {
   const mutations: [string, (sql: string) => string, RegExp][] = [
@@ -56,6 +56,31 @@ describe('les essais détectent une migration affaiblie (mutations)', () => {
       'anon peut lire les classes',
       (sql) => `${sql}\ngrant select on public.game_classes to anon;`,
       /ECHEC \(s6\)/,
+    ],
+    [
+      'anon peut lire les séances',
+      (sql) => `${sql}\ngrant select on public.game_sessions to anon;`,
+      /ECHEC \(s15\)/,
+    ],
+    [
+      'un code élève hors liste est accepté',
+      (sql) => sql.replace('if v_num < 1 or v_num > v_class.nb_codes then', 'if false then'),
+      /ECHEC \(s11\)/,
+    ],
+    [
+      'plus de limite de débit',
+      (sql) => sql.replace('>= 60 then', '>= 60000 then'),
+      /ECHEC \(s13\)/,
+    ],
+    [
+      'une classe expirée accepte encore des séances',
+      (sql) => sql.replaceAll(' and purge_on >= current_date', ''),
+      /ECHEC \(s14\)/,
+    ],
+    [
+      'une séance rejouée double la ligne',
+      (sql) => sql.replace('on conflict (id) do nothing', 'on conflict (id) do update set created_at = now()').replace('id uuid primary key,\n  class_id uuid not null references public.game_classes (id) on delete cascade,\n  student_code', 'id uuid not null,\n  class_id uuid not null references public.game_classes (id) on delete cascade,\n  student_code'),
+      /ECHEC \(s9\/s10\)|ON CONFLICT/i,
     ],
   ];
   for (const [nom, muter, attendu] of mutations) {
