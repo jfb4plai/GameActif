@@ -31,3 +31,48 @@ describe('AideEcran', () => {
     expect(document.querySelectorAll('details.aide-ecran li')).toHaveLength(AIDES.eleve.puces.length);
   });
 });
+
+describe('AideEcran, lecture à voix haute', () => {
+  const retirerSynthese = () => {
+    delete (window as unknown as { speechSynthesis?: unknown }).speechSynthesis;
+    delete (globalThis as unknown as { SpeechSynthesisUtterance?: unknown }).SpeechSynthesisUtterance;
+  };
+  const poserSynthese = () => {
+    const lus: string[] = [];
+    (globalThis as unknown as { SpeechSynthesisUtterance: unknown }).SpeechSynthesisUtterance = class {
+      text: string;
+      lang = '';
+      voice: unknown = null;
+      constructor(t: string) {
+        this.text = t;
+      }
+    };
+    (window as unknown as { speechSynthesis: unknown }).speechSynthesis = {
+      getVoices: () => [],
+      cancel: () => {},
+      speak: (u: { text: string }) => void lus.push(u.text),
+    };
+    return lus;
+  };
+  afterEach(retirerSynthese);
+
+  it('l’aide élève propose « Écouter l’aide » et lit toutes les puces', async () => {
+    const lus = poserSynthese();
+    render(<AideEcran id="eleve" />);
+    await userEvent.click(screen.getByRole('button', { name: 'Écouter l’aide' }));
+    expect(lus).toEqual([AIDES.eleve.puces.join(' ')]);
+  });
+
+  it('l’aide de l’enseignant n’a pas de bouton de lecture', () => {
+    poserSynthese();
+    render(<AideEcran id="classes" />);
+    expect(screen.queryByRole('button', { name: 'Écouter l’aide' })).toBeNull();
+  });
+
+  it('sans synthèse vocale : pas de bouton, pas d’erreur, les puces restent lisibles', () => {
+    retirerSynthese();
+    render(<AideEcran id="eleve" />);
+    expect(screen.queryByRole('button', { name: 'Écouter l’aide' })).toBeNull();
+    expect(document.querySelectorAll('details.aide-ecran li')).toHaveLength(AIDES.eleve.puces.length);
+  });
+});
