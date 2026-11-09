@@ -1,6 +1,6 @@
 # Étude : adaptateur de référentiel pour le français (P1 à P6)
 
-Date : 2026-11-06. Statut : étude, rien n'est construit. Elle chiffre l'effort et pose les décisions à prendre avant un plan.
+Date : 2026-11-06. Statut au 2026-11-09 : **exécutée en local** (plan 11, tâches 1 à 7, branche `feat/francais`, non poussée). Constaté : 1 028 attendus de rubriques P1 à P6 chargés (codes `F.P#.r#.i#.a#`), matière « Français » proposée à chaque niveau, codes `F.` acceptés par l'application et par la base partagée (migration 20261109 appliquée le 2026-11-09 après essai annulé), 1041 tests, parcours réel P3 français vérifié dans le navigateur (attendu F.P3.r6.i1.a1, jeu Associer en tête, export puis réimport du fichier). Poids du site : JS 807,50 kB vers 1 269,06 kB, gzip 169,59 vers 220,85 kB. Non fait : activité pilote de français, filtre par visée, lisibilité des codes F. dans le tableau de bord, masquage du champ « Nombres à comparer » en français. Les sections 1 à 8 ci-dessous gardent le texte de l'étude d'origine.
 Statuts : constaté (commande ou fichier cité), déduit (raisonnement), non vérifié.
 
 ## 1. Pourquoi
