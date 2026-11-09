@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { ErreurStockage } from '../compte/activites.js';
 import type { ResultatManuel } from '../suivi/agregats.js';
 import type { ClasseLue, SuiviStore } from '../suivi/lecture.js';
+import { estCodeAttendu } from '../suivi/attendu.js';
 import { codesDeClasse } from './formats.js';
 
-const FORME_ATTENDU = /^M\.P[1-6](\.[A-Za-z0-9]+)+$/;
 const MESSAGE_FORME = 'Ce texte n’a pas le format d’un attendu, par exemple M.P4.1.1.i1.a1. Copiez-le depuis la fiche du jeu.';
 const MESSAGE_GENERIQUE = 'L’enregistrement n’a pas abouti. Votre saisie est conservée : réessayez.';
 
@@ -33,7 +33,7 @@ export function SaisieManuelle({ classe, store, onEnregistre }: Props) {
   async function enregistrer() {
     const c = cible.trim();
     setMessage('');
-    if (!FORME_ATTENDU.test(c)) {
+    if (!estCodeAttendu(c)) {
       setErreur(MESSAGE_FORME);
       return;
     }
