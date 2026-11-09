@@ -65,3 +65,29 @@ const lire = (chemin) => brut(chemin).replace(/\r\n/g, '\n');
   );
   console.log('OK : supabase/essai-rollback-game_partage.sql généré.');
 }
+
+// 4. game_codes_francais : les trois premières migrations sont APPLIQUÉES en production (2026-11-06) : l'essai ne
+//    rejoue que la nouvelle migration. Le test PGlite, lui, rejoue les quatre à partir d'une base vide.
+{
+  const francais = lire('supabase/migrations/20261109_game_codes_francais.sql');
+  const essais = lire('supabase/essais/game_francais.assertions.sql');
+  const entete = `-- GameActif : ESSAI de la migration game_codes_francais dans une transaction ANNULÉE (rien n'est conservé).
+-- Fichier généré par scripts/build-essai-sql.mjs : ne pas le modifier à la main.
+-- Suppose game_acces, game_suivi et game_partage déjà appliquées (c'est le cas en production depuis le 2026-11-06).
+-- À lancer UNIQUEMENT après l'accord explicite de l'administrateur :
+--   npx --no-install supabase db query --remote=<projet> --yes -f supabase/essai-rollback-game_francais.sql
+-- Succès : la commande se termine sans erreur et rien n'est conservé (la transaction est annulée). Échec : une erreur
+-- « ECHEC (x) » ou SQL, et rien n'est conservé non plus.
+`;
+  writeFileSync(
+    join(racine, 'supabase', 'essai-rollback-game_francais.sql'),
+    `${entete}begin;
+set local lock_timeout = '3s';
+${francais}
+${essais}
+rollback;
+`,
+    'utf-8',
+  );
+  console.log('OK : supabase/essai-rollback-game_francais.sql généré.');
+}
