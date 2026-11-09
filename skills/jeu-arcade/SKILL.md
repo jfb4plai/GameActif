@@ -40,11 +40,11 @@ Style visuel de GameActif, à respecter pour tout le jeu. Page : fond crème #ef
 
 ## Tir aux bulles
 
-Fabriquer le jeu « Tir aux bulles », un jeu de tir de bulles d'arcade. En haut, un mur dense de bulles colorées et rondes, réparti en un amas par famille ; chaque amas porte une plaque avec le nom de sa famille, et ses bulles ont la couleur et la marque de cette famille. En bas au centre, un canon qui pivote vers le pointeur (souris ou doigt) avec une ligne pointillée de visée ; la bulle chargée dans le canon est une grande bulle blanche à contour d'encre qui porte un seul élément du bloc de données en gros caractères. L'élève lit l'élément, vise l'amas de la famille qu'il choisit, puis tire (clic, toucher, ou flèches puis Entrée) ; la bulle part en ligne droite et la décision de classer est l'acte de viser. Si l'amas est le bon, la bulle s'accroche à l'amas, prend sa couleur et sa marque, et le retour est « Bien vu. ». Sinon, la bulle revient doucement dans le canon avec le retour « Pas tout à fait. Regarde l'indice. » et rien n'est perdu. Les bulles ne descendent jamais et aucune limite de tirs n'existe : le mur reste immobile et l'élève prend le temps qu'il veut. Au clavier, les flèches visent l'amas suivant ou précédent et Entrée tire. Le jeu se termine quand tous les éléments ont été classés ; afficher alors chaque famille avec ses éléments pour que l'élève relise.
+Fabriquer le jeu « Tir aux bulles », un jeu de tir de bulles d'arcade. En haut, un mur dense de bulles colorées et rondes, réparti en un amas par famille ; chaque amas porte une plaque avec le nom de sa famille, et ses bulles ont la couleur et la marque de cette famille. En bas au centre, un canon qui pivote vers le pointeur (souris ou doigt) avec une ligne pointillée de visée ; la bulle chargée dans le canon est une grande bulle blanche à contour d'encre qui porte un seul élément du bloc de données en gros caractères. L'élève lit l'élément, vise l'amas de la famille qu'il choisit, puis tire (clic, toucher, ou flèches puis Entrée) ; la bulle part en ligne droite et la décision de classer est l'acte de viser. Si l'amas est le bon, la bulle s'accroche à l'amas, prend sa couleur et sa marque, et le retour est « Bien vu. ». Sinon, la bulle revient doucement dans le canon avec le retour « Pas tout à fait. Regarde l'indice. » et rien n'est perdu. Les bulles ne descendent jamais et aucune limite de tirs n'existe : le mur reste immobile et l'élève prend le temps qu'il veut. Au clavier, les flèches visent l'amas suivant ou précédent et Entrée tire. Le jeu se termine quand tous les éléments ont été classés ; afficher alors chaque famille avec ses éléments pour que l'élève relise. Trois niveaux, choisis par des boutons « Niveau 1 : sans barre », « Niveau 2 : une barre » et « Niveau 3 : deux barres » ; le niveau 1 est le niveau par défaut et reste celui décrit ci-dessus. Aux niveaux 2 et 3, une ou deux barres rayées sont posées entre le canon et les amas et bloquent certaines lignes de tir : le canon, mobile sur toute la largeur, se déplace en le faisant glisser, avec des boutons « Canon à gauche » et « Canon à droite », ou avec Maj et les flèches ; un bouton « Placer le canon » l'amène à une place libre pour le groupe visé. La ligne pointillée s'arrête sur la barre, marquée d'une croix. Un tir bloqué par une barre n'est jamais une erreur : le message est « Une barre bloque le tir. Déplacer le canon, puis tirer. », rien n'est compté et la bulle reste dans le canon. Atteindre le bon groupe doit TOUJOURS être possible : avant d'afficher un niveau, le jeu vérifie pour chaque groupe qu'une plage d'au moins 42 px de positions du canon laisse la ligne de tir libre ; sinon il raccourcit les barres, puis les retire.
 
 ## Casse-briques
 
-Fabriquer le jeu « Casse-briques », un jeu d'arcade de casse-briques vivant. En haut, un mur de grandes briques pleines à contour d'encre épais, rangées en lignes, chacune portant un seul élément du bloc de données (ou un partenaire possible) en gros caractères ; la couleur des briques est décorative, répartie au hasard, et ne doit jamais indiquer la famille ni la bonne réponse. En bas, une raquette que l'élève déplace à la souris, au doigt ou avec les flèches ; une balle ronde avec un reflet, lancée par un clic, un toucher ou la barre d'espace. Au-dessus du mur, une bannière de consigne : le nom d'une famille (« Casse les briques de la famille … ») ou un élément à associer (« Casse la brique qui va avec … »). La décision est le choix de la brique : l'élève lit les briques, décide laquelle est la bonne, puis envoie la balle dessus. La balle n'est jamais perdue : si elle passe sous la raquette, elle revient à la raquette sans aucune perte. Une brique qui n'est pas la bonne (autre famille ou mauvais partenaire) est incassable : la balle rebondit et le message doux « Pas tout à fait. Regarde l'indice. » s'affiche avec un indice. Prévoir aussi un mode « pas à pas » sans balle : les flèches déplacent le choix d'une brique à l'autre et Entrée la casse, pour les élèves en difficulté motrice ; ce mode est actif d'office en mode calme. Le jeu se termine quand toutes les consignes ont été jouées ; afficher alors chaque famille avec ses éléments pour que l'élève relise.
+Fabriquer le jeu « Casse-briques », un jeu d'arcade de casse-briques vivant. En haut, un mur de grandes briques pleines à contour d'encre épais, rangées en lignes, chacune portant un seul élément du bloc de données (ou un partenaire possible) en gros caractères ; la couleur des briques est décorative, répartie au hasard, et ne doit jamais indiquer la famille ni la bonne réponse. En bas, une raquette que l'élève déplace à la souris, au doigt ou avec les flèches ; une balle ronde avec un reflet, lancée par un clic, un toucher ou la barre d'espace. Sur la raquette, une grande flèche de direction noire à contour blanc part de la balle posée et montre où elle ira ; un trait pointillé la prolonge jusqu'au premier mur ou à la première brique. Avant le lancer, le pointeur ou le doigt oriente la flèche, limitée à 60 degrés de la verticale ; la raquette se déplace en la faisant glisser ou avec les flèches gauche et droite ; Maj et les flèches, ou des boutons « Flèche à gauche » et « Flèche à droite », tournent la flèche. La balle part exactement dans la direction de la flèche, sans aucun hasard ; après le lancer, la raquette suit le pointeur. Au-dessus du mur, une bannière de consigne : le nom d'une famille (« Casse les briques de la famille … ») ou un élément à associer (« Casse la brique qui va avec … »). La décision est le choix de la brique : l'élève lit les briques, décide laquelle est la bonne, puis envoie la balle dessus. La balle n'est jamais perdue : si elle passe sous la raquette, elle revient à la raquette sans aucune perte. Une brique qui n'est pas la bonne (autre famille ou mauvais partenaire) est incassable : la balle rebondit et le message doux « Pas tout à fait. Regarde l'indice. » s'affiche avec un indice. Prévoir aussi un mode « pas à pas » sans balle : les flèches déplacent le choix d'une brique à l'autre et Entrée la casse, pour les élèves en difficulté motrice ; ce mode est actif d'office en mode calme. Le jeu se termine quand toutes les consignes ont été jouées ; afficher alors chaque famille avec ses éléments pour que l'élève relise.
 
 ## Fichiers de référence
 
@@ -95,6 +95,16 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
     <button type="button" id="ecouter">Écouter</button>
     <button type="button" id="indice">Indice</button>
   </div>
+  <div class="barre" role="group" aria-label="Niveau">
+    <button type="button" id="niveau-1" aria-pressed="true">Niveau 1 : sans barre</button>
+    <button type="button" id="niveau-2" aria-pressed="false">Niveau 2 : une barre</button>
+    <button type="button" id="niveau-3" aria-pressed="false">Niveau 3 : deux barres</button>
+  </div>
+  <div class="barre" role="group" aria-label="Canon">
+    <button type="button" id="canon-gauche" hidden>Canon à gauche</button>
+    <button type="button" id="canon-droite" hidden>Canon à droite</button>
+    <button type="button" id="placer" hidden>Placer le canon</button>
+  </div>
   <canvas id="terrain" width="720" height="680" tabindex="0" aria-label="Terrain de tir. Flèches gauche et droite : changer de groupe. Entrée : tirer."></canvas>
   <div id="retour" role="status" aria-live="polite"></div>
   <div class="panneau fin" id="fin" hidden>
@@ -114,12 +124,13 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
     ]
   };
   var COULEURS = ['#1f8a8c', '#f6be2c', '#e8412a', '#cfe8d5'];
-  var W = 720, H = 680, CX = 360, CY = 590, R = 24;
+  var W = 720, H = 680, cx = 360, CY = 590, R = 24, FINY = 270;
   var cv = document.getElementById('terrain'), ctx = cv.getContext('2d');
   var $retour = document.getElementById('retour'), $indice = document.getElementById('indice'), $fin = document.getElementById('fin');
   var fam = DONNEES.familles, n = fam.length;
   if (n >= 4) R = 17; // quatre familles : bulles plus petites pour ne pas se chevaucher
   var file, pos, erreurs, indiceUtilise, ecartee, place, angle, cible, vol, calme = false;
+  var niveau = 1, barres = [], glisse = false, deplace = false, ignorerClic = false;
 
   function melange(a) { var b = a.slice(); for (var i = b.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = b[i]; b[i] = b[j]; b[j] = t; } return b; }
   function echapper(s) { return s.replace(/[.*+?^(){}|[\]\\$]/g, '\\$&'); }
@@ -147,6 +158,64 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
     feux.forEach(function (p) { ctx.fillStyle = p.c; ctx.strokeStyle = '#161616'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832); ctx.fill(); ctx.stroke(); });
   }
   function message(t, doux) { $retour.textContent = t; $retour.className = doux ? 'doux' : ''; }
+
+  // Niveaux 2 et 3 : des barres sont posées entre le canon et les amas ; le canon se déplace sur toute la largeur.
+  // Garantie : le jeu vérifie, pour chaque amas, qu'une plage de positions du canon laisse la ligne de tir libre ; sinon les barres sont raccourcies, puis retirées.
+  var CXMIN = 70, CXMAX = 650, MARGE = 24, PAS_CANON = 30;
+  // Fraction du segment (a, b) où il entre dans le rectangle r agrandi de MARGE, ou null s'il ne le touche pas (méthode de Liang-Barsky).
+  function coupe(ax, ay, bx, by, r) {
+    var x0 = r.x - MARGE, x1 = r.x + r.w + MARGE, y0 = r.y - MARGE, y1 = r.y + r.h + MARGE, dx = bx - ax, dy = by - ay, t0 = 0, t1 = 1;
+    var p = [-dx, dx, -dy, dy], q = [ax - x0, x1 - ax, ay - y0, y1 - ay];
+    for (var k = 0; k < 4; k++) {
+      if (p[k] === 0) { if (q[k] < 0) return null; }
+      else {
+        var t = q[k] / p[k];
+        if (p[k] < 0) { if (t > t1) return null; if (t > t0) t0 = t; }
+        else { if (t < t0) return null; if (t < t1) t1 = t; }
+      }
+    }
+    return t0;
+  }
+  function angleVers(i) { return Math.atan2(centre(i).x - cx, CY - FINY); }
+  // Fraction du trajet, du canon placé en x vers l'amas i, où une barre l'arrête ; null si la voie est libre.
+  function premierImpact(x, i) {
+    var c = centre(i), meilleur = null;
+    barres.forEach(function (r) { var t = coupe(x, CY, c.x, FINY, r); if (t !== null && (meilleur === null || t < meilleur)) meilleur = t; });
+    return meilleur;
+  }
+  function libre(x, i) { return Math.abs(Math.atan2(centre(i).x - x, CY - FINY)) <= 1.2 && premierImpact(x, i) === null; }
+  // Un amas est atteignable s'il existe 8 positions voisines du canon (42 px) d'où le tir est libre.
+  function atteignable(i) {
+    var suite = 0;
+    for (var x = CXMIN; x <= CXMAX; x += 6) { suite = libre(x, i) ? suite + 1 : 0; if (suite >= 8) return true; }
+    return false;
+  }
+  function barresDuNiveau() {
+    if (niveau === 2) return [{ x: W * 0.375, y: CY - 202, w: W * 0.25, h: 26 }];
+    if (niveau === 3) return [{ x: W * 0.12, y: CY - 202, w: W * 0.28, h: 26 }, { x: W * 0.6, y: CY - 150, w: W * 0.28, h: 26 }];
+    return [];
+  }
+  function securiser() {
+    var base = barresDuNiveau(), facteur = 1;
+    for (var essai = 0; essai < 12; essai++) {
+      barres = base.map(function (b) { var w = b.w * facteur; return { x: b.x + (b.w - w) / 2, y: b.y, w: w, h: b.h }; });
+      var tous = true;
+      for (var i = 0; i < n; i++) if (!atteignable(i)) tous = false;
+      if (tous) return;
+      facteur *= 0.8;
+    }
+    barres = [];
+  }
+  function dessinerBarres() {
+    barres.forEach(function (r) {
+      ctx.save(); ctx.fillStyle = 'rgba(0,0,0,0.38)'; ctx.fillRect(r.x + 4, r.y + 4, r.w, r.h);
+      ctx.fillStyle = '#f6be2c'; ctx.fillRect(r.x, r.y, r.w, r.h);
+      ctx.beginPath(); ctx.rect(r.x, r.y, r.w, r.h); ctx.clip(); ctx.strokeStyle = '#161616'; ctx.lineWidth = 8;
+      for (var k = -r.h; k < r.w + r.h; k += 22) { ctx.beginPath(); ctx.moveTo(r.x + k, r.y + r.h); ctx.lineTo(r.x + k + r.h, r.y); ctx.stroke(); }
+      ctx.restore();
+      ctx.save(); ctx.strokeStyle = '#161616'; ctx.lineWidth = 4; ctx.strokeRect(r.x, r.y, r.w, r.h); ctx.restore();
+    });
+  }
 
   // Position de chaque amas : centres répartis en largeur.
   function centre(i) { return { x: (W / (n + 1)) * (i + 1), y: 175 }; }
@@ -186,7 +255,7 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
     ctx.fillStyle = calme ? '#ffffff' : '#fbf6e9'; ctx.fillRect(0, 0, W, H);
     if (!calme) { // décor : rayons discrets
       ctx.save(); ctx.globalAlpha = 0.18; ctx.fillStyle = '#f6be2c';
-      for (var r = 0; r < 14; r++) { ctx.beginPath(); ctx.moveTo(CX, CY); ctx.arc(CX, CY, 900, -Math.PI + r * 0.24, -Math.PI + r * 0.24 + 0.12); ctx.closePath(); ctx.fill(); }
+      for (var r = 0; r < 14; r++) { ctx.beginPath(); ctx.moveTo(cx, CY); ctx.arc(cx, CY, 900, -Math.PI + r * 0.24, -Math.PI + r * 0.24 + 0.12); ctx.closePath(); ctx.fill(); }
       ctx.restore();
     }
     // Amas et plaques
@@ -206,45 +275,58 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
       place[i].forEach(function (t, k) { texteCentre(t, c.x, 300 + k * 26, 220, 18); });
       if (i === cible) { ctx.save(); ctx.strokeStyle = '#e8412a'; ctx.lineWidth = 4; ctx.setLineDash([2, 8]); ctx.lineCap = 'round'; ctx.beginPath(); ctx.arc(c.x, 175, 4 * R + 4, 0, 6.2832); ctx.stroke(); ctx.restore(); }
     }
-    // visée pointillée
+    dessinerBarres();
+    // visée pointillée ; aux niveaux 2 et 3, elle s'arrête sur la barre, marquée d'une croix
     if (!vol && pos < file.length) {
       ctx.save(); ctx.strokeStyle = '#161616'; ctx.lineWidth = 4; ctx.setLineDash([2, 12]); ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(CX, CY); ctx.lineTo(CX + Math.sin(angle) * 430, CY - Math.cos(angle) * 430); ctx.stroke(); ctx.restore();
+      if (niveau === 1) {
+        ctx.beginPath(); ctx.moveTo(cx, CY); ctx.lineTo(cx + Math.sin(angle) * 430, CY - Math.cos(angle) * 430); ctx.stroke();
+      } else {
+        var cc = centre(cible), ti = premierImpact(cx, cible), tt = ti === null ? 1 : ti, ex = cx + (cc.x - cx) * tt, ey = CY + (FINY - CY) * tt;
+        ctx.beginPath(); ctx.moveTo(cx, CY); ctx.lineTo(ex, ey); ctx.stroke();
+        if (ti !== null) {
+          ctx.setLineDash([]); ctx.lineCap = 'butt';
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 12; ctx.beginPath(); ctx.moveTo(ex - 12, ey - 12); ctx.lineTo(ex + 12, ey + 12); ctx.moveTo(ex + 12, ey - 12); ctx.lineTo(ex - 12, ey + 12); ctx.stroke();
+          ctx.strokeStyle = '#161616'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(ex - 12, ey - 12); ctx.lineTo(ex + 12, ey + 12); ctx.moveTo(ex + 12, ey - 12); ctx.lineTo(ex - 12, ey + 12); ctx.stroke();
+        }
+      }
+      ctx.restore();
     }
     dessinerFeux();
     // canon
-    ctx.save(); ctx.translate(CX, CY); ctx.rotate(angle);
+    ctx.save(); ctx.translate(cx, CY); ctx.rotate(angle);
     ctx.fillStyle = '#161616'; ctx.strokeStyle = '#161616'; ctx.fillRect(-26, -90, 52, 90);
     ctx.fillStyle = '#1f8a8c'; ctx.fillRect(-26, -90, 52, 20); ctx.strokeRect(-26, -90, 52, 90);
     ctx.restore();
-    ctx.fillStyle = '#161616'; ctx.beginPath(); ctx.arc(CX, CY + 20, 70, Math.PI, 0); ctx.fill();
-    ctx.fillStyle = '#f6be2c'; ctx.fillRect(CX - 70, CY + 20, 140, 36); ctx.strokeStyle = '#161616'; ctx.lineWidth = 3; ctx.strokeRect(CX - 70, CY + 20, 140, 36);
+    ctx.fillStyle = '#161616'; ctx.beginPath(); ctx.arc(cx, CY + 20, 70, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = '#f6be2c'; ctx.fillRect(cx - 70, CY + 20, 140, 36); ctx.strokeStyle = '#161616'; ctx.lineWidth = 3; ctx.strokeRect(cx - 70, CY + 20, 140, 36);
     // bulle chargée ou en vol
     if (pos < file.length) {
-      var L = file[pos].aff.length, br0 = L <= 12 ? 52 : (L <= 30 ? 70 : 88), bx = CX, by = CY, br = br0;
-      if (vol) { bx = vol.x; by = vol.y; br = br0 - 20 * vol.t; }
+      var L = file[pos].aff.length, br0 = L <= 12 ? 52 : (L <= 30 ? 70 : 88), bx = cx, by = CY, br = br0;
+      if (vol) { bx = vol.x; by = vol.y; br = niveau === 1 ? br0 - 20 * vol.t : br0 - (br0 - 24) * Math.min(1, vol.t * 4); }
       ctx.save(); ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#161616'; ctx.lineWidth = 4;
       ctx.beginPath(); ctx.arc(bx, by, br, 0, 6.2832); ctx.fill(); ctx.stroke(); ctx.restore();
       texteCentre(file[pos].aff, bx, by, br * 1.7, 20);
     }
   }
 
-  function viserVers(i) { cible = i; var c = centre(i); angle = Math.atan2(c.x - CX, CY - c.y); dessiner(); }
+  function viserVers(i) { cible = i; var c = centre(i); angle = niveau > 1 ? angleVers(i) : Math.atan2(c.x - cx, CY - c.y); dessiner(); }
   function viserPointeur(ev) {
     var r = cv.getBoundingClientRect(), x = (ev.clientX - r.left) * W / r.width, y = (ev.clientY - r.top) * H / r.height;
-    angle = Math.max(-1.2, Math.min(1.2, Math.atan2(x - CX, CY - y)));
+    angle = Math.max(-1.2, Math.min(1.2, Math.atan2(x - cx, CY - y)));
     var best = 0, bd = 1e9;
-    for (var i = 0; i < n; i++) { var c = centre(i), d = Math.abs((c.x - CX) * Math.cos(angle) + (c.y - CY) * Math.sin(angle)); if (d < bd) { bd = d; best = i; } }
-    cible = best; dessiner();
+    for (var i = 0; i < n; i++) { var c = centre(i), d = Math.abs((c.x - cx) * Math.cos(angle) + (c.y - CY) * Math.sin(angle)); if (d < bd) { bd = d; best = i; } }
+    cible = best; if (niveau > 1) angle = angleVers(best); dessiner();
   }
 
   function tirer() {
     if (vol || pos >= file.length) return;
     if (cible === ecartee) { message('Ce groupe est écarté par l\'indice. Viser un autre groupe.', true); return; }
+    if (niveau > 1 && !libre(cx, cible)) { message('Une barre bloque le tir. Déplacer le canon, puis tirer.', true); return; }
     var e = file[pos], c = centre(cible), ok = (e.famille === cible);
     var fin = { x: c.x, y: 175 + 95 };
     if (calme) { resultat(ok, e); return; }
-    vol = { x: CX, y: CY, t: 0, de: { x: CX, y: CY }, vers: fin, retour: !ok, ok: ok, e: e };
+    vol = { x: cx, y: CY, t: 0, de: { x: cx, y: CY }, vers: fin, retour: !ok, ok: ok, e: e };
     avancer();
   }
   function avancer() {
@@ -282,9 +364,51 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
     indiceUtilise = true; this.disabled = true; message('Indice : un groupe est écarté. Choisir parmi les autres.'); dessiner();
   });
 
-  cv.addEventListener('pointermove', function (ev) { if (!vol) viserPointeur(ev); });
-  cv.addEventListener('click', function (ev) { viserPointeur(ev); tirer(); });
+  function deplacerCanonVers(x) { cx = Math.max(CXMIN, Math.min(CXMAX, x)); if (niveau > 1) angle = angleVers(cible); dessiner(); }
+  // « Placer le canon » : va à la position libre la plus proche pour l'amas visé (aide, sans limite d'usage).
+  function placerCanon() {
+    if (niveau < 2 || vol || pos >= file.length) return;
+    var meilleur = null;
+    for (var x = CXMIN; x <= CXMAX; x += 6) {
+      if (libre(x, cible) && libre(x - 12, cible) && libre(x + 12, cible) && (meilleur === null || Math.abs(x - cx) < Math.abs(meilleur - cx))) meilleur = x;
+    }
+    if (meilleur === null) { message('Aucune place libre pour ce groupe. Choisir un autre groupe.', true); return; }
+    deplacerCanonVers(meilleur); message('Canon placé : la ligne pointillée est libre. Tirer.');
+  }
+  function pointX(ev) { var r = cv.getBoundingClientRect(); return (ev.clientX - r.left) * W / r.width; }
+  function pointY(ev) { var r = cv.getBoundingClientRect(); return (ev.clientY - r.top) * H / r.height; }
+  cv.addEventListener('pointerdown', function (ev) {
+    if (niveau < 2 || vol) return;
+    if (pointY(ev) > CY - 30 && Math.abs(pointX(ev) - cx) < 90) { glisse = true; deplace = false; }
+  });
+  cv.addEventListener('pointermove', function (ev) {
+    if (vol) return;
+    if (glisse) { deplace = true; deplacerCanonVers(pointX(ev)); return; }
+    viserPointeur(ev);
+  });
+  function finGlisse() { if (glisse && deplace) ignorerClic = true; glisse = false; }
+  cv.addEventListener('pointerup', finGlisse); cv.addEventListener('pointercancel', finGlisse);
+  cv.addEventListener('click', function (ev) { if (ignorerClic) { ignorerClic = false; return; } viserPointeur(ev); tirer(); });
+  document.getElementById('canon-gauche').addEventListener('click', function () { deplacerCanonVers(cx - PAS_CANON); });
+  document.getElementById('canon-droite').addEventListener('click', function () { deplacerCanonVers(cx + PAS_CANON); });
+  document.getElementById('placer').addEventListener('click', placerCanon);
+  function appliquerNiveau() {
+    H = niveau === 1 ? 680 : 800; CY = H - 90; cv.height = H;
+    cx = niveau === 1 ? W / 2 : Math.max(CXMIN, Math.min(CXMAX, cx));
+    securiser();
+    [1, 2, 3].forEach(function (k) { document.getElementById('niveau-' + k).setAttribute('aria-pressed', String(k === niveau)); });
+    ['canon-gauche', 'canon-droite', 'placer'].forEach(function (id) { document.getElementById(id).hidden = niveau === 1; });
+    cv.setAttribute('aria-label', 'Terrain de tir. Flèches gauche et droite : changer de groupe. Entrée : tirer.' + (niveau === 1 ? '' : ' Maj et flèches : déplacer le canon.'));
+    if (file) { viserVers(cible); }
+  }
+  function choisirNiveau(k) {
+    if (vol || k === niveau) return;
+    niveau = k; appliquerNiveau();
+    message(k === 1 ? 'Niveau 1 : pas de barre.' : 'Niveau ' + k + ' : les barres bloquent certains tirs. Déplacer le canon pour que la ligne pointillée soit libre.');
+  }
+  [1, 2, 3].forEach(function (k) { document.getElementById('niveau-' + k).addEventListener('click', function () { choisirNiveau(k); }); });
   cv.addEventListener('keydown', function (ev) {
+    if (niveau > 1 && ev.shiftKey && (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight')) { if (!vol) deplacerCanonVers(cx + (ev.key === 'ArrowLeft' ? -PAS_CANON : PAS_CANON)); ev.preventDefault(); return; }
     if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') { viserVers((cible + 1) % n); ev.preventDefault(); }
     else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') { viserVers((cible + n - 1) % n); ev.preventDefault(); }
     else if (ev.key === 'Enter' || ev.key === ' ') { tirer(); ev.preventDefault(); }
@@ -314,6 +438,7 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
   }
   document.getElementById('rejouer').addEventListener('click', demarrer);
   basculerCalme(calme);
+  appliquerNiveau();
   demarrer();
 })();
 </script>
@@ -357,15 +482,18 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
   <h1>Casse-briques</h1>
   <div class="panneau consignes">
     <p>Lire la consigne.</p>
-    <p>Envoyer la balle sur la bonne brique.</p>
+    <p>Orienter la flèche vers la bonne brique.</p>
+    <p>Lancer la balle.</p>
   </div>
   <div class="barre">
     <button type="button" id="calme" aria-pressed="false">Mode calme : désactivé</button>
     <button type="button" id="pas" aria-pressed="false">Mode pas à pas : désactivé</button>
     <button type="button" id="ecouter">Écouter</button>
     <button type="button" id="indice">Indice</button>
+    <button type="button" id="fleche-gauche">Flèche à gauche</button>
+    <button type="button" id="fleche-droite">Flèche à droite</button>
   </div>
-  <canvas id="terrain" width="720" height="620" tabindex="0" aria-label="Terrain. Mode balle : flèches gauche et droite pour la raquette, espace pour lancer. Mode pas à pas : flèches pour choisir une brique, Entrée pour la casser."></canvas>
+  <canvas id="terrain" width="720" height="620" tabindex="0" aria-label="Terrain. Mode balle : flèches gauche et droite pour la raquette, Maj et flèches pour tourner la flèche de direction, espace pour lancer. Mode pas à pas : flèches pour choisir une brique, Entrée pour la casser."></canvas>
   <div id="retour" role="status" aria-live="polite"></div>
   <div class="panneau fin" id="fin" hidden>
     <h2>Toutes les consignes sont jouées.</h2>
@@ -390,6 +518,7 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
   var briques, tour, sel, indiceBrique, raf = 0, px = W / 2;
   var balle = { x: 0, y: 0, vx: 0, vy: 0, enJeu: false };
   var calme = false, pas = false;
+  var VIT = 6.7, ANGMAX = Math.PI / 3, PAS_ANG = 0.1, LONG = 90, ang = 0, glisse = false, deplace = false, ignorerClic = false;
 
   function melange(a) { var b = a.slice(); for (var i = b.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = b[i]; b[i] = b[j]; b[j] = t; } return b; }
   function echapper(s) { return s.replace(/[.*+?^(){}|[\]\\$]/g, '\\$&'); }
@@ -427,7 +556,49 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
     lignes.forEach(function (l, i) { ctx.fillText(l, x, y + (i - (lignes.length - 1) / 2) * taille * 1.25); });
   }
 
+  // Flèche de direction : part de la balle posée sur la raquette ; la balle partira exactement dans cette direction.
+  function fleche() {
+    if (!modeBalle() || balle.enJeu) return null;
+    var x1 = px, y1 = PY - R - 2;
+    return { x1: x1, y1: y1, x2: x1 + Math.sin(ang) * LONG, y2: y1 - Math.cos(ang) * LONG };
+  }
+  // Premier obstacle sur le trajet de la flèche (mur ou brique non cassée) : le trait pointillé s'y arrête.
+  function impact() {
+    var dx = Math.sin(ang), dy = -Math.cos(ang), x = px, y = PY - R - 2;
+    for (var k = 0; k < 600; k++) {
+      x += dx * 3; y += dy * 3;
+      if (x <= R) { return { x: R, y: y }; }
+      if (x >= W - R) { return { x: W - R, y: y }; }
+      if (y <= R) { return { x: x, y: R }; }
+      for (var i = 0; i < briques.length; i++) {
+        var b = briques[i];
+        if (!b.cassee && x > b.x - R && x < b.x + BW + R && y > b.y - R && y < b.y + BH + R) { return { x: x, y: y }; }
+      }
+    }
+    return { x: x, y: y };
+  }
+  function tourner(d) { ang = Math.max(-ANGMAX, Math.min(ANGMAX, ang + d)); dessiner(); }
+  function majBoutons() {
+    var visible = modeBalle() && !balle.enJeu;
+    document.getElementById('fleche-gauche').hidden = !visible; document.getElementById('fleche-droite').hidden = !visible;
+  }
+  function dessinerFleche() {
+    var f = fleche(); if (!f) return;
+    var p = impact();
+    ctx.save(); ctx.strokeStyle = '#161616'; ctx.lineWidth = 4; ctx.setLineDash([2, 12]); ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(f.x2, f.y2); ctx.lineTo(p.x, p.y); ctx.stroke(); ctx.restore();
+    var a = Math.atan2(f.x2 - f.x1, f.y1 - f.y2), tx = f.x2, ty = f.y2, sa = Math.sin(a), ca = Math.cos(a);
+    ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(f.x1, f.y1); ctx.lineTo(tx - sa * 14, ty + ca * 14);
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 14; ctx.stroke(); ctx.strokeStyle = '#161616'; ctx.lineWidth = 8; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(tx + sa * 10, ty - ca * 10);
+    ctx.lineTo(tx - sa * 16 + ca * 16, ty + ca * 16 + sa * 16);
+    ctx.lineTo(tx - sa * 16 - ca * 16, ty + ca * 16 - sa * 16); ctx.closePath();
+    ctx.fillStyle = '#161616'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.fill(); ctx.stroke(); ctx.restore();
+  }
+
   function dessiner() {
+    majBoutons();
     ctx.fillStyle = calme ? '#ffffff' : '#fbf6e9'; ctx.fillRect(0, 0, W, H);
     if (!calme) { ctx.save(); ctx.globalAlpha = 0.16; ctx.fillStyle = '#f6be2c'; for (var r = 0; r < 14; r++) { ctx.beginPath(); ctx.moveTo(W / 2, PY); ctx.arc(W / 2, PY, 900, -Math.PI + r * 0.24, -Math.PI + r * 0.24 + 0.12); ctx.closePath(); ctx.fill(); } ctx.restore(); }
     // bannière de consigne
@@ -452,6 +623,7 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
       var bx = balle.enJeu ? balle.x : px, by = balle.enJeu ? balle.y : PY - R - 2;
       ctx.fillStyle = '#ffffff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(bx, by, R, 0, 6.2832); ctx.fill(); ctx.stroke();
       ctx.fillStyle = '#e8412a'; ctx.beginPath(); ctx.arc(bx + 3, by + 3, R * 0.45, 0, 6.2832); ctx.fill();
+      dessinerFleche();
     }
     dessinerFeux();
   }
@@ -490,7 +662,7 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
       dessiner(); boucle();
     });
   }
-  function lancer() { if (balle.enJeu || tour >= DONNEES.familles.length || !modeBalle()) return; balle.enJeu = true; balle.x = px; balle.y = PY - R - 2; balle.vx = (Math.random() < 0.5 ? -1 : 1) * 3; balle.vy = -6; boucle(); }
+  function lancer() { if (balle.enJeu || tour >= DONNEES.familles.length || !modeBalle()) return; balle.enJeu = true; balle.x = px; balle.y = PY - R - 2; balle.vx = Math.sin(ang) * VIT; balle.vy = -Math.cos(ang) * VIT; boucle(); }
 
   function terminer() {
     var recap = document.getElementById('recap'); recap.textContent = '';
@@ -504,17 +676,34 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
     $indice.disabled = true; message('Indice : une brique de cette famille est entourée de tirets.'); dessiner();
   });
 
-  function pointeur(ev) { var r = cv.getBoundingClientRect(); px = Math.max(PW / 2, Math.min(W - PW / 2, (ev.clientX - r.left) * W / r.width)); if (!balle.enJeu) dessiner(); }
-  cv.addEventListener('pointermove', function (ev) { if (modeBalle()) { pointeur(ev); } });
+  function point(ev) { var r = cv.getBoundingClientRect(); return { x: (ev.clientX - r.left) * W / r.width, y: (ev.clientY - r.top) * H / r.height }; }
+  function deplacerRaquette(x) { px = Math.max(PW / 2, Math.min(W - PW / 2, x)); dessiner(); }
+  // Avant le lancer, le pointeur oriente la flèche (limitée à 60 degrés de la verticale) ; la raquette se déplace en la faisant glisser ou avec les flèches. Après le lancer, la raquette suit le pointeur.
+  function viserPointeur(q) { ang = Math.max(-ANGMAX, Math.min(ANGMAX, Math.atan2(q.x - px, PY - R - 2 - q.y))); dessiner(); }
+  cv.addEventListener('pointerdown', function (ev) {
+    var q = point(ev); if (!modeBalle() || balle.enJeu) return;
+    if (q.y > PY - 12 && Math.abs(q.x - px) < PW / 2 + 12) { glisse = true; deplace = false; }
+  });
+  cv.addEventListener('pointermove', function (ev) {
+    if (!modeBalle()) return;
+    var q = point(ev);
+    if (balle.enJeu) { deplacerRaquette(q.x); return; }
+    if (glisse) { deplace = true; deplacerRaquette(q.x); return; }
+    viserPointeur(q);
+  });
+  function finGlisse() { if (glisse && deplace) ignorerClic = true; glisse = false; }
+  cv.addEventListener('pointerup', finGlisse); cv.addEventListener('pointercancel', finGlisse);
   cv.addEventListener('click', function (ev) {
     var r = cv.getBoundingClientRect(), x = (ev.clientX - r.left) * W / r.width, y = (ev.clientY - r.top) * H / r.height;
-    if (modeBalle()) { pointeur(ev); lancer(); return; }
+    if (ignorerClic) { ignorerClic = false; return; }
+    if (modeBalle()) { if (!balle.enJeu) viserPointeur({ x: x, y: y }); lancer(); return; }
     briques.forEach(function (b, i) { if (!b.cassee && x > b.x && x < b.x + BW && y > b.y && y < b.y + BH) { sel = i; viser(i); } });
   });
   cv.addEventListener('keydown', function (ev) {
     if (!$fin.hidden) return;
     if (modeBalle()) {
-      if (ev.key === 'ArrowLeft') { px = Math.max(PW / 2, px - 30); dessiner(); ev.preventDefault(); }
+      if (ev.shiftKey && (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight')) { if (!balle.enJeu) tourner(ev.key === 'ArrowLeft' ? -PAS_ANG : PAS_ANG); ev.preventDefault(); }
+      else if (ev.key === 'ArrowLeft') { px = Math.max(PW / 2, px - 30); dessiner(); ev.preventDefault(); }
       else if (ev.key === 'ArrowRight') { px = Math.min(W - PW / 2, px + 30); dessiner(); ev.preventDefault(); }
       else if (ev.key === ' ' || ev.key === 'Enter') { lancer(); ev.preventDefault(); }
       return;
@@ -526,6 +715,8 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
     else if (ev.key === 'Enter' || ev.key === ' ') { viser(sel); ev.preventDefault(); }
   });
 
+  document.getElementById('fleche-gauche').addEventListener('click', function () { tourner(-PAS_ANG); });
+  document.getElementById('fleche-droite').addEventListener('click', function () { tourner(PAS_ANG); });
   function majMode() { balle.enJeu = false; cancelAnimationFrame(raf); dessiner(); }
   function basculerCalme(actif) {
     calme = actif; if (actif) feux = []; document.body.classList.toggle('calme', actif);
@@ -555,8 +746,8 @@ Pour des familles, reproduire le fichier de référence du mode en entier, sans 
     var lignes = Math.ceil(briques.length / COLS);
     H = Math.max(620, Y0 + lignes * (BH + GAP) + 110); PY = H - 50; cv.height = H;
     briques.forEach(function (b, i) { b.x = X0 + (i % COLS) * (BW + GAP); b.y = Y0 + Math.floor(i / COLS) * (BH + GAP); b.deco = DECO[i % 4]; });
-    tour = 0; sel = 0; indiceBrique = -1; balle.enJeu = false; px = W / 2; $fin.hidden = true; $indice.disabled = false;
-    message('Déplacer la raquette, puis lancer la balle.'); dessiner();
+    tour = 0; sel = 0; indiceBrique = -1; balle.enJeu = false; px = W / 2; ang = 0; $fin.hidden = true; $indice.disabled = false;
+    message('Orienter la flèche vers une brique, puis lancer la balle.'); dessiner();
   }
   document.getElementById('rejouer').addEventListener('click', demarrer);
   basculerCalme(calme);

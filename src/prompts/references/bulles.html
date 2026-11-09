@@ -40,6 +40,16 @@
     <button type="button" id="ecouter">Écouter</button>
     <button type="button" id="indice">Indice</button>
   </div>
+  <div class="barre" role="group" aria-label="Niveau">
+    <button type="button" id="niveau-1" aria-pressed="true">Niveau 1 : sans barre</button>
+    <button type="button" id="niveau-2" aria-pressed="false">Niveau 2 : une barre</button>
+    <button type="button" id="niveau-3" aria-pressed="false">Niveau 3 : deux barres</button>
+  </div>
+  <div class="barre" role="group" aria-label="Canon">
+    <button type="button" id="canon-gauche" hidden>Canon à gauche</button>
+    <button type="button" id="canon-droite" hidden>Canon à droite</button>
+    <button type="button" id="placer" hidden>Placer le canon</button>
+  </div>
   <canvas id="terrain" width="720" height="680" tabindex="0" aria-label="Terrain de tir. Flèches gauche et droite : changer de groupe. Entrée : tirer."></canvas>
   <div id="retour" role="status" aria-live="polite"></div>
   <div class="panneau fin" id="fin" hidden>
@@ -59,12 +69,13 @@
     ]
   };
   var COULEURS = ['#1f8a8c', '#f6be2c', '#e8412a', '#cfe8d5'];
-  var W = 720, H = 680, CX = 360, CY = 590, R = 24;
+  var W = 720, H = 680, cx = 360, CY = 590, R = 24, FINY = 270;
   var cv = document.getElementById('terrain'), ctx = cv.getContext('2d');
   var $retour = document.getElementById('retour'), $indice = document.getElementById('indice'), $fin = document.getElementById('fin');
   var fam = DONNEES.familles, n = fam.length;
   if (n >= 4) R = 17; // quatre familles : bulles plus petites pour ne pas se chevaucher
   var file, pos, erreurs, indiceUtilise, ecartee, place, angle, cible, vol, calme = false;
+  var niveau = 1, barres = [], glisse = false, deplace = false, ignorerClic = false;
 
   function melange(a) { var b = a.slice(); for (var i = b.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = b[i]; b[i] = b[j]; b[j] = t; } return b; }
   function echapper(s) { return s.replace(/[.*+?^(){}|[\]\\$]/g, '\\$&'); }
@@ -92,6 +103,64 @@
     feux.forEach(function (p) { ctx.fillStyle = p.c; ctx.strokeStyle = '#161616'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832); ctx.fill(); ctx.stroke(); });
   }
   function message(t, doux) { $retour.textContent = t; $retour.className = doux ? 'doux' : ''; }
+
+  // Niveaux 2 et 3 : des barres sont posées entre le canon et les amas ; le canon se déplace sur toute la largeur.
+  // Garantie : le jeu vérifie, pour chaque amas, qu'une plage de positions du canon laisse la ligne de tir libre ; sinon les barres sont raccourcies, puis retirées.
+  var CXMIN = 70, CXMAX = 650, MARGE = 24, PAS_CANON = 30;
+  // Fraction du segment (a, b) où il entre dans le rectangle r agrandi de MARGE, ou null s'il ne le touche pas (méthode de Liang-Barsky).
+  function coupe(ax, ay, bx, by, r) {
+    var x0 = r.x - MARGE, x1 = r.x + r.w + MARGE, y0 = r.y - MARGE, y1 = r.y + r.h + MARGE, dx = bx - ax, dy = by - ay, t0 = 0, t1 = 1;
+    var p = [-dx, dx, -dy, dy], q = [ax - x0, x1 - ax, ay - y0, y1 - ay];
+    for (var k = 0; k < 4; k++) {
+      if (p[k] === 0) { if (q[k] < 0) return null; }
+      else {
+        var t = q[k] / p[k];
+        if (p[k] < 0) { if (t > t1) return null; if (t > t0) t0 = t; }
+        else { if (t < t0) return null; if (t < t1) t1 = t; }
+      }
+    }
+    return t0;
+  }
+  function angleVers(i) { return Math.atan2(centre(i).x - cx, CY - FINY); }
+  // Fraction du trajet, du canon placé en x vers l'amas i, où une barre l'arrête ; null si la voie est libre.
+  function premierImpact(x, i) {
+    var c = centre(i), meilleur = null;
+    barres.forEach(function (r) { var t = coupe(x, CY, c.x, FINY, r); if (t !== null && (meilleur === null || t < meilleur)) meilleur = t; });
+    return meilleur;
+  }
+  function libre(x, i) { return Math.abs(Math.atan2(centre(i).x - x, CY - FINY)) <= 1.2 && premierImpact(x, i) === null; }
+  // Un amas est atteignable s'il existe 8 positions voisines du canon (42 px) d'où le tir est libre.
+  function atteignable(i) {
+    var suite = 0;
+    for (var x = CXMIN; x <= CXMAX; x += 6) { suite = libre(x, i) ? suite + 1 : 0; if (suite >= 8) return true; }
+    return false;
+  }
+  function barresDuNiveau() {
+    if (niveau === 2) return [{ x: W * 0.375, y: CY - 202, w: W * 0.25, h: 26 }];
+    if (niveau === 3) return [{ x: W * 0.12, y: CY - 202, w: W * 0.28, h: 26 }, { x: W * 0.6, y: CY - 150, w: W * 0.28, h: 26 }];
+    return [];
+  }
+  function securiser() {
+    var base = barresDuNiveau(), facteur = 1;
+    for (var essai = 0; essai < 12; essai++) {
+      barres = base.map(function (b) { var w = b.w * facteur; return { x: b.x + (b.w - w) / 2, y: b.y, w: w, h: b.h }; });
+      var tous = true;
+      for (var i = 0; i < n; i++) if (!atteignable(i)) tous = false;
+      if (tous) return;
+      facteur *= 0.8;
+    }
+    barres = [];
+  }
+  function dessinerBarres() {
+    barres.forEach(function (r) {
+      ctx.save(); ctx.fillStyle = 'rgba(0,0,0,0.38)'; ctx.fillRect(r.x + 4, r.y + 4, r.w, r.h);
+      ctx.fillStyle = '#f6be2c'; ctx.fillRect(r.x, r.y, r.w, r.h);
+      ctx.beginPath(); ctx.rect(r.x, r.y, r.w, r.h); ctx.clip(); ctx.strokeStyle = '#161616'; ctx.lineWidth = 8;
+      for (var k = -r.h; k < r.w + r.h; k += 22) { ctx.beginPath(); ctx.moveTo(r.x + k, r.y + r.h); ctx.lineTo(r.x + k + r.h, r.y); ctx.stroke(); }
+      ctx.restore();
+      ctx.save(); ctx.strokeStyle = '#161616'; ctx.lineWidth = 4; ctx.strokeRect(r.x, r.y, r.w, r.h); ctx.restore();
+    });
+  }
 
   // Position de chaque amas : centres répartis en largeur.
   function centre(i) { return { x: (W / (n + 1)) * (i + 1), y: 175 }; }
@@ -131,7 +200,7 @@
     ctx.fillStyle = calme ? '#ffffff' : '#fbf6e9'; ctx.fillRect(0, 0, W, H);
     if (!calme) { // décor : rayons discrets
       ctx.save(); ctx.globalAlpha = 0.18; ctx.fillStyle = '#f6be2c';
-      for (var r = 0; r < 14; r++) { ctx.beginPath(); ctx.moveTo(CX, CY); ctx.arc(CX, CY, 900, -Math.PI + r * 0.24, -Math.PI + r * 0.24 + 0.12); ctx.closePath(); ctx.fill(); }
+      for (var r = 0; r < 14; r++) { ctx.beginPath(); ctx.moveTo(cx, CY); ctx.arc(cx, CY, 900, -Math.PI + r * 0.24, -Math.PI + r * 0.24 + 0.12); ctx.closePath(); ctx.fill(); }
       ctx.restore();
     }
     // Amas et plaques
@@ -151,45 +220,58 @@
       place[i].forEach(function (t, k) { texteCentre(t, c.x, 300 + k * 26, 220, 18); });
       if (i === cible) { ctx.save(); ctx.strokeStyle = '#e8412a'; ctx.lineWidth = 4; ctx.setLineDash([2, 8]); ctx.lineCap = 'round'; ctx.beginPath(); ctx.arc(c.x, 175, 4 * R + 4, 0, 6.2832); ctx.stroke(); ctx.restore(); }
     }
-    // visée pointillée
+    dessinerBarres();
+    // visée pointillée ; aux niveaux 2 et 3, elle s'arrête sur la barre, marquée d'une croix
     if (!vol && pos < file.length) {
       ctx.save(); ctx.strokeStyle = '#161616'; ctx.lineWidth = 4; ctx.setLineDash([2, 12]); ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(CX, CY); ctx.lineTo(CX + Math.sin(angle) * 430, CY - Math.cos(angle) * 430); ctx.stroke(); ctx.restore();
+      if (niveau === 1) {
+        ctx.beginPath(); ctx.moveTo(cx, CY); ctx.lineTo(cx + Math.sin(angle) * 430, CY - Math.cos(angle) * 430); ctx.stroke();
+      } else {
+        var cc = centre(cible), ti = premierImpact(cx, cible), tt = ti === null ? 1 : ti, ex = cx + (cc.x - cx) * tt, ey = CY + (FINY - CY) * tt;
+        ctx.beginPath(); ctx.moveTo(cx, CY); ctx.lineTo(ex, ey); ctx.stroke();
+        if (ti !== null) {
+          ctx.setLineDash([]); ctx.lineCap = 'butt';
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 12; ctx.beginPath(); ctx.moveTo(ex - 12, ey - 12); ctx.lineTo(ex + 12, ey + 12); ctx.moveTo(ex + 12, ey - 12); ctx.lineTo(ex - 12, ey + 12); ctx.stroke();
+          ctx.strokeStyle = '#161616'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(ex - 12, ey - 12); ctx.lineTo(ex + 12, ey + 12); ctx.moveTo(ex + 12, ey - 12); ctx.lineTo(ex - 12, ey + 12); ctx.stroke();
+        }
+      }
+      ctx.restore();
     }
     dessinerFeux();
     // canon
-    ctx.save(); ctx.translate(CX, CY); ctx.rotate(angle);
+    ctx.save(); ctx.translate(cx, CY); ctx.rotate(angle);
     ctx.fillStyle = '#161616'; ctx.strokeStyle = '#161616'; ctx.fillRect(-26, -90, 52, 90);
     ctx.fillStyle = '#1f8a8c'; ctx.fillRect(-26, -90, 52, 20); ctx.strokeRect(-26, -90, 52, 90);
     ctx.restore();
-    ctx.fillStyle = '#161616'; ctx.beginPath(); ctx.arc(CX, CY + 20, 70, Math.PI, 0); ctx.fill();
-    ctx.fillStyle = '#f6be2c'; ctx.fillRect(CX - 70, CY + 20, 140, 36); ctx.strokeStyle = '#161616'; ctx.lineWidth = 3; ctx.strokeRect(CX - 70, CY + 20, 140, 36);
+    ctx.fillStyle = '#161616'; ctx.beginPath(); ctx.arc(cx, CY + 20, 70, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = '#f6be2c'; ctx.fillRect(cx - 70, CY + 20, 140, 36); ctx.strokeStyle = '#161616'; ctx.lineWidth = 3; ctx.strokeRect(cx - 70, CY + 20, 140, 36);
     // bulle chargée ou en vol
     if (pos < file.length) {
-      var L = file[pos].aff.length, br0 = L <= 12 ? 52 : (L <= 30 ? 70 : 88), bx = CX, by = CY, br = br0;
-      if (vol) { bx = vol.x; by = vol.y; br = br0 - 20 * vol.t; }
+      var L = file[pos].aff.length, br0 = L <= 12 ? 52 : (L <= 30 ? 70 : 88), bx = cx, by = CY, br = br0;
+      if (vol) { bx = vol.x; by = vol.y; br = niveau === 1 ? br0 - 20 * vol.t : br0 - (br0 - 24) * Math.min(1, vol.t * 4); }
       ctx.save(); ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#161616'; ctx.lineWidth = 4;
       ctx.beginPath(); ctx.arc(bx, by, br, 0, 6.2832); ctx.fill(); ctx.stroke(); ctx.restore();
       texteCentre(file[pos].aff, bx, by, br * 1.7, 20);
     }
   }
 
-  function viserVers(i) { cible = i; var c = centre(i); angle = Math.atan2(c.x - CX, CY - c.y); dessiner(); }
+  function viserVers(i) { cible = i; var c = centre(i); angle = niveau > 1 ? angleVers(i) : Math.atan2(c.x - cx, CY - c.y); dessiner(); }
   function viserPointeur(ev) {
     var r = cv.getBoundingClientRect(), x = (ev.clientX - r.left) * W / r.width, y = (ev.clientY - r.top) * H / r.height;
-    angle = Math.max(-1.2, Math.min(1.2, Math.atan2(x - CX, CY - y)));
+    angle = Math.max(-1.2, Math.min(1.2, Math.atan2(x - cx, CY - y)));
     var best = 0, bd = 1e9;
-    for (var i = 0; i < n; i++) { var c = centre(i), d = Math.abs((c.x - CX) * Math.cos(angle) + (c.y - CY) * Math.sin(angle)); if (d < bd) { bd = d; best = i; } }
-    cible = best; dessiner();
+    for (var i = 0; i < n; i++) { var c = centre(i), d = Math.abs((c.x - cx) * Math.cos(angle) + (c.y - CY) * Math.sin(angle)); if (d < bd) { bd = d; best = i; } }
+    cible = best; if (niveau > 1) angle = angleVers(best); dessiner();
   }
 
   function tirer() {
     if (vol || pos >= file.length) return;
     if (cible === ecartee) { message('Ce groupe est écarté par l\'indice. Viser un autre groupe.', true); return; }
+    if (niveau > 1 && !libre(cx, cible)) { message('Une barre bloque le tir. Déplacer le canon, puis tirer.', true); return; }
     var e = file[pos], c = centre(cible), ok = (e.famille === cible);
     var fin = { x: c.x, y: 175 + 95 };
     if (calme) { resultat(ok, e); return; }
-    vol = { x: CX, y: CY, t: 0, de: { x: CX, y: CY }, vers: fin, retour: !ok, ok: ok, e: e };
+    vol = { x: cx, y: CY, t: 0, de: { x: cx, y: CY }, vers: fin, retour: !ok, ok: ok, e: e };
     avancer();
   }
   function avancer() {
@@ -227,9 +309,51 @@
     indiceUtilise = true; this.disabled = true; message('Indice : un groupe est écarté. Choisir parmi les autres.'); dessiner();
   });
 
-  cv.addEventListener('pointermove', function (ev) { if (!vol) viserPointeur(ev); });
-  cv.addEventListener('click', function (ev) { viserPointeur(ev); tirer(); });
+  function deplacerCanonVers(x) { cx = Math.max(CXMIN, Math.min(CXMAX, x)); if (niveau > 1) angle = angleVers(cible); dessiner(); }
+  // « Placer le canon » : va à la position libre la plus proche pour l'amas visé (aide, sans limite d'usage).
+  function placerCanon() {
+    if (niveau < 2 || vol || pos >= file.length) return;
+    var meilleur = null;
+    for (var x = CXMIN; x <= CXMAX; x += 6) {
+      if (libre(x, cible) && libre(x - 12, cible) && libre(x + 12, cible) && (meilleur === null || Math.abs(x - cx) < Math.abs(meilleur - cx))) meilleur = x;
+    }
+    if (meilleur === null) { message('Aucune place libre pour ce groupe. Choisir un autre groupe.', true); return; }
+    deplacerCanonVers(meilleur); message('Canon placé : la ligne pointillée est libre. Tirer.');
+  }
+  function pointX(ev) { var r = cv.getBoundingClientRect(); return (ev.clientX - r.left) * W / r.width; }
+  function pointY(ev) { var r = cv.getBoundingClientRect(); return (ev.clientY - r.top) * H / r.height; }
+  cv.addEventListener('pointerdown', function (ev) {
+    if (niveau < 2 || vol) return;
+    if (pointY(ev) > CY - 30 && Math.abs(pointX(ev) - cx) < 90) { glisse = true; deplace = false; }
+  });
+  cv.addEventListener('pointermove', function (ev) {
+    if (vol) return;
+    if (glisse) { deplace = true; deplacerCanonVers(pointX(ev)); return; }
+    viserPointeur(ev);
+  });
+  function finGlisse() { if (glisse && deplace) ignorerClic = true; glisse = false; }
+  cv.addEventListener('pointerup', finGlisse); cv.addEventListener('pointercancel', finGlisse);
+  cv.addEventListener('click', function (ev) { if (ignorerClic) { ignorerClic = false; return; } viserPointeur(ev); tirer(); });
+  document.getElementById('canon-gauche').addEventListener('click', function () { deplacerCanonVers(cx - PAS_CANON); });
+  document.getElementById('canon-droite').addEventListener('click', function () { deplacerCanonVers(cx + PAS_CANON); });
+  document.getElementById('placer').addEventListener('click', placerCanon);
+  function appliquerNiveau() {
+    H = niveau === 1 ? 680 : 800; CY = H - 90; cv.height = H;
+    cx = niveau === 1 ? W / 2 : Math.max(CXMIN, Math.min(CXMAX, cx));
+    securiser();
+    [1, 2, 3].forEach(function (k) { document.getElementById('niveau-' + k).setAttribute('aria-pressed', String(k === niveau)); });
+    ['canon-gauche', 'canon-droite', 'placer'].forEach(function (id) { document.getElementById(id).hidden = niveau === 1; });
+    cv.setAttribute('aria-label', 'Terrain de tir. Flèches gauche et droite : changer de groupe. Entrée : tirer.' + (niveau === 1 ? '' : ' Maj et flèches : déplacer le canon.'));
+    if (file) { viserVers(cible); }
+  }
+  function choisirNiveau(k) {
+    if (vol || k === niveau) return;
+    niveau = k; appliquerNiveau();
+    message(k === 1 ? 'Niveau 1 : pas de barre.' : 'Niveau ' + k + ' : les barres bloquent certains tirs. Déplacer le canon pour que la ligne pointillée soit libre.');
+  }
+  [1, 2, 3].forEach(function (k) { document.getElementById('niveau-' + k).addEventListener('click', function () { choisirNiveau(k); }); });
   cv.addEventListener('keydown', function (ev) {
+    if (niveau > 1 && ev.shiftKey && (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight')) { if (!vol) deplacerCanonVers(cx + (ev.key === 'ArrowLeft' ? -PAS_CANON : PAS_CANON)); ev.preventDefault(); return; }
     if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') { viserVers((cible + 1) % n); ev.preventDefault(); }
     else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') { viserVers((cible + n - 1) % n); ev.preventDefault(); }
     else if (ev.key === 'Enter' || ev.key === ' ') { tirer(); ev.preventDefault(); }
@@ -259,6 +383,7 @@
   }
   document.getElementById('rejouer').addEventListener('click', demarrer);
   basculerCalme(calme);
+  appliquerNiveau();
   demarrer();
 })();
 </script>

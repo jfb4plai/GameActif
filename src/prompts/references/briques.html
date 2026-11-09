@@ -31,15 +31,18 @@
   <h1>Casse-briques</h1>
   <div class="panneau consignes">
     <p>Lire la consigne.</p>
-    <p>Envoyer la balle sur la bonne brique.</p>
+    <p>Orienter la flèche vers la bonne brique.</p>
+    <p>Lancer la balle.</p>
   </div>
   <div class="barre">
     <button type="button" id="calme" aria-pressed="false">Mode calme : désactivé</button>
     <button type="button" id="pas" aria-pressed="false">Mode pas à pas : désactivé</button>
     <button type="button" id="ecouter">Écouter</button>
     <button type="button" id="indice">Indice</button>
+    <button type="button" id="fleche-gauche">Flèche à gauche</button>
+    <button type="button" id="fleche-droite">Flèche à droite</button>
   </div>
-  <canvas id="terrain" width="720" height="620" tabindex="0" aria-label="Terrain. Mode balle : flèches gauche et droite pour la raquette, espace pour lancer. Mode pas à pas : flèches pour choisir une brique, Entrée pour la casser."></canvas>
+  <canvas id="terrain" width="720" height="620" tabindex="0" aria-label="Terrain. Mode balle : flèches gauche et droite pour la raquette, Maj et flèches pour tourner la flèche de direction, espace pour lancer. Mode pas à pas : flèches pour choisir une brique, Entrée pour la casser."></canvas>
   <div id="retour" role="status" aria-live="polite"></div>
   <div class="panneau fin" id="fin" hidden>
     <h2>Toutes les consignes sont jouées.</h2>
@@ -64,6 +67,7 @@
   var briques, tour, sel, indiceBrique, raf = 0, px = W / 2;
   var balle = { x: 0, y: 0, vx: 0, vy: 0, enJeu: false };
   var calme = false, pas = false;
+  var VIT = 6.7, ANGMAX = Math.PI / 3, PAS_ANG = 0.1, LONG = 90, ang = 0, glisse = false, deplace = false, ignorerClic = false;
 
   function melange(a) { var b = a.slice(); for (var i = b.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = b[i]; b[i] = b[j]; b[j] = t; } return b; }
   function echapper(s) { return s.replace(/[.*+?^(){}|[\]\\$]/g, '\\$&'); }
@@ -101,7 +105,49 @@
     lignes.forEach(function (l, i) { ctx.fillText(l, x, y + (i - (lignes.length - 1) / 2) * taille * 1.25); });
   }
 
+  // Flèche de direction : part de la balle posée sur la raquette ; la balle partira exactement dans cette direction.
+  function fleche() {
+    if (!modeBalle() || balle.enJeu) return null;
+    var x1 = px, y1 = PY - R - 2;
+    return { x1: x1, y1: y1, x2: x1 + Math.sin(ang) * LONG, y2: y1 - Math.cos(ang) * LONG };
+  }
+  // Premier obstacle sur le trajet de la flèche (mur ou brique non cassée) : le trait pointillé s'y arrête.
+  function impact() {
+    var dx = Math.sin(ang), dy = -Math.cos(ang), x = px, y = PY - R - 2;
+    for (var k = 0; k < 600; k++) {
+      x += dx * 3; y += dy * 3;
+      if (x <= R) { return { x: R, y: y }; }
+      if (x >= W - R) { return { x: W - R, y: y }; }
+      if (y <= R) { return { x: x, y: R }; }
+      for (var i = 0; i < briques.length; i++) {
+        var b = briques[i];
+        if (!b.cassee && x > b.x - R && x < b.x + BW + R && y > b.y - R && y < b.y + BH + R) { return { x: x, y: y }; }
+      }
+    }
+    return { x: x, y: y };
+  }
+  function tourner(d) { ang = Math.max(-ANGMAX, Math.min(ANGMAX, ang + d)); dessiner(); }
+  function majBoutons() {
+    var visible = modeBalle() && !balle.enJeu;
+    document.getElementById('fleche-gauche').hidden = !visible; document.getElementById('fleche-droite').hidden = !visible;
+  }
+  function dessinerFleche() {
+    var f = fleche(); if (!f) return;
+    var p = impact();
+    ctx.save(); ctx.strokeStyle = '#161616'; ctx.lineWidth = 4; ctx.setLineDash([2, 12]); ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(f.x2, f.y2); ctx.lineTo(p.x, p.y); ctx.stroke(); ctx.restore();
+    var a = Math.atan2(f.x2 - f.x1, f.y1 - f.y2), tx = f.x2, ty = f.y2, sa = Math.sin(a), ca = Math.cos(a);
+    ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(f.x1, f.y1); ctx.lineTo(tx - sa * 14, ty + ca * 14);
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 14; ctx.stroke(); ctx.strokeStyle = '#161616'; ctx.lineWidth = 8; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(tx + sa * 10, ty - ca * 10);
+    ctx.lineTo(tx - sa * 16 + ca * 16, ty + ca * 16 + sa * 16);
+    ctx.lineTo(tx - sa * 16 - ca * 16, ty + ca * 16 - sa * 16); ctx.closePath();
+    ctx.fillStyle = '#161616'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.fill(); ctx.stroke(); ctx.restore();
+  }
+
   function dessiner() {
+    majBoutons();
     ctx.fillStyle = calme ? '#ffffff' : '#fbf6e9'; ctx.fillRect(0, 0, W, H);
     if (!calme) { ctx.save(); ctx.globalAlpha = 0.16; ctx.fillStyle = '#f6be2c'; for (var r = 0; r < 14; r++) { ctx.beginPath(); ctx.moveTo(W / 2, PY); ctx.arc(W / 2, PY, 900, -Math.PI + r * 0.24, -Math.PI + r * 0.24 + 0.12); ctx.closePath(); ctx.fill(); } ctx.restore(); }
     // bannière de consigne
@@ -126,6 +172,7 @@
       var bx = balle.enJeu ? balle.x : px, by = balle.enJeu ? balle.y : PY - R - 2;
       ctx.fillStyle = '#ffffff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(bx, by, R, 0, 6.2832); ctx.fill(); ctx.stroke();
       ctx.fillStyle = '#e8412a'; ctx.beginPath(); ctx.arc(bx + 3, by + 3, R * 0.45, 0, 6.2832); ctx.fill();
+      dessinerFleche();
     }
     dessinerFeux();
   }
@@ -164,7 +211,7 @@
       dessiner(); boucle();
     });
   }
-  function lancer() { if (balle.enJeu || tour >= DONNEES.familles.length || !modeBalle()) return; balle.enJeu = true; balle.x = px; balle.y = PY - R - 2; balle.vx = (Math.random() < 0.5 ? -1 : 1) * 3; balle.vy = -6; boucle(); }
+  function lancer() { if (balle.enJeu || tour >= DONNEES.familles.length || !modeBalle()) return; balle.enJeu = true; balle.x = px; balle.y = PY - R - 2; balle.vx = Math.sin(ang) * VIT; balle.vy = -Math.cos(ang) * VIT; boucle(); }
 
   function terminer() {
     var recap = document.getElementById('recap'); recap.textContent = '';
@@ -178,17 +225,34 @@
     $indice.disabled = true; message('Indice : une brique de cette famille est entourée de tirets.'); dessiner();
   });
 
-  function pointeur(ev) { var r = cv.getBoundingClientRect(); px = Math.max(PW / 2, Math.min(W - PW / 2, (ev.clientX - r.left) * W / r.width)); if (!balle.enJeu) dessiner(); }
-  cv.addEventListener('pointermove', function (ev) { if (modeBalle()) { pointeur(ev); } });
+  function point(ev) { var r = cv.getBoundingClientRect(); return { x: (ev.clientX - r.left) * W / r.width, y: (ev.clientY - r.top) * H / r.height }; }
+  function deplacerRaquette(x) { px = Math.max(PW / 2, Math.min(W - PW / 2, x)); dessiner(); }
+  // Avant le lancer, le pointeur oriente la flèche (limitée à 60 degrés de la verticale) ; la raquette se déplace en la faisant glisser ou avec les flèches. Après le lancer, la raquette suit le pointeur.
+  function viserPointeur(q) { ang = Math.max(-ANGMAX, Math.min(ANGMAX, Math.atan2(q.x - px, PY - R - 2 - q.y))); dessiner(); }
+  cv.addEventListener('pointerdown', function (ev) {
+    var q = point(ev); if (!modeBalle() || balle.enJeu) return;
+    if (q.y > PY - 12 && Math.abs(q.x - px) < PW / 2 + 12) { glisse = true; deplace = false; }
+  });
+  cv.addEventListener('pointermove', function (ev) {
+    if (!modeBalle()) return;
+    var q = point(ev);
+    if (balle.enJeu) { deplacerRaquette(q.x); return; }
+    if (glisse) { deplace = true; deplacerRaquette(q.x); return; }
+    viserPointeur(q);
+  });
+  function finGlisse() { if (glisse && deplace) ignorerClic = true; glisse = false; }
+  cv.addEventListener('pointerup', finGlisse); cv.addEventListener('pointercancel', finGlisse);
   cv.addEventListener('click', function (ev) {
     var r = cv.getBoundingClientRect(), x = (ev.clientX - r.left) * W / r.width, y = (ev.clientY - r.top) * H / r.height;
-    if (modeBalle()) { pointeur(ev); lancer(); return; }
+    if (ignorerClic) { ignorerClic = false; return; }
+    if (modeBalle()) { if (!balle.enJeu) viserPointeur({ x: x, y: y }); lancer(); return; }
     briques.forEach(function (b, i) { if (!b.cassee && x > b.x && x < b.x + BW && y > b.y && y < b.y + BH) { sel = i; viser(i); } });
   });
   cv.addEventListener('keydown', function (ev) {
     if (!$fin.hidden) return;
     if (modeBalle()) {
-      if (ev.key === 'ArrowLeft') { px = Math.max(PW / 2, px - 30); dessiner(); ev.preventDefault(); }
+      if (ev.shiftKey && (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight')) { if (!balle.enJeu) tourner(ev.key === 'ArrowLeft' ? -PAS_ANG : PAS_ANG); ev.preventDefault(); }
+      else if (ev.key === 'ArrowLeft') { px = Math.max(PW / 2, px - 30); dessiner(); ev.preventDefault(); }
       else if (ev.key === 'ArrowRight') { px = Math.min(W - PW / 2, px + 30); dessiner(); ev.preventDefault(); }
       else if (ev.key === ' ' || ev.key === 'Enter') { lancer(); ev.preventDefault(); }
       return;
@@ -200,6 +264,8 @@
     else if (ev.key === 'Enter' || ev.key === ' ') { viser(sel); ev.preventDefault(); }
   });
 
+  document.getElementById('fleche-gauche').addEventListener('click', function () { tourner(-PAS_ANG); });
+  document.getElementById('fleche-droite').addEventListener('click', function () { tourner(PAS_ANG); });
   function majMode() { balle.enJeu = false; cancelAnimationFrame(raf); dessiner(); }
   function basculerCalme(actif) {
     calme = actif; if (actif) feux = []; document.body.classList.toggle('calme', actif);
@@ -229,8 +295,8 @@
     var lignes = Math.ceil(briques.length / COLS);
     H = Math.max(620, Y0 + lignes * (BH + GAP) + 110); PY = H - 50; cv.height = H;
     briques.forEach(function (b, i) { b.x = X0 + (i % COLS) * (BW + GAP); b.y = Y0 + Math.floor(i / COLS) * (BH + GAP); b.deco = DECO[i % 4]; });
-    tour = 0; sel = 0; indiceBrique = -1; balle.enJeu = false; px = W / 2; $fin.hidden = true; $indice.disabled = false;
-    message('Déplacer la raquette, puis lancer la balle.'); dessiner();
+    tour = 0; sel = 0; indiceBrique = -1; balle.enJeu = false; px = W / 2; ang = 0; $fin.hidden = true; $indice.disabled = false;
+    message('Orienter la flèche vers une brique, puis lancer la balle.'); dessiner();
   }
   document.getElementById('rejouer').addEventListener('click', demarrer);
   basculerCalme(calme);
