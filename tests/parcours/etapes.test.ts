@@ -52,6 +52,14 @@ describe('parcours, étapes', () => {
     expect(e.brouillon.matiere).toBe('');
   });
 
+  it('en français : un attendu F. est accepté, un attendu de maths est refusé, et changer de matière retire les cibles de l’autre', () => {
+    let e = a(etatInitial(), { type: 'choisirNiveau', niveau: 'P3' }, { type: 'suivant' }, { type: 'choisirMatiere', matiere: 'francais' }, { type: 'suivant' });
+    e = a(e, { type: 'basculerCible', code: 'F.P3.r1.i1.a1' });
+    expect(e.brouillon.cibles).toEqual(['F.P3.r1.i1.a1']);
+    expect(a(e, { type: 'basculerCible', code: 'M.P3.1.1.i1.a1' }).brouillon.cibles).toEqual(['F.P3.r1.i1.a1']);
+    expect(a(e, { type: 'choisirMatiere', matiere: 'mathematiques' }).brouillon.cibles).toEqual([]);
+  });
+
   it('à l’étape compétences, exige de 1 à 3 attendus et refuse le quatrième', () => {
     let e = a(etatInitial(), { type: 'choisirNiveau', niveau: 'P4' }, { type: 'suivant' }, { type: 'choisirMatiere', matiere: 'mathematiques' }, { type: 'suivant' });
     expect(e.etape).toBe('competences');

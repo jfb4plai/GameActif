@@ -41,6 +41,11 @@ describe('exporterActivite', () => {
     expect(r).toEqual({ ok: true, brouillon: b, avertissements: [] });
   });
 
+  it('un brouillon de français garde sa matière et ses codes F. à l’export puis à l’import', () => {
+    const b = complet({ niveau: 'P3', matiere: 'francais', cibles: ['F.P3.r1.i1.a1', 'F.P3.r1.i1.a2'] });
+    expect(lireActivite(exporterActivite(b, MAINTENANT).contenu)).toEqual({ ok: true, brouillon: b, avertissements: [] });
+  });
+
   it('ne contient que format, version, exporteLe et brouillon, jamais d’identité', () => {
     const o = JSON.parse(exporterActivite(complet(), MAINTENANT).contenu);
     expect(Object.keys(o)).toEqual(['format', 'version', 'exporteLe', 'brouillon']);

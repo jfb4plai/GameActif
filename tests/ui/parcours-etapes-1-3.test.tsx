@@ -46,9 +46,25 @@ describe('EtapeMatiere', () => {
     expect(envoyer).toHaveBeenCalledWith({ type: 'choisirMatiere', matiere: 'mathematiques' });
   });
 
+  it('propose les mathématiques et le français pour P3 et envoie le choix du français', async () => {
+    const envoyer = vi.fn();
+    render(<EtapeMatiere etat={aveC('P3')} envoyer={envoyer} />);
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Mathématiques', 'Français']);
+    await userEvent.click(screen.getByRole('button', { name: 'Français' }));
+    expect(envoyer).toHaveBeenCalledWith({ type: 'choisirMatiere', matiere: 'francais' });
+  });
+
   it('dit qu’aucune matière n’est disponible quand le niveau n’en a pas', () => {
     render(<EtapeMatiere etat={aveC('S1')} envoyer={() => {}} />);
     expect(screen.getByText('Aucune matière n’est encore disponible pour ce niveau.')).toBeTruthy();
+  });
+});
+
+describe('EtapeCompetences, français', () => {
+  it('affiche les 10 rubriques de P3 et des codes F.P3.', () => {
+    render(<Harnais depart={aveC('P3', 'francais')} />);
+    expect(document.querySelectorAll('details.groupe-competences')).toHaveLength(10);
+    expect(screen.getByText('F.P3.r1.i1.a1')).toBeTruthy();
   });
 });
 
