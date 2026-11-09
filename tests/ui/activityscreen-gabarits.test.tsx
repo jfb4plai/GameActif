@@ -15,12 +15,12 @@ function mount() {
 }
 
 describe('ActivityScreen, nouveaux gabarits', () => {
-  it('liste les sept jeux sur écran dans l’ordre du registre', () => {
+  it('liste les sept jeux sur écran ; pour une activité de 2e primaire, Associer passe en tête', () => {
     mount();
     const titres = screen.getAllByRole('heading', { name: /^Jeu sur écran/ }).map((h) => h.textContent);
     expect(titres).toEqual([
-      'Jeu sur écran : Trier',
       'Jeu sur écran : Associer',
+      'Jeu sur écran : Trier',
       'Jeu sur écran : Mémo',
       'Jeu sur écran : Remettre en ordre',
       'Jeu sur écran : Comparer',

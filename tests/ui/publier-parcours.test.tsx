@@ -31,20 +31,20 @@ const brouillon = {
   qcm: '',
 };
 
-function memoire(avecBrouillon = false): Stockage & StockageLocal {
+function memoire(avecBrouillon = false, niveau = 'P4'): Stockage & StockageLocal {
   const d = new Map<string, string>();
-  if (avecBrouillon) d.set('gameactif.brouillon.v1', JSON.stringify({ v: 1, etape: 'elements', brouillon }));
+  if (avecBrouillon) d.set('gameactif.brouillon.v1', JSON.stringify({ v: 1, etape: 'elements', brouillon: { ...brouillon, niveau, cibles: [`M.${niveau}.1.1.i1.a1`] } }));
   return { getItem: (k) => d.get(k) ?? null, setItem: (k, v) => void d.set(k, v), removeItem: (k) => void d.delete(k) };
 }
 
-async function monter(opts: { suiviActif: boolean; enseignant: boolean }) {
+async function monter(opts: { suiviActif: boolean; enseignant: boolean; niveau?: string }) {
   window.history.replaceState(null, '', '/');
   window.matchMedia = (() => ({ matches: false, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
   render(
     <CalmProvider>
       <AuthProvider client={fauxAuth({ session: { id: 'u1', email: 'prof@ecole.be' } }).client}>
         <Parcours
-          stockage={memoire(true)}
+          stockage={memoire(true, opts.niveau)}
           rpc={async () => ({ data: opts.enseignant, error: null })}
           stockageInvitation={memoire()}
           stockageSuivi={memoire()}
@@ -69,6 +69,20 @@ describe('Parcours, « Proposer à la classe » à l’étape « Vos jeux »', (
   it('un compte sans accès enseignant ne le voit pas', async () => {
     await monter({ suiviActif: true, enseignant: false });
     expect(screen.queryByRole('button', { name: 'Proposer à la classe' })).toBeNull();
+  });
+
+  it('avant la 3e primaire : pas de lien de partage, et une phrase explique pourquoi', async () => {
+    for (const niveau of ['P1', 'P2']) {
+      await monter({ suiviActif: true, enseignant: true, niveau });
+      expect(screen.queryByRole('button', { name: 'Proposer à la classe' })).toBeNull();
+      expect(screen.getByText(/à partir de la 3e primaire/)).toBeTruthy();
+      cleanup();
+    }
+  });
+
+  it('à partir de la 3e primaire : le bouton est proposé', async () => {
+    await monter({ suiviActif: true, enseignant: true, niveau: 'P3' });
+    expect(await screen.findByRole('button', { name: 'Proposer à la classe' })).toBeTruthy();
   });
 
   it('suivi inactif : pas de bouton', async () => {

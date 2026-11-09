@@ -9,7 +9,7 @@ import { buildPhysicalKit } from '../physical/kit.js';
 import { programmeLinks, type ProgrammeLink } from '../physical/programme.js';
 import { AutresJeux } from './AutresJeux.js';
 import { PhysicalKitView } from './PhysicalKitView.js';
-import { MECANIQUES, mecanique } from '../engine/mecaniques.js';
+import { mecanique, ordreAffichage } from '../engine/mecaniques.js';
 import { PLATEAUX } from './plateaux.js';
 import { QuiJoue } from './QuiJoue.js';
 import type { StockageLocal } from '../compte/invitation.js';
@@ -130,7 +130,7 @@ export function ActivityScreen({ activity, suivi, stockage, eleve }: Props) {
   }, []);
 
   const available = availableMechanics(activity);
-  const mechanics = MECANIQUES.map((m) => m.id).filter((m) => available[m].available);
+  const mechanics = ordreAffichage(activity.year).map((m) => m.id).filter((m) => available[m].available);
   const pupils = Number.parseInt(pupilsText, 10);
   const pupilsUsed = Number.isFinite(pupils) && pupils > 0 ? pupils : DEFAULT_PUPILS;
   const seed = seedOf(activity.id);

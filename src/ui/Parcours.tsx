@@ -21,6 +21,9 @@ import { AideEcran } from './AideEcran.js';
 import type { AideId } from '../aide/aides.js';
 import { SUIVI_ACTIF_PAR_DEFAUT } from '../suivi/interrupteur.js';
 import { PublierActivite } from './PublierActivite.js';
+
+/** Niveaux où le lien de partage (jeu en autonomie) est proposé : pas de jeu asynchrone avant la 3e primaire (décision de JF, 2026-11-09). */
+const PARTAGE_DES_LA_P3: ReadonlySet<string> = new Set(['P3', 'P4', 'P5', 'P6']);
 import { magasinPartageSupabase, type ClientPartageEcriture, type PartageStore } from '../partage/magasin.js';
 import { magasinSuiviSupabase, type ClientLecture, type SuiviStore } from '../suivi/lecture.js';
 import { EtapeCompetences } from './EtapeCompetences.js';
@@ -197,7 +200,11 @@ export function Parcours({
               <>
                 <ActivityScreen activity={activite} suivi={clientSuivi} />
                 {acces === 'enseignant' && magasinSuivi !== null && magasinPartage !== null && (
-                  <PublierActivite brouillon={b} suivi={magasinSuivi} partage={magasinPartage} origine={window.location.origin} />
+                  PARTAGE_DES_LA_P3.has(b.niveau) ? (
+                    <PublierActivite brouillon={b} suivi={magasinSuivi} partage={magasinPartage} origine={window.location.origin} />
+                  ) : (
+                    <p className="aide">Le partage par lien est ouvert à partir de la 3e primaire : avant, les jeux se jouent avec vous, en classe.</p>
+                  )
                 )}
               </>
             ) : (
