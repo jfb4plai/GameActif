@@ -54,6 +54,33 @@ async function jouerUnTour() {
   await screen.findByText(/Tour terminé/);
 }
 
+describe('ActivityScreen, pas d’enregistrement par code avant la 3e primaire', () => {
+  const monterAnnee = (year: string) => {
+    window.matchMedia = (() => ({ matches: false, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+    render(
+      <CalmProvider>
+        <ActivityScreen activity={{ ...activite(), year }} suivi={client(async () => ({ data: 'ok', error: null })).c} stockage={stockage(false)} />
+      </CalmProvider>,
+    );
+  };
+
+  it('en 1re et 2e primaire : pas de « Associer cet appareil à une classe »', () => {
+    for (const year of ['1re primaire', '2e primaire']) {
+      monterAnnee(year);
+      expect(screen.queryByRole('button', { name: 'Associer cet appareil à une classe' })).toBeNull();
+      cleanup();
+    }
+  });
+
+  it('à partir de la 3e primaire, ou niveau inconnu : le bouton est proposé', () => {
+    for (const year of ['3e primaire', '6e primaire', 'inconnu']) {
+      monterAnnee(year);
+      expect(screen.getByRole('button', { name: 'Associer cet appareil à une classe' })).toBeTruthy();
+      cleanup();
+    }
+  });
+});
+
 describe('ActivityScreen, suivi par code', () => {
   it('envoie une fois la séance sous le code choisi, avec les attendus de l’activité, puis revient à « Jouer sans enregistrer »', async () => {
     const { c, appels } = client(async () => ({ data: 'ok', error: null }));

@@ -9,7 +9,7 @@ import { buildPhysicalKit } from '../physical/kit.js';
 import { programmeLinks, type ProgrammeLink } from '../physical/programme.js';
 import { AutresJeux } from './AutresJeux.js';
 import { PhysicalKitView } from './PhysicalKitView.js';
-import { mecanique, ordreAffichage } from '../engine/mecaniques.js';
+import { mecanique, ordreAffichage, rangPrimaire } from '../engine/mecaniques.js';
 import { PLATEAUX } from './plateaux.js';
 import { QuiJoue } from './QuiJoue.js';
 import type { StockageLocal } from '../compte/invitation.js';
@@ -129,6 +129,9 @@ export function ActivityScreen({ activity, suivi, stockage, eleve }: Props) {
     };
   }, []);
 
+  // Pas de jeu en autonomie avec enregistrement par code avant la 3e primaire (décision de JF, 2026-11-09).
+  const rang = rangPrimaire(activity.year);
+  const avantTroisiemePrimaire = rang !== null && rang < 3;
   const available = availableMechanics(activity);
   const mechanics = ordreAffichage(activity.year).map((m) => m.id).filter((m) => available[m].available);
   const pupils = Number.parseInt(pupilsText, 10);
@@ -256,7 +259,7 @@ export function ActivityScreen({ activity, suivi, stockage, eleve }: Props) {
       </div>
       )}
 
-      {suivi && (
+      {suivi && !avantTroisiemePrimaire && (
         <div className="carte">
           <QuiJoue
             classe={classe}

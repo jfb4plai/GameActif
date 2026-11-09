@@ -33,13 +33,19 @@ export const MECANIQUES: readonly MecaniqueDef[] = [
   { id: 'placer', label: 'Placer dans une scène', atelier: false, setup: setupPlacer },
 ];
 
+/** « 3e primaire » donne 3 ; un libellé non reconnu donne null. */
+export function rangPrimaire(annee: string): number | null {
+  const n = Number(/^([1-6])(?:re|e) primaire$/.exec(annee)?.[1]);
+  return Number.isInteger(n) ? n : null;
+}
+
 /**
  * Ordre d'affichage selon le niveau (libellé « 3e primaire ») : de la 1re à la 3e, Associer passe en tête ; ensuite,
  * ou si le niveau n'est pas reconnu, l'ordre de MECANIQUES est conservé. Choix de l'enseignant, sans source scientifique.
  */
 export function ordreAffichage(annee: string): readonly MecaniqueDef[] {
-  const n = Number(/^(\d)(?:re|e) primaire$/.exec(annee)?.[1]);
-  if (!(n >= 1 && n <= 3)) return MECANIQUES;
+  const n = rangPrimaire(annee);
+  if (n === null || n > 3) return MECANIQUES;
   const associer = MECANIQUES.find((m) => m.id === 'associer');
   return associer ? [associer, ...MECANIQUES.filter((m) => m !== associer)] : MECANIQUES;
 }
