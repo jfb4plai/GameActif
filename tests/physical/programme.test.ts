@@ -23,6 +23,25 @@ describe('jeu de données du référentiel', () => {
   });
 });
 
+describe('programmeLinks, attendus du français', () => {
+  const F1 = 'F.P3.r1.i1.a1';
+
+  it('reprend le texte officiel du référentiel, sans phrase de jeu (les phrases du pilote sont écrites pour les maths)', () => {
+    for (const support of ['numerique', 'physique'] as const) {
+      const links = programmeLinks('trier', support, [F1]);
+      expect(links).toHaveLength(1);
+      expect(links[0].code).toBe(F1);
+      expect(links[0].texte.startsWith('Citer les paramètres de la communication')).toBe(true);
+      expect(links[0].phrase).toBeNull();
+      expect(links[0].extraEnClasse).toBe(false);
+    }
+  });
+
+  it('signale un attendu de français inconnu comme introuvable, sans lever d’erreur', () => {
+    expect(programmeLinks('associer', 'numerique', ['F.P3.r99.i1.a1'])[0].texte).toBe('Attendu introuvable');
+  });
+});
+
 describe('programmeLinks, jeu physique', () => {
   it('Trier : une phrase par attendu du pilote, texte officiel repris du jeu de données', () => {
     const links = programmeLinks('trier', 'physique', [A1, A2, A3]);

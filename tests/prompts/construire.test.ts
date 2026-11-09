@@ -90,6 +90,15 @@ describe('construirePrompt', () => {
     expect(k).not.toContain(garde.modes.bulles.consigne);
   });
 
+  it('cite aussi le code et le texte officiel d’un attendu de français', () => {
+    const a: Activity = { ...activitePilote(), discipline: 'Français', year: '3e primaire', cibles: ['F.P3.r1.i1.a1'] };
+    const officiel = REFERENTIEL.find((e) => e.code === 'F.P3.r1.i1.a1');
+    expect(officiel).toBeDefined();
+    const t = construirePrompt(a, 'bulles', 'standard', 1).texte;
+    expect(t).toContain(`F.P3.r1.i1.a1 : ${officiel!.texte}`);
+    expect(t).not.toContain('texte introuvable');
+  });
+
   it('cite le code et le texte officiel de chaque attendu visé', () => {
     const a = activitePilote();
     const t = construirePrompt(a, 'bulles', 'standard', 1).texte;
