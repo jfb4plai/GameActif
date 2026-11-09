@@ -124,7 +124,7 @@ describe('lireActivite, refus', () => {
   });
 
   it('refuse un niveau ou une matière absents des données', () => {
-    for (const b of [complet({ niveau: 'S1' }), complet({ matiere: 'francais' }), complet({ niveau: '' })]) {
+    for (const b of [complet({ niveau: 'S1' }), complet({ matiere: 'histoire' }), complet({ niveau: '' })]) {
       expect(lireActivite(enveloppe(b))).toEqual({ ok: false, message: 'Ce niveau ou cette matière n’existe pas encore dans GameActif.' });
     }
   });

@@ -48,7 +48,7 @@ describe('parcours, étapes', () => {
 
   it('refuse un niveau ou une matière absents des données', () => {
     expect(a(etatInitial(), { type: 'choisirNiveau', niveau: 'S1' }).brouillon.niveau).toBe('');
-    const e = a(etatInitial(), { type: 'choisirNiveau', niveau: 'P4' }, { type: 'choisirMatiere', matiere: 'francais' });
+    const e = a(etatInitial(), { type: 'choisirNiveau', niveau: 'P4' }, { type: 'choisirMatiere', matiere: 'histoire' });
     expect(e.brouillon.matiere).toBe('');
   });
 

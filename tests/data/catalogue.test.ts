@@ -6,8 +6,10 @@ describe('niveaux et matières', () => {
     expect(niveaux()).toEqual(['P1', 'P2', 'P3', 'P4', 'P5', 'P6']);
   });
 
-  it('propose les mathématiques pour un niveau présent dans les données', () => {
-    expect(matieres('P4')).toEqual([{ id: 'mathematiques', label: 'Mathématiques' }]);
+  it('propose les mathématiques puis le français pour chaque niveau présent dans les données', () => {
+    for (const n of niveaux()) {
+      expect(matieres(n)).toEqual([{ id: 'mathematiques', label: 'Mathématiques' }, { id: 'francais', label: 'Français' }]);
+    }
   });
 
   it('ne propose rien pour un niveau absent des données', () => {
@@ -34,7 +36,15 @@ describe('competences', () => {
 
   it('renvoie une liste vide pour un niveau ou une matière inconnus', () => {
     expect(competences('P9', 'mathematiques')).toEqual([]);
-    expect(competences('P4', 'francais')).toEqual([]);
+    expect(competences('P4', 'histoire')).toEqual([]);
+  });
+
+  it('groupe les attendus de français de P3 par rubrique : 10 groupes, 168 attendus, codes F.P3.', () => {
+    const groupes = competences('P3', 'francais');
+    expect(groupes).toHaveLength(10);
+    expect(groupes[0].sousPoint).toBe('r1');
+    expect(groupes.reduce((n, g) => n + g.attendus.length, 0)).toBe(168);
+    for (const g of groupes) for (const a of g.attendus) expect(a.code.startsWith('F.P3.')).toBe(true);
   });
 });
 

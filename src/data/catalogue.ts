@@ -11,7 +11,9 @@ export interface GroupeCompetences {
   attendus: ReferentielEntry[];
 }
 
-const LIBELLES_MATIERES: Record<string, string> = { mathematiques: 'Mathématiques' };
+const LIBELLES_MATIERES: Record<string, string> = { mathematiques: 'Mathématiques', francais: 'Français' };
+/** Ordre d'affichage des matières ; une matière absente de cette liste vient après. */
+const ORDRE_MATIERES = ['mathematiques', 'francais'];
 
 /** Niveaux présents dans les données, de P1 à P6. */
 export function niveaux(): string[] {
@@ -19,7 +21,9 @@ export function niveaux(): string[] {
 }
 
 export function matieres(niveau: string): Matiere[] {
-  const ids = [...new Set(REFERENTIEL.filter((e) => e.annee === niveau).map((e) => e.matiere))];
+  const ids = [...new Set(REFERENTIEL.filter((e) => e.annee === niveau).map((e) => e.matiere))].sort(
+    (a, b) => (ORDRE_MATIERES.indexOf(a) + 1 || 99) - (ORDRE_MATIERES.indexOf(b) + 1 || 99),
+  );
   return ids.map((id) => ({ id, label: LIBELLES_MATIERES[id] ?? id }));
 }
 
