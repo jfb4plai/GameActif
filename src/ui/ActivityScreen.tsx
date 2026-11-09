@@ -275,7 +275,10 @@ export function ActivityScreen({ activity, suivi, stockage, eleve }: Props) {
       {mechanics.map((m) => (
         <article key={m} className="deux-cartes">
           <div className="carte carte-ecran">
-            <h2>{`Jeu sur écran : ${mecanique(m).label}`}</h2>
+            <h2>
+              {m === 'associer' && <img src="arasaac/23763.png" alt="" width={48} height={48} style={{ verticalAlign: 'middle', marginRight: '8px' }} />}
+              {`Jeu sur écran : ${mecanique(m).label}`}
+            </h2>
             {!eleve && <LinksView links={programmeLinks(m, 'numerique', activity.cibles)} />}
             <button type="button" onClick={() => jouer(m)} aria-label={`Jouer : ${mecanique(m).label}`}>Jouer</button>
           </div>

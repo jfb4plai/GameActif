@@ -96,6 +96,17 @@ describe('PageLegale, mentions', () => {
   });
 });
 
+describe('PageLegale, mentions : pictogrammes ARASAAC', () => {
+  it('cite l’auteur, le propriétaire, l’origine et la licence demandés par ARASAAC', () => {
+    render(<PageLegale page="mentions" compteActif={false} suiviActif={false} />);
+    expect(texte()).toMatch(/Sergio Palao/);
+    expect(texte()).toMatch(/Gouvernement d’Aragon/);
+    expect(texte()).toMatch(/ARASAAC \(http:\/\/www\.arasaac\.org\)/);
+    expect(texte()).toMatch(/Creative Commons BY-NC-SA/);
+    expect(texte()).not.toMatch(/—/);
+  });
+});
+
 describe('PiedDePage', () => {
   it('donne accès aux deux pages et au retour au parcours', () => {
     render(<PiedDePage />);

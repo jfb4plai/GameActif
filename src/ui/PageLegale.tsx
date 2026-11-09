@@ -87,6 +87,9 @@ function Mentions() {
       <p>
         Les attendus proposés viennent des référentiels de la Fédération Wallonie-Bruxelles. Les activités et textes saisis par les enseignants restent sous leur responsabilité.
       </p>
+      <p>
+        Le pictogramme du jeu « Associer » est un pictogramme ARASAAC. Les symboles pictographiques utilisés sont la propriété du Gouvernement d’Aragon et ont été créés par Sergio Palao pour ARASAAC (http://www.arasaac.org), qui les distribuent sous Licence Creative Commons BY-NC-SA.
+      </p>
       <p>Licence du code : à préciser (ce dépôt n’a pas encore de fichier de licence).</p>
     </>
   );

@@ -24,5 +24,6 @@ Statuts : constaté (code cité), à confirmer par JF, non vérifié.
 | Contact `jeanfrancois.beguin@ens.ecl.be` | règle PLAI : modes d'emploi et outils | à confirmer par JF |
 | Mentions : éditeur, Pôle Territorial de la Ville de Liège, référentiels FWB | `CLAUDE.md` du projet, `scripts/build-referentiel.mjs` | constaté |
 | Licence du code : à préciser | aucun fichier `LICENSE` dans le dépôt (`git ls-files`, `origin/main`, 2026-11-06) alors que d'autres dépôts PLAI en ont un | constaté ; **JF décide** s'il pose PolyForm Noncommercial 1.0.0 |
+| Pictogramme ARASAAC 23763 sur « Associer », attribution dans Mentions | `public/arasaac/LISEZMOI.txt`, conditions lues sur arasaac.org/terms-of-use le 2026-11-09 (CC BY-NC-SA, formulation d'attribution reprise) | constaté pour le texte d'attribution ; effet juridique sur la licence du code **non qualifié** |
 
 Rien dans les pages n'affirme une conformité ni une sécurité.

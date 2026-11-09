@@ -14,6 +14,23 @@ function mount() {
   render(<CalmProvider><ActivityScreen activity={toutesActivity()} /></CalmProvider>);
 }
 
+describe('ActivityScreen, picto ARASAAC sur « Associer »', () => {
+  it('le titre « Associer » porte le picto 23763, décoratif (le mot est à côté), et aucun autre jeu n’en porte', () => {
+    mount();
+    const titres = screen.getAllByRole('heading', { name: /^Jeu sur écran/ });
+    for (const h of titres) {
+      const img = h.querySelector('img');
+      if (h.textContent === 'Jeu sur écran : Associer') {
+        expect(img).not.toBeNull();
+        expect(img!.getAttribute('src')).toBe('arasaac/23763.png');
+        expect(img!.getAttribute('alt')).toBe('');
+      } else {
+        expect(img).toBeNull();
+      }
+    }
+  });
+});
+
 describe('ActivityScreen, nouveaux gabarits', () => {
   it('liste les sept jeux sur écran ; pour une activité de 2e primaire, Associer passe en tête', () => {
     mount();
