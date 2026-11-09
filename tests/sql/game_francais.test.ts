@@ -43,12 +43,12 @@ describe('migration game_codes_francais et essais (Postgres en mémoire, sans to
     for (const cas of CAS) expect(essais()).toContain(`OK ${cas}`);
   });
 
-  it('la migration ne crée que des objets préfixés game_, reste non appliquée et n’a aucun prénom ni secret', () => {
+  it('la migration ne crée que des objets préfixés game_, est marquée appliquée et n’a aucun prénom ni secret', () => {
     const sql = lire(FRANCAIS);
     const creations = [...sql.matchAll(/create (?:or replace )?(?:table|function|trigger|policy|index)\s+(?:if not exists\s+)?(?:public\.)?"?([a-z_0-9]+)"?/gi)].map((m) => m[1]);
     expect(creations.length).toBeGreaterThan(0);
     for (const nom of creations) expect(nom.startsWith('game_')).toBe(true);
-    expect(sql).toMatch(/NON APPLIQUÉE/);
+    expect(sql).toMatch(/APPLIQUÉE le 2026-11-09/);
     expect(sql).not.toMatch(/eyJ[A-Za-z0-9_-]{20,}/);
     expect(sql).not.toMatch(/\b(prenom|firstname|first_name|nom_eleve|student_name)\b/i);
   });

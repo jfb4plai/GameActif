@@ -8,8 +8,8 @@
 begin;
 set local lock_timeout = '3s';
 -- ---------------------------------------------------------------------------------------------------------------
--- GameActif : codes d'attendus du français. NON APPLIQUÉE à la base partagée : à essayer dans une transaction annulée
--- (supabase/essai-rollback-game_francais.sql), puis à appliquer seulement avec l'accord explicite de JF.
+-- GameActif : codes d'attendus du français. APPLIQUÉE le 2026-11-09 sur la base partagée, avec l'accord explicite de JF,
+-- après un essai dans une transaction annulée (supabase/essai-rollback-game_francais.sql).
 -- Dépend de 20261103, 20261107 et 20261108 (déjà appliquées). Plan : plans/2026-11-09-gameactif-plan-11-francais.md.
 --
 -- Les codes de maths valent M.P4.1.1.i1.a1 ; ceux du français valent F.P3.r1.i1.a1 (rubrique, item, attendu, par rang).
